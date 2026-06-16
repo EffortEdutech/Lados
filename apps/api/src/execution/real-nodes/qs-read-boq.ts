@@ -6,7 +6,7 @@
  * Auto-detects column mapping from header names.
  * Sprint 7 (S7-004)
  */
-import type { NodeContext, NodeExecuteResult } from '@qsos/node-sdk';
+import type { NodeContext, NodeExecuteResult } from '@qsos/execution-engine';
 
 export interface BOQItem {
   item_no: string;
@@ -50,6 +50,24 @@ function findKey(headers: string[], synonyms: string[]): string | null {
   return null;
 }
 
+/**
+ * Resolves a config column spec to the actual row key.
+ * Supports:
+ *   - Excel column letter: "A" → hdrs[0], "B" → hdrs[1], etc.
+ *   - Key name directly:   "item_no" → "item_no" (if it exists in hdrs)
+ */
+function resolveColConfig(spec: string, hdrs: string[]): string | null {
+  const s = spec.trim();
+  // Single letter A-Z (case-insensitive) → positional
+  if (/^[A-Za-z]$/.test(s)) {
+    const idx = s.toUpperCase().charCodeAt(0) - 65; // A=0, B=1, ...
+    return hdrs[idx] ?? null;
+  }
+  // Otherwise treat as the key name
+  const lower = s.toLowerCase();
+  return hdrs.includes(lower) ? lower : null;
+}
+
 function toNumber(val: unknown): number | null {
   if (val === null || val === undefined || val === '') return null;
   const n = Number(val);
@@ -74,7 +92,7 @@ export async function realReadBoq(ctx: NodeContext): Promise<NodeExecuteResult> 
 
   if (!rows || rows.length === 0) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: {
@@ -91,18 +109,24 @@ export async function realReadBoq(ctx: NodeContext): Promise<NodeExecuteResult> 
   // Auto-detect columns from config overrides or header synonyms
   const hdrs = headers ?? Object.keys(rows[0] ?? {}).filter((k) => k !== 'row');
 
-  const colItemNo = (ctx.config['item_col'] as string | undefined)?.toLowerCase()
-    ?? findKey(hdrs, ITEM_NO_KEYS);
-  const colDesc   = (ctx.config['desc_col'] as string | undefined)?.toLowerCase()
-    ?? findKey(hdrs, DESC_KEYS);
-  const colUnit   = (ctx.config['unit_col'] as string | undefined)?.toLowerCase()
-    ?? findKey(hdrs, UNIT_KEYS);
-  const colQty    = (ctx.config['qty_col'] as string | undefined)?.toLowerCase()
-    ?? findKey(hdrs, QTY_KEYS);
-  const colRate   = (ctx.config['rate_col'] as string | undefined)?.toLowerCase()
-    ?? findKey(hdrs, RATE_KEYS);
-  const colAmt    = (ctx.config['amount_col'] as string | undefined)?.toLowerCase()
-    ?? findKey(hdrs, AMOUNT_KEYS);
+  const colItemNo = (ctx.config['item_col'] as string | undefined)
+    ? resolveColConfig(ctx.config['item_col'] as string, hdrs)
+    : findKey(hdrs, ITEM_NO_KEYS);
+  const colDesc   = (ctx.config['desc_col'] as string | undefined)
+    ? resolveColConfig(ctx.config['desc_col'] as string, hdrs)
+    : findKey(hdrs, DESC_KEYS);
+  const colUnit   = (ctx.config['unit_col'] as string | undefined)
+    ? resolveColConfig(ctx.config['unit_col'] as string, hdrs)
+    : findKey(hdrs, UNIT_KEYS);
+  const colQty    = (ctx.config['qty_col'] as string | undefined)
+    ? resolveColConfig(ctx.config['qty_col'] as string, hdrs)
+    : findKey(hdrs, QTY_KEYS);
+  const colRate   = (ctx.config['rate_col'] as string | undefined)
+    ? resolveColConfig(ctx.config['rate_col'] as string, hdrs)
+    : findKey(hdrs, RATE_KEYS);
+  const colAmt    = (ctx.config['amount_col'] as string | undefined)
+    ? resolveColConfig(ctx.config['amount_col'] as string, hdrs)
+    : findKey(hdrs, AMOUNT_KEYS);
 
   ctx.logger.info(
     `Column mapping — item_no: ${colItemNo}, desc: ${colDesc}, unit: ${colUnit}, qty: ${colQty}, rate: ${colRate}, amount: ${colAmt}`,
@@ -165,7 +189,7 @@ export async function realReadBoq(ctx: NodeContext): Promise<NodeExecuteResult> 
   };
 
   return {
-    status: 'completed',
+    status: 'success',
     outputs: {
       boq: boqDoc,
       total_items: lineItems.length,

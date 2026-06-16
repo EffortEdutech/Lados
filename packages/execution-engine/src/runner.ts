@@ -107,7 +107,6 @@ export class WorkflowRunner {
           info:  (msg: string) => nodeMessages.push(`[INFO]  ${msg}`),
           warn:  (msg: string) => nodeMessages.push(`[WARN]  ${msg}`),
           error: (msg: string) => nodeMessages.push(`[ERROR] ${msg}`),
-          debug: (msg: string) => nodeMessages.push(`[DEBUG] ${msg}`),
         },
       };
 
@@ -124,7 +123,7 @@ export class WorkflowRunner {
 
         nodeMessages.push(...(result.logs ?? []).map(String));
 
-        if (result.status === 'failed') {
+        if (result.status === 'failure') {
           logEntry.status = 'failed';
           logEntry.error = result.error ?? { code: 'NODE_FAILED', message: 'Node reported failure' };
           logEntry.outputs = result.outputs ?? {};
@@ -210,12 +209,15 @@ export class WorkflowRunner {
       const depOutputs = nodeOutputs[depId] ?? {};
       Object.assign(merged, depOutputs);
     }
+    // Also include top-level workflow inputs (e.g. file_id passed from UI)
+    Object.assign(merged, workflowInputs);
     return merged;
   }
 }
 
-// ── Convenience function ──────────────────────────────────────────────────────
-
+/**
+ * Convenience function — create a runner and execute immediately.
+ */
 export async function runWorkflow(options: RunnerOptions): Promise<ExecutionResult> {
   const runner = new WorkflowRunner(options);
   return runner.run();

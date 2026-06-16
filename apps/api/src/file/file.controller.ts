@@ -17,7 +17,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SupabaseJwtGuard as JwtAuthGuard } from '../common/guards/supabase-jwt.guard';
 import { FileService } from './file.service';
 
 const ALLOWED_MIME = new Set([

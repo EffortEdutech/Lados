@@ -85,9 +85,6 @@ export interface RunnerOptions {
   nodeResolver?: (nodeType: string) => ((ctx: NodeContext) => Promise<NodeExecuteResult>) | null;
 }
 
-// ── Mock node result factory (used by mock registry) ─────────────────────────
+// ── Mock node executor type ───────────────────────────────────────────────────
 
-export type MockNodeExecutor = (
-  nodeType: string,
-  ctx: NodeContext,
-) => Promise<NodeExecuteResult>;
+export type MockNodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;

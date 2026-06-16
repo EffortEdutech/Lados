@@ -5,7 +5,7 @@
  * Detects cycles and validates that every node type is referenced correctly.
  */
 
-import type { QSWorkflowDefinition, WorkflowNodeInstance } from '@qsos/shared-types';
+import type { QSWorkflowDefinition, WorkflowNodeInstance, NodeInstanceId } from '@qsos/shared-types';
 import type { ExecutionPlan, ExecutionStep } from './types';
 
 // ── Build adjacency ───────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ export function planWorkflow(definition: QSWorkflowDefinition): ExecutionPlan {
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
   const steps: ExecutionStep[] = order.map((nodeId) => {
-    const node = nodeMap.get(nodeId)!;
+    const node = nodeMap.get(nodeId as NodeInstanceId)!;
     return {
       nodeId: node.id,
       nodeType: node.type,

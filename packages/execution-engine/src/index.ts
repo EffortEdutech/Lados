@@ -3,6 +3,7 @@
  *
  * Workflow execution engine for QS-OS.
  * Sprint 6 (S6-002) — sequential mock execution.
+ * Sprint 7 (S7-005) — real node resolver support.
  *
  * @example
  *   import { runWorkflow } from '@qsos/execution-engine';
@@ -12,7 +13,13 @@
 export const EXECUTION_ENGINE_VERSION = '0.1.0' as const;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+// Re-export node-sdk types so callers don't need a direct node-sdk dep
 export type {
+  // From @qsos/node-sdk (re-exported via types.ts)
+  NodeContext,
+  NodeExecuteResult,
+  NodeLogger,
+  // Engine-internal types
   RunStatus,
   NodeRunStatus,
   ExecutionStep,

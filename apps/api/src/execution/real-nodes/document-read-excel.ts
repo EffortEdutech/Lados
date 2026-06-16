@@ -6,7 +6,7 @@
  * Sprint 7 (S7-004)
  */
 import * as XLSX from 'xlsx';
-import type { NodeContext, NodeExecuteResult } from '@qsos/node-sdk';
+import type { NodeContext, NodeExecuteResult } from '@qsos/execution-engine';
 import type { FileService } from '../../file/file.service';
 
 export interface ExcelRow {
@@ -22,7 +22,7 @@ export async function realReadExcel(
 
   if (!fileId) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: { code: 'NO_FILE_ID', message: 'No file_id provided in inputs or config' },
@@ -39,7 +39,7 @@ export async function realReadExcel(
     ctx.logger.info(`Storage path: ${storagePath}`);
   } catch (err: unknown) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: {
@@ -57,7 +57,7 @@ export async function realReadExcel(
     ctx.logger.info(`Downloaded ${fileBuffer.length} bytes`);
   } catch (err: unknown) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: {
@@ -74,7 +74,7 @@ export async function realReadExcel(
     workbook = XLSX.read(fileBuffer, { type: 'buffer', cellDates: true });
   } catch (err: unknown) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: {
@@ -90,7 +90,7 @@ export async function realReadExcel(
 
   if (!sheet) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: {
@@ -115,7 +115,7 @@ export async function realReadExcel(
 
   if (headerRowIndex < 0) {
     return {
-      status: 'failed',
+      status: 'failure',
       outputs: {},
       logs: [],
       error: { code: 'NO_HEADER', message: 'Could not find a header row with ≥3 columns' },
@@ -142,7 +142,7 @@ export async function realReadExcel(
   ctx.logger.info(`Parsed ${rows.length} data rows from sheet "${sheetName}"`);
 
   return {
-    status: 'completed',
+    status: 'success',
     outputs: {
       file_id: fileId,
       sheet_name: sheetName,

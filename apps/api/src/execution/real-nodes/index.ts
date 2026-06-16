@@ -5,7 +5,7 @@
  * Falls back to mock for everything else.
  * Sprint 7 (S7-004)
  */
-import type { NodeContext, NodeExecuteResult } from '@qsos/node-sdk';
+import type { NodeContext, NodeExecuteResult } from '@qsos/execution-engine';
 import type { FileService } from '../../file/file.service';
 import { realReadExcel } from './document-read-excel';
 import { realReadBoq } from './qs-read-boq';

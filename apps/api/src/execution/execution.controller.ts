@@ -15,7 +15,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SupabaseJwtGuard as JwtAuthGuard } from '../common/guards/supabase-jwt.guard';
 import { ExecutionService } from './execution.service';
 import { TriggerRunDto } from './dto/trigger-run.dto';
 

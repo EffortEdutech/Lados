@@ -13,12 +13,12 @@ import type { MockNodeExecutor } from './types';
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function success(outputs: Record<string, unknown>, summary?: string): NodeExecuteResult {
-  return { status: 'completed', outputs, summary: summary ?? 'OK', logs: [] };
+  return { status: 'success', outputs, summary: summary ?? 'OK', logs: [] };
 }
 
 function failure(code: string, message: string): NodeExecuteResult {
   return {
-    status: 'failed',
+    status: 'failure',
     outputs: {},
     logs: [],
     error: { code, message },
@@ -230,20 +230,21 @@ const mocks: Record<string, (ctx: NodeContext) => Promise<NodeExecuteResult>> = 
 
 // ── Fallback for unknown node types ──────────────────────────────────────────
 
-const fallbackMock: MockNodeExecutor = async (nodeType, _ctx) => {
+async function fallbackMockImpl(nodeType: string, ctx: NodeContext): Promise<NodeExecuteResult> {
+  void ctx;
   await delay(50);
   return success(
     { executed: true, node_type: nodeType },
     `[mock] ${nodeType} executed (no specific mock)`,
   );
-};
+}
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export function getMockExecutor(nodeType: string): (ctx: NodeContext) => Promise<NodeExecuteResult> {
   const impl = mocks[nodeType];
   if (impl) return impl;
-  return (ctx) => fallbackMock(nodeType, ctx);
+  return (ctx) => fallbackMockImpl(nodeType, ctx);
 }
 
 export function hasMockFor(nodeType: string): boolean {

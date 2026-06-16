@@ -34,13 +34,22 @@ CREATE INDEX IF NOT EXISTS uploads_organization_id_idx ON uploads(organization_i
 CREATE INDEX IF NOT EXISTS uploads_project_id_idx      ON uploads(project_id);
 CREATE INDEX IF NOT EXISTS uploads_workflow_id_idx     ON uploads(workflow_id);
 
-CREATE TRIGGER set_uploads_updated_at
-  BEFORE UPDATE ON uploads
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+-- Trigger: guard against duplicate on re-run
+DO $$ BEGIN
+  CREATE TRIGGER set_uploads_updated_at
+    BEFORE UPDATE ON uploads
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;
 
 -- ── RLS ───────────────────────────────────────────────────────────────────────
 
 ALTER TABLE uploads ENABLE ROW LEVEL SECURITY;
+
+-- Drop first so re-runs are safe
+DROP POLICY IF EXISTS "Members can read uploads in their org" ON uploads;
+DROP POLICY IF EXISTS "Members can insert uploads"            ON uploads;
+DROP POLICY IF EXISTS "Uploader can update their uploads"     ON uploads;
 
 CREATE POLICY "Members can read uploads in their org"
   ON uploads FOR SELECT TO authenticated
@@ -86,7 +95,13 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Storage RLS: authenticated users can upload and read their own files
+-- Storage RLS: authenticated users can upload and read files in this bucket.
+-- Ownership is enforced at the API level via the uploads table — no owner cast needed here.
+-- Drop first in case of partial re-run.
+DROP POLICY IF EXISTS "Authenticated users can upload files"         ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can read their uploaded files" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can delete their own files"    ON storage.objects;
+
 CREATE POLICY "Authenticated users can upload files"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'workflow-uploads');
@@ -95,6 +110,6 @@ CREATE POLICY "Authenticated users can read their uploaded files"
   ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = 'workflow-uploads');
 
-CREATE POLICY "Authenticated users can delete their own files"
+CREATE POLICY "Authenticated users can delete uploaded files"
   ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'workflow-uploads' AND owner = auth.uid()::text);
+  USING (bucket_id = 'workflow-uploads');

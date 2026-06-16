@@ -85,7 +85,6 @@ VALUES (
         "position": { "x": 250, "y": 310 },
         "config": {
           "sheet_name": "BOQ",
-          "header_row": 1,
           "skip_empty": true
         }
       },
