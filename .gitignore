@@ -47,7 +47,4 @@ supabase/.temp/
 ~$*.doc
 ~$*.pptx
 ~$*.ppt
-*.xlsx
-*.xls
-*.docx
-*.pptx
+
