@@ -1,0 +1,25 @@
+{
+  "name": "@qsos/procurement-pack",
+  "version": "0.1.0",
+  "description": "QS-OS procurement pack — tender, subcontract, supplier, purchase order nodes",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@qsos/node-sdk": "workspace:*",
+    "@qsos/pack-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@qsos/execution-engine",
+  "version": "0.1.0",
+  "description": "QS-OS workflow execution engine — DAG runner, node scheduler, and state machine",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@qsos/node-sdk": "workspace:*",
+    "@qsos/shared-types": "workspace:*",
+    "@qsos/workflow-json": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
