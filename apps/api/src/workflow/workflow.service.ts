@@ -132,6 +132,36 @@ export class WorkflowService {
     return data;
   }
 
+  /** Delete a workflow (owner/admin only) */
+  async delete(id: string, userId: string) {
+    const workflow = await this.findOne(id, userId);
+    await this.assertProjectAccess(workflow.project_id as string, userId, ['owner', 'admin', 'member']);
+
+    const { error } = await this.supabase.admin
+      .from('workflows')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
+
+    // Audit log — fire-and-forget
+    const { data: proj } = await this.supabase.admin
+      .from('projects').select('organization_id').eq('id', workflow.project_id as string).maybeSingle();
+    if (proj) {
+      void this.supabase.admin.from('audit_log').insert({
+        organization_id: proj.organization_id,
+        project_id:      workflow.project_id,
+        actor_id:        userId,
+        event_type:      'workflow.deleted',
+        entity_type:     'workflow',
+        entity_id:       id,
+        summary:         `Workflow "${workflow.name as string}" deleted`,
+      });
+    }
+
+    return { deleted: true };
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   private async assertProjectAccess(

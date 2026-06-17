@@ -54,7 +54,6 @@ export class TemplatesService {
       .from('workflows')
       .insert({
         project_id: projectId,
-        organization_id: project.organization_id,
         name,
         description: tpl.description,
         status: 'draft',

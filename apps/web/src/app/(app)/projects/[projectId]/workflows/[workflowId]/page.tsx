@@ -9,7 +9,46 @@ import FileUploadPanel from '@/components/canvas/FileUploadPanel';
 import LibraryPanel from '@/components/canvas/LibraryPanel';
 import { apiClient } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase/client';
-import type { QSWorkflowDefinition } from '@qsos/shared-types';
+import type { QSWorkflowDefinition, WorkflowConnection, WorkflowNodeId } from '@qsos/shared-types';
+
+// ── Normalize definition from DB ───────────────────────────────────────────────
+// Templates stored via SQL seed may use React Flow's "edges" key instead of
+// the canonical "connections" key. Convert to ensure the canvas never crashes.
+function normalizeDefinition(raw: unknown): QSWorkflowDefinition {
+  const def = raw as QSWorkflowDefinition & {
+    version?: string;
+    edges?: Array<{ id: string; source: string; target: string; sourceHandle?: string; targetHandle?: string }>;
+  };
+
+  // Convert seed-style edges [{id, source, target}] → canonical connections
+  const connections: WorkflowConnection[] = def.connections?.length
+    ? def.connections
+    : (def.edges ?? []).map((e) => ({
+        id: e.id,
+        sourceNodeId: e.source as WorkflowNodeId,
+        sourcePortId: e.sourceHandle ?? 'out',
+        targetNodeId: e.target as WorkflowNodeId,
+        targetPortId: e.targetHandle ?? 'in',
+      })) as WorkflowConnection[];
+
+  return {
+    ...def,
+    // Ensure canonical schemaVersion so auto-save round-trips cleanly
+    schemaVersion: def.schemaVersion ?? '1.0',
+    // Ensure workflow metadata stub exists (validator no longer requires it,
+    // but the canvas spreads it in auto-save so it must not be undefined)
+    workflow: def.workflow ?? {
+      id: '' as WorkflowNodeId,
+      name: '',
+      version: '1.0.0',
+      status: 'draft' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    nodes: def.nodes ?? [],
+    connections,
+  };
+}
 
 const WorkflowCanvas = dynamic(() => import('@/components/canvas/WorkflowCanvas'), {
   ssr: false,
@@ -108,7 +147,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
       )
       .then((res) => {
         if (res.success && res.data) {
-          setDefinition(res.data.definition);
+          setDefinition(normalizeDefinition(res.data.definition));
           setWorkflowName(res.data.name);
         } else {
           setError(res.error?.message ?? 'Failed to load workflow');

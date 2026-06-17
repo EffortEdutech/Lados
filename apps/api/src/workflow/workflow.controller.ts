@@ -1,6 +1,6 @@
 import {
-  Controller, Get, Post, Patch, Put,
-  Param, Body, UseGuards,
+  Controller, Get, Post, Patch, Put, Delete,
+  Param, Body, UseGuards, HttpCode,
 } from '@nestjs/common';
 import type { User } from '@supabase/supabase-js';
 import type { ApiResponse } from '@qsos/shared-types';
@@ -71,6 +71,16 @@ export class WorkflowController {
     @CurrentUser() user: User,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.workflowService.saveDefinition(id, dto, user.id);
+    return { success: true, data, error: null };
+  }
+
+  @Delete(':id')
+  @HttpCode(200)
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.delete(id, user.id);
     return { success: true, data, error: null };
   }
 }

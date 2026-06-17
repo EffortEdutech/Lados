@@ -3,7 +3,7 @@
  *
  * Returns a real implementation function for node types that have one.
  * Falls back to mock for everything else.
- * Sprint 7 (S7-004) · Sprint 8 (S8-003) · Sprint 9 (S9-003) · Sprint 10 (S10-002)
+ * Sprint 7 (S7-004) · Sprint 8 (S8-003) · Sprint 9 (S9-003) · Sprint 10 (S10-002) · Sprint 11 (S11-004)
  */
 import type { NodeContext, NodeExecuteResult } from '@qsos/execution-engine';
 import type { FileService } from '../../file/file.service';
@@ -11,6 +11,8 @@ import type { LibraryService } from '../../library/library.service';
 import type { AiService } from '../../ai/ai.service';
 import { realHumanApproval } from './core-human-approval';
 import { realLogger } from './core-logger';
+import { realSaveArtifact } from './project-save-artifact';
+import { realReadArtifact } from './project-read-artifact';
 import { realUploadFile } from './document-upload-file';
 import { realReadExcel } from './document-read-excel';
 import { realReadBoq } from './qs-read-boq';
@@ -34,6 +36,10 @@ export function buildRealNodeResolver(
     // ── Core Pack ─────────────────────────────────────────────────────────────
     'core.human_approval': (ctx) => realHumanApproval(ctx),
     'core.logger':         (ctx) => realLogger(ctx),
+
+    // ── Pipeline Pack ─────────────────────────────────────────────────────────
+    'project.save_artifact': (ctx) => realSaveArtifact(ctx),
+    'project.read_artifact': (ctx) => realReadArtifact(ctx),
 
     // ── Document Pack ─────────────────────────────────────────────────────────
     'document.upload_file': (ctx) => realUploadFile(ctx),

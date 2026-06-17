@@ -11,11 +11,16 @@ import ReactFlow, {
   type Connection,
   type Node,
   type Edge,
+  type NodeTypes,
   BackgroundVariant,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { QSWorkflowDefinition, WorkflowNodeInstance, WorkflowConnection } from '@qsos/shared-types';
 import PropertyPanel from './PropertyPanel';
+
+// Stable module-level constant — prevents React Flow nodeTypes warning in StrictMode.
+// Empty object tells React Flow to use its built-in default node types (default/input/output).
+const NODE_TYPES: NodeTypes = {};
 
 // ── Helpers: convert QS-OS types ↔ React Flow types ─────────────────────────
 
@@ -75,8 +80,8 @@ export default function WorkflowCanvas({
   organizationId,
   projectId,
 }: WorkflowCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(definition.nodes));
-  const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(definition.connections));
+  const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(definition.nodes ?? []));
+  const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(definition.connections ?? []));
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -199,6 +204,7 @@ export default function WorkflowCanvas({
         onDragOver={readOnly ? undefined : onDragOver}
       >
         <ReactFlow
+          nodeTypes={NODE_TYPES}
           nodes={nodes}
           edges={edges}
           onNodesChange={readOnly ? undefined : handleNodesChange}

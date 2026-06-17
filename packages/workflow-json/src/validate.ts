@@ -18,28 +18,9 @@ export function validateWorkflow(json: unknown): ValidationResult {
 
   const doc = json as Record<string, unknown>;
 
-  // ── schemaVersion ──────────────────────────────────────────────────────────
-  if (!doc['schemaVersion']) {
-    errors.push({ field: 'schemaVersion', message: 'Required' });
-  } else if (doc['schemaVersion'] !== WORKFLOW_SCHEMA_VERSION) {
-    errors.push({
-      field: 'schemaVersion',
-      message: `Must be "${WORKFLOW_SCHEMA_VERSION}", got "${String(doc['schemaVersion'])}"`,
-    });
-  }
-
-  // ── workflow ───────────────────────────────────────────────────────────────
-  const workflow = doc['workflow'] as Record<string, unknown> | undefined;
-  if (!workflow || typeof workflow !== 'object') {
-    errors.push({ field: 'workflow', message: 'Required object' });
-  } else {
-    if (!workflow['id']) errors.push({ field: 'workflow.id', message: 'Required' });
-    if (!workflow['name']) errors.push({ field: 'workflow.name', message: 'Required' });
-    if (!workflow['version']) errors.push({ field: 'workflow.version', message: 'Required' });
-    if (!workflow['status']) errors.push({ field: 'workflow.status', message: 'Required' });
-    if (!workflow['createdAt']) errors.push({ field: 'workflow.createdAt', message: 'Required' });
-    if (!workflow['updatedAt']) errors.push({ field: 'workflow.updatedAt', message: 'Required' });
-  }
+  // ── schemaVersion — optional, warn but don't fail ─────────────────────────
+  // The workflow metadata (id, name, status, etc.) lives in the workflows table.
+  // The definition JSON only needs to be structurally valid (nodes + connections).
 
   // ── nodes ──────────────────────────────────────────────────────────────────
   if (!Array.isArray(doc['nodes'])) {

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api/client';
+import PipelineCanvas from '@/components/pipeline/PipelineCanvas';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ function templateIcon(icon: string): string {
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'workflows' | 'pipeline'>('workflows');
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,10 +64,15 @@ export default function ProjectDetailPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<WorkflowTemplate | null>(null);
   const [templates, setTemplates]       = useState<WorkflowTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templatesError, setTemplatesError] = useState<string | null>(null);
 
   const [form, setForm]   = useState({ name: '', description: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError]  = useState<string | null>(null);
+
+  // Delete workflow
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // ── Load workflows ──────────────────────────────────────────────────────────
 
@@ -85,12 +92,37 @@ export default function ProjectDetailPage() {
     setShowTemplates(true);
     setSelectedTemplate(null);
     setError(null);
+    setTemplatesError(null);
     setTemplatesLoading(true);
     apiClient
       .get<{ templates: WorkflowTemplate[] }>('/workflow-templates')
-      .then((res) => setTemplates(res.data?.templates ?? []))
-      .catch(() => setTemplates([]))
+      .then((res) => {
+        if (res.success && res.data?.templates) {
+          setTemplates(res.data.templates);
+        } else {
+          const msg = res.error?.message ?? res.error?.code ?? 'Unknown error';
+          setTemplatesError(`API error: ${msg}`);
+          setTemplates([]);
+        }
+      })
+      .catch((err: unknown) => {
+        setTemplatesError(err instanceof Error ? err.message : 'Failed to load templates');
+        setTemplates([]);
+      })
       .finally(() => setTemplatesLoading(false));
+  }
+
+  // ── Delete workflow ─────────────────────────────────────────────────────────
+
+  async function handleDeleteWorkflow(wfId: string) {
+    setDeleteLoading(true);
+    try {
+      await apiClient.delete(`/projects/${projectId}/workflows/${wfId}`);
+      setConfirmDeleteId(null);
+      loadWorkflows();
+    } finally {
+      setDeleteLoading(false);
+    }
   }
 
   // ── Create blank workflow ───────────────────────────────────────────────────
@@ -152,27 +184,61 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Workflows</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Project</h1>
             <p className="mt-1 text-sm text-gray-500 font-mono">{projectId}</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={openTemplateModal}
-              className="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5"
-            >
-              <span>🗂️</span> From Template
-            </button>
-            <button
-              onClick={() => { setShowBlank(true); setError(null); }}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              + New Workflow
-            </button>
-          </div>
+          {activeTab === 'workflows' && (
+            <div className="flex gap-2">
+              <button
+                onClick={openTemplateModal}
+                className="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5"
+              >
+                <span>🗂️</span> From Template
+              </button>
+              <button
+                onClick={() => { setShowBlank(true); setError(null); }}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                + New Workflow
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Tab Bar */}
+        <div className="flex items-center gap-1 border-b border-gray-200 mb-6">
+          <button
+            onClick={() => setActiveTab('workflows')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              activeTab === 'workflows'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Workflows
+          </button>
+          <button
+            onClick={() => setActiveTab('pipeline')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              activeTab === 'pipeline'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Pipeline
+          </button>
+        </div>
+
+        {/* ── Pipeline Tab ──────────────────────────────────────────────────── */}
+        {activeTab === 'pipeline' && (
+          <PipelineCanvas projectId={projectId} />
+        )}
+
+        {/* ── Workflows Tab ─────────────────────────────────────────────────── */}
+        {activeTab === 'workflows' && (
+          <>
         {/* Loading */}
         {loading && (
           <p className="text-sm text-gray-400 text-center py-16">Loading…</p>
@@ -206,45 +272,81 @@ export default function ProjectDetailPage() {
         {/* Workflow list */}
         <div className="space-y-3">
           {workflows.map((wf) => (
-            <Link
-              key={wf.id}
-              href={`/projects/${projectId}/workflows/${wf.id}`}
-              className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all group"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
-                    {wf.name}
-                  </h3>
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[wf.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                    {wf.status}
+            <div key={wf.id} className="relative group">
+              <Link
+                href={`/projects/${projectId}/workflows/${wf.id}`}
+                className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
+                      {wf.name}
+                    </h3>
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[wf.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                      {wf.status}
+                    </span>
+                  </div>
+                  {wf.description && (
+                    <p className="text-xs text-gray-500 truncate">{wf.description}</p>
+                  )}
+                  {wf.tags?.length > 0 && (
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                      {wf.tags.map((tag) => (
+                        <span key={tag} className="text-[11px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="text-right ml-4 flex-shrink-0">
+                  <p className="text-xs text-gray-400">v{wf.version}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(wf.updated_at).toLocaleDateString()}
+                  </p>
+                  <span className="text-xs text-blue-500 group-hover:text-blue-600 mt-1 block">
+                    Open canvas →
                   </span>
                 </div>
-                {wf.description && (
-                  <p className="text-xs text-gray-500 truncate">{wf.description}</p>
-                )}
-                {wf.tags?.length > 0 && (
-                  <div className="flex gap-1 mt-1.5 flex-wrap">
-                    {wf.tags.map((tag) => (
-                      <span key={tag} className="text-[11px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="text-right ml-4 flex-shrink-0">
-                <p className="text-xs text-gray-400">v{wf.version}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {new Date(wf.updated_at).toLocaleDateString()}
-                </p>
-                <span className="text-xs text-blue-500 group-hover:text-blue-600 mt-1 block">
-                  Open canvas →
-                </span>
-              </div>
-            </Link>
+              </Link>
+
+              {/* Delete button — sits outside Link, top-right corner */}
+              {confirmDeleteId === wf.id ? (
+                <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white border border-red-200 rounded-lg px-2 py-1 shadow-sm z-10">
+                  <span className="text-xs text-red-600 font-medium">Delete?</span>
+                  <button
+                    onClick={() => handleDeleteWorkflow(wf.id)}
+                    disabled={deleteLoading}
+                    className="text-[11px] bg-red-600 text-white px-2 py-0.5 rounded hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {deleteLoading ? '…' : 'Yes'}
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded hover:bg-gray-200"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmDeleteId(wf.id); }}
+                  className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500 p-1 rounded z-10"
+                  title="Remove workflow"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                    <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
         </div>
+          </>
+        )}
       </div>
 
       {/* ── Modal: Create Blank ─────────────────────────────────────────────── */}
@@ -328,7 +430,13 @@ export default function ProjectDetailPage() {
                 <p className="text-sm text-gray-400 text-center py-8">Loading templates…</p>
               )}
 
-              {!templatesLoading && templates.length === 0 && (
+              {!templatesLoading && templatesError && (
+                <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-center">
+                  <p className="font-semibold">Could not load templates</p>
+                  <p className="text-xs mt-1 font-mono">{templatesError}</p>
+                </div>
+              )}
+              {!templatesLoading && !templatesError && templates.length === 0 && (
                 <p className="text-sm text-gray-400 text-center py-8">
                   No templates available. Run migration 0010 in Supabase SQL Editor.
                 </p>

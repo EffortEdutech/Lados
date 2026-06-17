@@ -12,10 +12,11 @@ import {
   Param,
   Body,
   UseGuards,
-  Request,
   HttpCode,
 } from '@nestjs/common';
-import { JwtGuard } from '../common/guards/jwt.guard';
+import type { User } from '@supabase/supabase-js';
+import { SupabaseJwtGuard as JwtGuard } from '../common/guards/supabase-jwt.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { TemplatesService } from './templates.service';
 
 interface InstantiateDto {
@@ -24,22 +25,25 @@ interface InstantiateDto {
 }
 
 @Controller('workflow-templates')
-@UseGuards(JwtGuard)
 export class TemplatesController {
   constructor(private readonly templates: TemplatesService) {}
 
+  // Public — template catalog is read-only, non-sensitive
   @Get()
-  listTemplates() {
-    return this.templates.list();
+  async listTemplates() {
+    const data = await this.templates.list();
+    return { success: true, data, error: null };
   }
 
   @Post(':id/instantiate')
+  @UseGuards(JwtGuard)
   @HttpCode(201)
-  instantiate(
+  async instantiate(
     @Param('id') templateId: string,
     @Body() dto: InstantiateDto,
-    @Request() req: { user: { sub: string } },
+    @CurrentUser() user: User,
   ) {
-    return this.templates.instantiate(templateId, dto.projectId, dto.name, req.user.sub);
+    const data = await this.templates.instantiate(templateId, dto.projectId, dto.name, user.id);
+    return { success: true, data, error: null };
   }
 }
