@@ -8,7 +8,7 @@
  *             right-click context menu for mode toggle, mode persisted in workflow JSON
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -25,7 +25,6 @@ import ReactFlow, {
   Handle,
   Position,
 } from 'reactflow';
-import 'reactflow/dist/style.css';
 import type {
   QSWorkflowDefinition,
   WorkflowNodeInstance,
@@ -33,6 +32,7 @@ import type {
   SkillMode,
 } from '@qsos/shared-types';
 import PropertyPanel from './PropertyPanel';
+import { ConditionNode } from './ConditionNode';
 
 // ── Custom SkillNode ──────────────────────────────────────────────────────────
 //
@@ -90,20 +90,30 @@ function SkillNode({ data, selected }: NodeProps) {
 }
 
 // Stable module-level constant — prevents React Flow nodeTypes warning.
-const NODE_TYPES: NodeTypes = { skill: SkillNode };
+// 'condition' uses ConditionNode (teal diamond); everything else uses SkillNode.
+const NODE_TYPES: NodeTypes = {
+  skill:     SkillNode,
+  condition: ConditionNode,
+};
 
 // ── Helpers: convert QS-OS types ↔ React Flow types ─────────────────────────
+
+function rfNodeType(nodeType: string): string {
+  return nodeType === 'workflow.condition' ? 'condition' : 'skill';
+}
 
 function toRFNodes(nodes: WorkflowNodeInstance[]): Node[] {
   return nodes.map((n) => ({
     id: n.id,
-    type: 'skill',
+    type: rfNodeType(n.type),
     position: n.position,
     data: {
       label: n.label ?? n.type,
       nodeType: n.type,
       config: n.config ?? {},
       mode: n.mode ?? 'active',
+      // expose expression at top level for ConditionNode rendering
+      expression: (n.config?.['expression'] as string | undefined) ?? undefined,
     },
   }));
 }
@@ -155,12 +165,21 @@ const MODE_OPTIONS: { mode: SkillMode; icon: string; label: string; desc: string
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+/** Opaque request to bulk-set mode on a set of node types. `stamp` must be unique per request. */
+export interface BulkModeRequest {
+  nodeTypes: string[];
+  mode: SkillMode;
+  stamp: number;
+}
+
 interface WorkflowCanvasProps {
   definition: QSWorkflowDefinition;
   onSave?: (updated: QSWorkflowDefinition) => void;
   readOnly?: boolean;
   organizationId?: string;
   projectId?: string;
+  /** When set (and stamp changes), bulk-applies mode to all canvas nodes matching nodeTypes. */
+  bulkModeRequest?: BulkModeRequest | null;
 }
 
 export default function WorkflowCanvas({
@@ -169,12 +188,30 @@ export default function WorkflowCanvas({
   readOnly = false,
   organizationId,
   projectId,
+  bulkModeRequest,
 }: WorkflowCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(definition.nodes ?? []));
   const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(definition.connections ?? []));
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** Apply bulk mode to all canvas nodes whose nodeType matches the request */
+  useEffect(() => {
+    if (!bulkModeRequest) return;
+    const { nodeTypes, mode } = bulkModeRequest;
+    const typeSet = new Set(nodeTypes);
+    setNodes((nds) => {
+      const updated = nds.map((n) =>
+        typeSet.has((n.data as { nodeType: string }).nodeType)
+          ? { ...n, data: { ...n.data, mode } }
+          : n,
+      );
+      scheduleAutoSave(updated, edges);
+      return updated;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulkModeRequest?.stamp]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -293,7 +330,7 @@ export default function WorkflowCanvas({
 
       const newNode: Node = {
         id: `${nodeType}-${Date.now()}`,
-        type: 'skill',
+        type: rfNodeType(nodeType),
         position,
         data: { label: nodeLabel || nodeType, nodeType, config: {}, mode: 'active' },
       };

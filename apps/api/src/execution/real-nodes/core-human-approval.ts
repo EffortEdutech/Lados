@@ -16,8 +16,12 @@
  */
 import type { NodeContext, NodeExecuteResult } from '@qsos/execution-engine';
 import { createClient } from '@supabase/supabase-js';
+import type { NotificationService } from '../../notification/notification.service';
 
-export async function realHumanApproval(ctx: NodeContext): Promise<NodeExecuteResult> {
+export async function realHumanApproval(
+  ctx: NodeContext,
+  notificationService?: NotificationService,
+): Promise<NodeExecuteResult> {
   const title         = (ctx.config['title'] as string | undefined) ?? 'Approve Workflow Step';
   const assigneeRole  = (ctx.config['assignee_role'] as string | undefined) ?? 'owner';
   const description   = (ctx.config['description'] as string | undefined) ?? '';
@@ -60,6 +64,26 @@ export async function realHumanApproval(ctx: NodeContext): Promise<NodeExecuteRe
     } else {
       approvalTaskId = task?.id ?? null;
       ctx.logger.info(`Approval task recorded: ${approvalTaskId}`);
+
+      // ── Notify the user (S14-004) ─────────────────────────────────────────
+      if (notificationService && ctx.userId) {
+        await notificationService.notify({
+          userId: ctx.userId,
+          type:   'approval_request',
+          title:  `Approval Required: ${title}`,
+          body:   description || `A workflow step requires your review (auto-approved in demo mode).`,
+          actionUrl: ctx.projectId
+            ? `/projects/${ctx.projectId}/workflows/${ctx.workflowId}`
+            : undefined,
+          metadata: {
+            workflowId:     ctx.workflowId,
+            executionId:    ctx.executionId,
+            approvalTaskId,
+          },
+        }).catch((err: unknown) => {
+          ctx.logger.warn(`Notification failed: ${err instanceof Error ? err.message : String(err)}`);
+        });
+      }
     }
   } else {
     ctx.logger.warn('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — approval task not persisted');

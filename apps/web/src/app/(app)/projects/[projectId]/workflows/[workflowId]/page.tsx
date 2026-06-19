@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import NodePalette from '@/components/canvas/NodePalette';
+import type { BulkModeRequest } from '@/components/canvas/WorkflowCanvas';
+import type { SkillMode } from '@qsos/shared-types';
 import ExecutionLogPanel from '@/components/canvas/ExecutionLogPanel';
 import FileUploadPanel from '@/components/canvas/FileUploadPanel';
 import LibraryPanel from '@/components/canvas/LibraryPanel';
@@ -127,6 +129,13 @@ export default function WorkflowEditorPage({ params }: PageProps) {
 
   // ── Sidebar tab ───────────────────────────────────────────────────────────
   const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents' | 'datapacks'>('nodes');
+
+  // ── Bulk mode request (S14-007) ───────────────────────────────────────────
+  const [bulkModeRequest, setBulkModeRequest] = useState<BulkModeRequest | null>(null);
+
+  const handleBulkMode = useCallback((nodeTypes: string[], mode: SkillMode) => {
+    setBulkModeRequest({ nodeTypes, mode, stamp: Date.now() });
+  }, []);
 
   // ── File upload state ──────────────────────────────────────────────────────
   const [showUploadPanel, setShowUploadPanel] = useState(false);
@@ -360,7 +369,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           </div>
           {/* Panel content */}
           <div className="flex-1 overflow-hidden">
-            {sidebarTab === 'nodes'     && <NodePalette />}
+            {sidebarTab === 'nodes'     && <NodePalette onBulkMode={handleBulkMode} />}
             {sidebarTab === 'datapacks' && <DataPackBrowser />}
             {sidebarTab === 'documents' && <LibraryPanel organizationId={organizationId} projectId={projectId} />}
           </div>
@@ -373,6 +382,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
               onSave={handleSave}
               organizationId={organizationId}
               projectId={projectId}
+              bulkModeRequest={bulkModeRequest}
             />
           </div>
 

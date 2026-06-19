@@ -64,7 +64,8 @@ export class NodeService {
   }
 
   /** Get a single node definition by type */
-  async findOne(type: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async findOne(type: string): Promise<Record<string, any>> {
     const runQuery = async (select: string) =>
       this.supabase.admin
         .from('registered_nodes')

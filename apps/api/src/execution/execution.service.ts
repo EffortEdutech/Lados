@@ -17,6 +17,8 @@ import { SupabaseService } from '../common/supabase/supabase.service';
 import { FileService } from '../file/file.service';
 import { LibraryService } from '../library/library.service';
 import { AiService } from '../ai/ai.service';
+import { DocumentService } from '../document/document.service';
+import { NotificationService } from '../notification/notification.service';
 import { buildRealNodeResolver } from './real-nodes';
 import { runWorkflow } from '@qsos/execution-engine';
 import type { QSWorkflowDefinition } from '@qsos/shared-types';
@@ -31,12 +33,16 @@ export class ExecutionService {
     private readonly fileService: FileService,
     private readonly libraryService: LibraryService,
     private readonly aiService: AiService,
+    private readonly documentService: DocumentService,
+    private readonly notificationService: NotificationService,
   ) {
-    // Build once — injects services so real nodes can resolve files, library, and AI
+    // Build once — injects services so real nodes can resolve files, library, AI, documents, and notifications
     this.nodeResolver = buildRealNodeResolver(
       this.fileService,
       this.libraryService,
       this.aiService,
+      this.documentService,
+      this.notificationService,
     );
   }
 

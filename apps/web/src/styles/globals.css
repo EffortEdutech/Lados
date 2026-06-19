@@ -1,3 +1,6 @@
+/* React Flow — must be imported globally, not inside a dynamic() chunk */
+@import 'reactflow/dist/style.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

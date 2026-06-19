@@ -19,14 +19,20 @@ async function request<T>(
 ): Promise<ApiResponse<T>> {
   const token = await getToken();
 
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...init.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init.headers,
+      },
+    });
+  } catch {
+    // Network error (API server unreachable, CORS preflight failure, etc.)
+    return { data: undefined, error: 'API server unreachable' } as ApiResponse<T>;
+  }
 
   return res.json() as Promise<ApiResponse<T>>;
 }

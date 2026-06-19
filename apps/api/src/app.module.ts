@@ -14,6 +14,9 @@ import { AiModule } from './ai/ai.module';
 import { TemplatesModule } from './templates/templates.module';
 import { PipelineModule } from './pipeline/pipeline.module';
 import { ArtifactModule } from './artifact/artifact.module';
+import { DocumentModule } from './document/document.module';
+import { ServicesModule } from './services/services.module';
+import { NotificationModule } from './notification/notification.module';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -36,6 +39,9 @@ import { MulterModule } from '@nestjs/platform-express';
     TemplatesModule,      // Sprint 10 — workflow templates
     PipelineModule,       // Sprint 11 — project pipeline canvas
     ArtifactModule,       // Sprint 11 — inter-workflow artifact store
+    DocumentModule,       // Sprint 14 — unified file-parsing service (global)
+    ServicesModule,       // Sprint 14 — core service registry + GET /services
+    NotificationModule,   // Sprint 14 — in-app notifications (global)
     MulterModule.register({ dest: '/tmp/uploads' }),  // in-memory buffer preferred
   ],
 })

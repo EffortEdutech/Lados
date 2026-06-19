@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 const NAV = [
-  { href: '/dashboard', label: 'Dashboard', icon: '⊞' },
-  { href: '/projects',  label: 'Projects',  icon: '📁' },
+  { href: '/dashboard',          label: 'Dashboard', icon: '⊞' },
+  { href: '/projects',           label: 'Projects',  icon: '📁' },
+  { href: '/settings/services',  label: 'Services',  icon: '⚙' },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -56,8 +58,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User / sign out */}
-        <div className="px-3 py-4 border-t border-gray-700">
+        {/* Notifications + Sign out */}
+        <div className="px-3 py-4 border-t border-gray-700 space-y-1">
+          <div className="flex items-center justify-between px-3 py-1.5">
+            <span className="text-xs text-gray-500">Notifications</span>
+            <NotificationBell />
+          </div>
           <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"

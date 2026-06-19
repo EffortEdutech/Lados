@@ -13,6 +13,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api/client';
+import type { SkillMode } from '@qsos/shared-types';
 
 // ── Type definitions ──────────────────────────────────────────────────────────
 
@@ -77,35 +78,69 @@ interface PackSectionProps {
   packColor?: string;
   nodes: RegisteredNode[];
   onDragStart: (e: React.DragEvent, node: RegisteredNode) => void;
+  onBulkMode?: (nodeTypes: string[], mode: SkillMode) => void;
   defaultOpen?: boolean;
 }
 
-function PackSection({ packName, packColor, nodes, onDragStart, defaultOpen = true }: PackSectionProps) {
+const BULK_ACTIONS: { mode: SkillMode; icon: string; title: string }[] = [
+  { mode: 'active',   icon: '▶',  title: 'Activate All' },
+  { mode: 'muted',    icon: '🔇', title: 'Mute All'     },
+  { mode: 'bypassed', icon: '⏭',  title: 'Bypass All'   },
+];
+
+function PackSection({ packName, packColor, nodes, onDragStart, onBulkMode, defaultOpen = true }: PackSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const [hoverHeader, setHoverHeader] = useState(false);
+
+  const nodeTypes = nodes.map((n) => n.type);
 
   return (
     <div className="mb-3">
       {/* Pack header */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-1 mb-1 group"
+      <div
+        className="flex w-full items-center justify-between gap-1 mb-1"
+        onMouseEnter={() => setHoverHeader(true)}
+        onMouseLeave={() => setHoverHeader(false)}
       >
-        <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex flex-1 items-center gap-1.5 min-w-0 group"
+        >
           <span
             className="h-2 w-2 flex-shrink-0 rounded-full"
             style={{ backgroundColor: packColor ?? '#6B7280' }}
           />
-          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider truncate">
             {packName}
           </span>
-          <span className="text-[9px] text-gray-400">
+          <span className="text-[9px] text-gray-400 flex-shrink-0">
             ({nodes.length})
           </span>
-        </div>
-        <span className="text-[10px] text-gray-300 group-hover:text-gray-400">
-          {open ? '▾' : '▸'}
-        </span>
-      </button>
+          <span className="text-[10px] text-gray-300 group-hover:text-gray-400 flex-shrink-0 ml-auto">
+            {open ? '▾' : '▸'}
+          </span>
+        </button>
+
+        {/* Bulk mode controls — visible on hover when onBulkMode is provided */}
+        {onBulkMode && (
+          <div
+            className={`flex items-center gap-0.5 flex-shrink-0 transition-opacity ${
+              hoverHeader ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {BULK_ACTIONS.map(({ mode, icon, title }) => (
+              <button
+                key={mode}
+                onClick={(e) => { e.stopPropagation(); onBulkMode(nodeTypes, mode); }}
+                title={title}
+                className="rounded px-1 py-0.5 text-[9px] text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                {icon}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Skill cards */}
       {open && (
@@ -156,7 +191,12 @@ function PackSection({ packName, packColor, nodes, onDragStart, defaultOpen = tr
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function NodePalette() {
+interface NodePaletteProps {
+  /** Called when a bulk mode action is triggered on a pack group header. */
+  onBulkMode?: (nodeTypes: string[], mode: SkillMode) => void;
+}
+
+export default function NodePalette({ onBulkMode }: NodePaletteProps = {}) {
   const [nodes, setNodes]   = useState<RegisteredNode[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -239,6 +279,7 @@ export default function NodePalette() {
             packColor={pack.color}
             nodes={pack.nodes}
             onDragStart={onDragStart}
+            onBulkMode={onBulkMode}
             defaultOpen={true}
           />
         ))}

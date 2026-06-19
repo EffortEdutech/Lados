@@ -14,6 +14,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SupabaseService } from '../common/supabase/supabase.service';
 
 export interface CompletionOptions {
   model?: string;
@@ -29,7 +30,10 @@ export class AiService {
   private readonly apiKey: string | null;
   private readonly baseUrl = 'https://api.openai.com/v1';
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly supabase: SupabaseService,
+  ) {
     this.apiKey = this.config.get<string>('OPENAI_API_KEY') ?? null;
     if (this.apiKey) {
       this.logger.log('AiService: OpenAI key configured — real AI classification enabled');
@@ -104,6 +108,40 @@ export class AiService {
       );
     }
 
+    // ── Audit write (S14-005) — fire and forget ───────────────────────────────
+    this.writeAuditLog({
+      action:     'ai.completion',
+      service_id: 'ai-service',
+      details: {
+        model,
+        prompt_tokens:      data.usage?.prompt_tokens,
+        completion_tokens:  data.usage?.completion_tokens,
+        system_prompt_hash: systemPrompt.slice(0, 80),
+      },
+    });
+
     return content;
+  }
+
+  /** Write to audit_log without blocking the caller */
+  private writeAuditLog(entry: {
+    action: string;
+    service_id: string;
+    details?: Record<string, unknown>;
+  }): void {
+    this.supabase.admin
+      .from('audit_log')
+      .insert({
+        event_type: entry.action,
+        summary:    entry.action,
+        service_id: entry.service_id,
+        metadata:   entry.details ?? {},
+      })
+      .then(({ error }) => {
+        if (error) this.logger.warn(`Audit write failed: ${error.message}`);
+      })
+      .catch((err: unknown) => {
+        this.logger.warn(`Audit write error: ${err instanceof Error ? err.message : String(err)}`);
+      });
   }
 }
