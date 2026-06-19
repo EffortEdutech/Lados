@@ -8,7 +8,10 @@
  * Sprint 9:  artifact download section for procurement.generate_rfq outputs
  * Sprint 13: V3 — business-friendly skill names, pack chips, mode badges,
  *             "skill" language throughout (was "node")
+ * Sprint 16: expandable output inspector per node row (S16-003)
  */
+
+import { useState } from 'react';
 
 interface RfqArtifact {
   trade: string;
@@ -108,23 +111,57 @@ function fmt(ms?: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+function OutputInspector({ outputs }: { outputs: Record<string, unknown> }) {
+  // Render outputs in a friendly way: string values inline, objects/arrays as JSON
+  const entries = Object.entries(outputs);
+  if (entries.length === 0) return <p className="text-[10px] text-gray-400 italic">No outputs</p>;
+  return (
+    <div className="space-y-1">
+      {entries.map(([key, val]) => {
+        const isComplex = typeof val === 'object' && val !== null;
+        return (
+          <div key={key}>
+            <span className="text-[10px] font-mono font-semibold text-gray-500">{key}: </span>
+            {isComplex ? (
+              <pre className="mt-0.5 text-[9px] font-mono text-gray-600 bg-gray-100 rounded px-2 py-1 overflow-x-auto max-h-24 whitespace-pre-wrap break-all">
+                {JSON.stringify(val, null, 2)}
+              </pre>
+            ) : (
+              <span className="text-[10px] font-mono text-gray-700">
+                {val === null ? 'null' : String(val)}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function NodeLogRow({ log }: { log: NodeLog }) {
+  const [expanded, setExpanded] = useState(false);
+
   const styles = STATUS_STYLES[log.status] ?? STATUS_STYLES['pending'];
   // DB rows arrive snake_case; TS interface is camelCase — read both
   const raw = log as Record<string, unknown>;
   const nodeName   = log.nodeName   ?? raw['node_name']   as string ?? '—';
   const nodeType   = log.nodeType   ?? raw['node_type']   as string ?? '';
   const durationMs = log.durationMs ?? raw['duration_ms'] as number | undefined;
+  const outputs    = log.outputs    ?? raw['outputs']     as Record<string, unknown> | undefined;
   // V3: mode from log entry (execution engine may set this in Sprint 14+)
   const mode       = raw['mode'] as string | undefined;
 
   const packLabel = getPackLabel(nodeType);
   const packColor = getPackColor(nodeType);
+  const hasOutputs = outputs && Object.keys(outputs).length > 0;
 
   return (
     <div className="border-b border-gray-100 last:border-0 py-2.5 px-4">
-      {/* Row 1: status dot + skill name + status badge + duration */}
-      <div className="flex items-center gap-2">
+      {/* Row 1: status dot + skill name + status badge + duration + expand toggle */}
+      <div
+        className={`flex items-center gap-2 ${hasOutputs ? 'cursor-pointer' : ''}`}
+        onClick={() => hasOutputs && setExpanded((v) => !v)}
+      >
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${styles.dot}`} />
         <span className="text-xs font-semibold text-gray-800 flex-1 truncate">{nodeName}</span>
         {/* Mode badge — only when not active */}
@@ -141,6 +178,11 @@ function NodeLogRow({ log }: { log: NodeLog }) {
         {durationMs !== undefined && (
           <span className="text-[10px] text-gray-400">{fmt(durationMs)}</span>
         )}
+        {hasOutputs && (
+          <span className="text-[10px] text-gray-300 flex-shrink-0">
+            {expanded ? '▾' : '▸'}
+          </span>
+        )}
       </div>
 
       {/* Row 2: pack chip + nodeType (secondary) */}
@@ -149,6 +191,12 @@ function NodeLogRow({ log }: { log: NodeLog }) {
           {packLabel}
         </span>
         <span className="text-[10px] text-gray-300 font-mono">{nodeType}</span>
+        {hasOutputs && !expanded && (
+          <span className="text-[10px] text-blue-400 ml-auto cursor-pointer hover:text-blue-600"
+            onClick={(e) => { e.stopPropagation(); setExpanded(true); }}>
+            Inspect outputs
+          </span>
+        )}
       </div>
 
       {/* Error */}
@@ -168,6 +216,16 @@ function NodeLogRow({ log }: { log: NodeLog }) {
           {log.messages.map((msg, i) => (
             <p key={i} className="text-[11px] text-gray-500 font-mono leading-tight">{msg}</p>
           ))}
+        </div>
+      )}
+
+      {/* Output Inspector — S16-003 */}
+      {expanded && hasOutputs && (
+        <div className="ml-4 mt-2 rounded bg-gray-50 border border-gray-200 px-3 py-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+            Outputs
+          </p>
+          <OutputInspector outputs={outputs!} />
         </div>
       )}
     </div>

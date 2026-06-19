@@ -125,8 +125,7 @@ export class DocumentService {
       })
       .then(({ error }) => {
         if (error) this.logger.warn(`Audit write failed: ${error.message}`);
-      })
-      .catch(() => {/* non-blocking */});
+      }, () => {/* non-blocking */});
 
     return {
       sheetName,

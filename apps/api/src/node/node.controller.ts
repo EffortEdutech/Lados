@@ -54,4 +54,12 @@ export class NodeController {
   }
 
   /** POST /api/v1/nodes/:type/validate-config */
-  @Post(':type/valida
+  @Post(':type/validate-config')
+  async validateConfig(
+    @Param('type') type: string,
+    @Body() body: { config: Record<string, unknown> },
+  ) {
+    const result = await this.nodeService.validateConfig(type, body.config ?? {});
+    return { success: true, data: result, error: null };
+  }
+}

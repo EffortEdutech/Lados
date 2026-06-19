@@ -132,6 +132,63 @@ export class WorkflowService {
     return data;
   }
 
+  /**
+   * Export workflow as a portable JSON bundle.
+   * Sprint 16 (S16-004).
+   * Returns name, description, tags, and the full definition.
+   * No run history or project-specific IDs are included — safe to share.
+   */
+  async exportWorkflow(id: string, userId: string) {
+    const workflow = await this.findOne(id, userId);
+    return {
+      _export_version: '1.0',
+      _exported_at:    new Date().toISOString(),
+      name:            workflow.name,
+      description:     workflow.description ?? '',
+      tags:            workflow.tags ?? [],
+      definition:      workflow.definition,
+    };
+  }
+
+  /**
+   * Import a workflow JSON bundle into a project.
+   * Sprint 16 (S16-004).
+   * Creates a new workflow; never overwrites an existing one.
+   */
+  async importWorkflow(
+    projectId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    bundle: Record<string, any>,
+    userId: string,
+  ) {
+    await this.assertProjectAccess(projectId, userId, ['owner', 'admin', 'member']);
+
+    const name       = (bundle['name'] as string | undefined) ?? 'Imported Workflow';
+    const description = bundle['description'] as string | undefined;
+    const tags        = (bundle['tags'] as string[] | undefined) ?? [];
+    const definition  = bundle['definition'];
+
+    if (!definition) throw new BadRequestException('Bundle missing "definition" key');
+
+    const result = validateWorkflow(definition);
+    if (!result.valid) {
+      const summary = result.errors
+        .map((e: { field: string; message: string }) => `${e.field}: ${e.message}`)
+        .join('; ');
+      throw new BadRequestException(`Invalid Workflow JSON in bundle — ${summary}`);
+    }
+
+    const dto: CreateWorkflowDto = { name: `${name} (imported)`, description, tags };
+    const created = await this.create(projectId, dto, userId);
+
+    // Overwrite the blank definition with the imported one
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const saveDto: SaveDefinitionDto = { definition } as any;
+    await this.saveDefinition((created as { id: string }).id, saveDto, userId);
+
+    return created;
+  }
+
   /** Delete a workflow (owner/admin only) */
   async delete(id: string, userId: string) {
     const workflow = await this.findOne(id, userId);

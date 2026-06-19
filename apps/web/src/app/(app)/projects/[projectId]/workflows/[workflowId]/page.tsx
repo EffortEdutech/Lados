@@ -7,6 +7,7 @@ import NodePalette from '@/components/canvas/NodePalette';
 import type { BulkModeRequest } from '@/components/canvas/WorkflowCanvas';
 import type { SkillMode } from '@qsos/shared-types';
 import ExecutionLogPanel from '@/components/canvas/ExecutionLogPanel';
+import RunHistoryPanel from '@/components/canvas/RunHistoryPanel';
 import FileUploadPanel from '@/components/canvas/FileUploadPanel';
 import LibraryPanel from '@/components/canvas/LibraryPanel';
 import DataPackBrowser from '@/components/canvas/DataPackBrowser';
@@ -128,7 +129,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   const [runError, setRunError] = useState<string | null>(null);
 
   // ── Sidebar tab ───────────────────────────────────────────────────────────
-  const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents' | 'datapacks'>('nodes');
+  const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents' | 'datapacks' | 'history'>('nodes');
 
   // ── Bulk mode request (S14-007) ───────────────────────────────────────────
   const [bulkModeRequest, setBulkModeRequest] = useState<BulkModeRequest | null>(null);
@@ -312,6 +313,27 @@ export default function WorkflowEditorPage({ params }: PageProps) {
         )}
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Export button — S16-004 */}
+          <button
+            onClick={async () => {
+              const res = await apiClient.get<Record<string, unknown>>(
+                `/projects/${projectId}/workflows/${workflowId}/export`,
+              );
+              if (!res.success || !res.data) return;
+              const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
+              const url  = URL.createObjectURL(blob);
+              const a    = document.createElement('a');
+              a.href     = url;
+              a.download = `${workflowName.replace(/\s+/g, '_')}.qsos.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded hover:bg-gray-100 transition-colors"
+            title="Export workflow JSON"
+          >
+            ↓ Export
+          </button>
+
           {/* Run button */}
           <button
             onClick={handleRunClick}
@@ -353,6 +375,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
               { id: 'nodes',     label: '⬡ Skills'    },
               { id: 'datapacks', label: '📦 Data'      },
               { id: 'documents', label: '📂 Files'     },
+              { id: 'history',   label: '🕐 History'   },
             ] as const).map(({ id, label }) => (
               <button
                 key={id}
@@ -372,6 +395,18 @@ export default function WorkflowEditorPage({ params }: PageProps) {
             {sidebarTab === 'nodes'     && <NodePalette onBulkMode={handleBulkMode} />}
             {sidebarTab === 'datapacks' && <DataPackBrowser />}
             {sidebarTab === 'documents' && <LibraryPanel organizationId={organizationId} projectId={projectId} />}
+            {sidebarTab === 'history'   && (
+              <RunHistoryPanel
+                workflowId={workflowId}
+                reRunning={running}
+                onLoadRun={(summary, logs) => {
+                  setRunSummary(summary);
+                  setRunLogs(logs);
+                  setShowLogs(true);
+                }}
+                onReRun={() => void executeRun()}
+              />
+            )}
           </div>
         </div>
         <main className="relative flex-1 overflow-hidden flex flex-col">
@@ -390,4 +425,32 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           {showUploadPanel && organizationId && (
             <FileUploadPanel
               organizationId={organizationId}
-              proje
+              projectId={projectId}
+              workflowId={workflowId}
+              onUploaded={handleFileUploaded}
+              onSkip={handleSkipUpload}
+            />
+          )}
+
+          {/* Run error banner */}
+          {runError && !showLogs && (
+            <div className="absolute bottom-4 left-4 right-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm text-red-700 flex items-center gap-2">
+              <span>⚠ {runError}</span>
+              <button onClick={() => setRunError(null)} className="ml-auto text-red-400 hover:text-red-600">✕</button>
+            </div>
+          )}
+
+          {/* Execution log panel */}
+          {showLogs && (
+            <ExecutionLogPanel
+              run={runSummary}
+              logs={runLogs}
+              loading={running}
+              onClose={() => setShowLogs(false)}
+            />
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}

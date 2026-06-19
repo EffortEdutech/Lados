@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 flex flex-col bg-gray-900 text-white">
+      <aside className="w-56 flex-shrink-0 flex flex-col bg-gray-900 text-white overflow-visible">
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-700">
           <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-sm">
@@ -64,4 +64,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="px-3 py-4 border-t border-gray-700 space-y-1">
           <div className="flex items-center justify-between px-3 py-1.5">
             <span className="text-xs text-gray-500">Notifications</span>
-   
+            <NotificationBell />
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            <span className="text-base leading-none">→</span>
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-auto">
+        {children}
+      </main>
+    </div>
+  );
+}

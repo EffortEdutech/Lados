@@ -64,4 +64,19 @@ export class ExecutionController {
     const logs = await this.executionService.getRunLogs(runId, req.user.id);
     return { success: true, data: logs };
   }
+
+  /**
+   * Latest qs.read_boq output for a project.
+   * Returns the most recent completed node output so the BOQ table page
+   * can render it without knowing which workflow or run it came from.
+   * Sprint 16 (S16-005).
+   */
+  @Get('projects/:projectId/boq-latest')
+  async getLatestBoq(
+    @Param('projectId') projectId: string,
+    @Request() req: { user: { id: string } },
+  ) {
+    const data = await this.executionService.getLatestBoq(projectId, req.user.id);
+    return { success: true, data };
+  }
 }

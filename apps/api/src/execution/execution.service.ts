@@ -231,6 +231,36 @@ export class ExecutionService {
     return runs ?? [];
   }
 
+  /**
+   * Get the most recent completed qs.read_boq output for a project.
+   * Scans execution_logs for node_type = 'qs.read_boq' across all workflows
+   * in the project.  Sprint 16 (S16-005).
+   */
+  async getLatestBoq(projectId: string, userId: string) {
+    // Verify project access
+    const { data: project } = await this.supabase.admin
+      .from('projects')
+      .select('organization_id')
+      .eq('id', projectId)
+      .maybeSingle();
+    if (!project) throw new NotFoundException('Project not found');
+    await this.assertMembership(project.organization_id as string, userId);
+
+    // Find most recent completed qs.read_boq node log for this project
+    const { data, error } = await this.supabase.admin
+      .from('execution_logs')
+      .select('outputs, started_at, run_id, execution_runs!inner(workflow_id, workflows!inner(project_id))')
+      .eq('node_type', 'qs.read_boq')
+      .eq('status', 'completed')
+      .eq('execution_runs.workflows.project_id', projectId)
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data ?? null;
+  }
+
   // ── Private ────────────────────────────────────────────────────────────────
 
   private async assertMembership(organizationId: string, userId: string) {

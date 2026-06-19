@@ -104,9 +104,9 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown — opens to the right of sidebar, aligned to bottom of bell */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+        <div className="absolute left-full bottom-0 ml-3 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="text-sm font-semibold text-gray-800">

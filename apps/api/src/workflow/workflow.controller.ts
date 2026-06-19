@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Patch, Put, Delete,
   Param, Body, UseGuards, HttpCode,
 } from '@nestjs/common';
+
 import type { User } from '@supabase/supabase-js';
 import type { ApiResponse } from '@qsos/shared-types';
 import { SupabaseJwtGuard } from '../common/guards/supabase-jwt.guard';
@@ -71,6 +72,27 @@ export class WorkflowController {
     @CurrentUser() user: User,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.workflowService.saveDefinition(id, dto, user.id);
+    return { success: true, data, error: null };
+  }
+
+  /** Export workflow as a portable JSON bundle — Sprint 16 (S16-004) */
+  @Get(':id/export')
+  async exportWorkflow(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.exportWorkflow(id, user.id);
+    return { success: true, data, error: null };
+  }
+
+  /** Import a workflow JSON bundle into a project — Sprint 16 (S16-004) */
+  @Post('import')
+  async importWorkflow(
+    @Param('projectId') projectId: string,
+    @Body() bundle: Record<string, unknown>,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.importWorkflow(projectId, bundle, user.id);
     return { success: true, data, error: null };
   }
 

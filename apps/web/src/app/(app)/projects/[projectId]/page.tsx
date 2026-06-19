@@ -74,6 +74,11 @@ export default function ProjectDetailPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Import workflow — S16-004
+  const [showImport, setShowImport] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+
   // ── Load workflows ──────────────────────────────────────────────────────────
 
   const loadWorkflows = useCallback(() => {
@@ -170,6 +175,38 @@ export default function ProjectDetailPage() {
     }
   }
 
+  // ── Import workflow ─────────────────────────────────────────────────────────
+
+  async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    setImportError(null);
+    try {
+      const text   = await file.text();
+      const bundle = JSON.parse(text) as Record<string, unknown>;
+      const res    = await apiClient.post<{ id: string }>(
+        `/projects/${projectId}/workflows/import`,
+        bundle,
+      );
+      if (!res.success) {
+        setImportError(res.error?.message ?? 'Import failed');
+        return;
+      }
+      setShowImport(false);
+      const wfId = res.data?.id;
+      if (wfId) {
+        router.push(`/projects/${projectId}/workflows/${wfId}`);
+      } else {
+        loadWorkflows();
+      }
+    } catch (err: unknown) {
+      setImportError(err instanceof Error ? err.message : 'Invalid JSON file');
+    } finally {
+      setImporting(false);
+    }
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -191,6 +228,13 @@ export default function ProjectDetailPage() {
           </div>
           {activeTab === 'workflows' && (
             <div className="flex gap-2">
+              <button
+                onClick={() => { setShowImport(true); setImportError(null); }}
+                className="px-3 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                title="Import workflow from .qsos.json file"
+              >
+                ↑ Import
+              </button>
               <button
                 onClick={openTemplateModal}
                 className="px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5"
@@ -229,6 +273,12 @@ export default function ProjectDetailPage() {
           >
             Pipeline
           </button>
+          <Link
+            href={`/projects/${projectId}/boq`}
+            className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 -mb-px transition-colors"
+          >
+            📊 BOQ Table
+          </Link>
         </div>
 
         {/* ── Pipeline Tab ──────────────────────────────────────────────────── */}
@@ -399,6 +449,55 @@ export default function ProjectDetailPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: Import Workflow ─────────────────────────────────────────── */}
+      {showImport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Import Workflow</h2>
+            <p className="text-xs text-gray-500 mb-5">
+              Select a <span className="font-mono">.qsos.json</span> file exported from QS-WFUI.
+              A new workflow will be created in this project.
+            </p>
+
+            {importError && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+                {importError}
+              </div>
+            )}
+
+            <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-colors ${
+              importing
+                ? 'border-blue-200 bg-blue-50 cursor-not-allowed'
+                : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+            }`}>
+              <span className="text-3xl">{importing ? '⏳' : '📂'}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {importing ? 'Importing…' : 'Click to select .qsos.json'}
+              </span>
+              <span className="text-xs text-gray-400">or drag and drop</span>
+              <input
+                type="file"
+                accept=".json,.qsos.json"
+                className="sr-only"
+                disabled={importing}
+                onChange={handleImportFile}
+              />
+            </label>
+
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowImport(false); setImportError(null); }}
+                disabled={importing}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

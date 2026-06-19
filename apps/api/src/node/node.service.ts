@@ -85,4 +85,106 @@ export class NodeService {
       return fallback;
     }
 
-    if (error ?? !data) throw new NotFoun
+    if (error ?? !data) throw new NotFoundException(`Node type "${type}" not found`);
+    return data;
+  }
+
+  /** Return only the ui_schema for a node type */
+  async getUISchema(type: string) {
+    const { data, error } = await this.supabase.admin
+      .from('registered_nodes')
+      .select('type, ui_schema, config_schema')
+      .eq('type', type)
+      .eq('is_enabled', true)
+      .single();
+
+    if (error ?? !data) throw new NotFoundException(`Node type "${type}" not found`);
+    return data;
+  }
+
+  /**
+   * Validate a node configuration object against the node's config_schema.
+   * Returns { valid, errors }.
+   */
+  async validateConfig(type: string, config: Record<string, unknown>) {
+    const node = await this.findOne(type);
+    const schema = node.config_schema as Array<{
+      key: string;
+      label: string;
+      required?: boolean;
+    }>;
+
+    const errors: Array<{ field: string; message: string }> = [];
+
+    for (const field of schema) {
+      if (field.required) {
+        const value = config[field.key];
+        const missing =
+          value === undefined ||
+          value === null ||
+          (typeof value === 'string' && value.trim() === '');
+        if (missing) {
+          errors.push({ field: field.key, message: `"${field.label}" is required` });
+        }
+      }
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
+  /** List all enabled packs with skill count */
+  async findAllPacks() {
+    const { data, error } = await this.supabase.admin
+      .from('packs')
+      .select('id, display_name, description, author, version, icon, color, is_official')
+      .eq('is_enabled', true)
+      .order('display_name');
+
+    if (error) throw new Error(error.message);
+    const packs = data ?? [];
+
+    // Attach skill count per pack
+    const { data: nodes } = await this.supabase.admin
+      .from('registered_nodes')
+      .select('pack_id')
+      .eq('is_enabled', true);
+
+    const countMap: Record<string, number> = {};
+    for (const n of nodes ?? []) {
+      countMap[n.pack_id] = (countMap[n.pack_id] ?? 0) + 1;
+    }
+
+    return packs.map((p) => ({ ...p, skill_count: countMap[p.id] ?? 0 }));
+  }
+
+  /**
+   * Search nodes by name, description, type, or pack name.
+   * Sprint 15 (S15-004) — server-side search to replace client-side filter.
+   */
+  async search(q: string) {
+    const term = q.trim();
+    if (!term) return this.findAll();
+
+    const runQuery = async (select: string) =>
+      this.supabase.admin
+        .from('registered_nodes')
+        .select(select)
+        .eq('is_enabled', true)
+        .or(
+          `name.ilike.%${term}%,description.ilike.%${term}%,type.ilike.%${term}%,pack_id.ilike.%${term}%`,
+        )
+        .order('category')
+        .order('name');
+
+    const { data, error } = await runQuery(SELECT_V3);
+    if (!error) return data ?? [];
+
+    if (isMissingColumnError(error.message)) {
+      const { data: fallback, error: fbErr } = await runQuery(SELECT_FALLBACK);
+      if (fbErr) throw new Error(fbErr.message);
+      return fallback ?? [];
+    }
+
+    throw new Error(error.message);
+  }
+}
