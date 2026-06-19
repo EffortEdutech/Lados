@@ -7,6 +7,7 @@ import NodePalette from '@/components/canvas/NodePalette';
 import type { BulkModeRequest } from '@/components/canvas/WorkflowCanvas';
 import type { SkillMode } from '@qsos/shared-types';
 import ExecutionLogPanel from '@/components/canvas/ExecutionLogPanel';
+import VersionHistoryDrawer from '@/components/canvas/VersionHistoryDrawer';
 import RunHistoryPanel from '@/components/canvas/RunHistoryPanel';
 import FileUploadPanel from '@/components/canvas/FileUploadPanel';
 import LibraryPanel from '@/components/canvas/LibraryPanel';
@@ -130,6 +131,12 @@ export default function WorkflowEditorPage({ params }: PageProps) {
 
   // ── Sidebar tab ───────────────────────────────────────────────────────────
   const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents' | 'datapacks' | 'history'>('nodes');
+
+  // ── Validation state (S18-001) ────────────────────────────────────────────
+  const [hasValidationErrors, setHasValidationErrors] = useState(false);
+
+  // ── Version history drawer (S18-002) ──────────────────────────────────────
+  const [showVersions, setShowVersions] = useState(false);
 
   // ── Bulk mode request (S14-007) ───────────────────────────────────────────
   const [bulkModeRequest, setBulkModeRequest] = useState<BulkModeRequest | null>(null);
@@ -313,6 +320,15 @@ export default function WorkflowEditorPage({ params }: PageProps) {
         )}
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Version history button — S18-002 */}
+          <button
+            onClick={() => setShowVersions(true)}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5 rounded hover:bg-gray-100 transition-colors"
+            title="Version history"
+          >
+            🕐 Versions
+          </button>
+
           {/* Export button — S16-004 */}
           <button
             onClick={async () => {
@@ -337,9 +353,10 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           {/* Run button */}
           <button
             onClick={handleRunClick}
-            disabled={running}
+            disabled={running || hasValidationErrors}
+            title={hasValidationErrors ? 'Fix connection errors before running' : undefined}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              running
+              running || hasValidationErrors
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-green-600 text-white hover:bg-green-700'
             }`}
@@ -418,6 +435,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
               organizationId={organizationId}
               projectId={projectId}
               bulkModeRequest={bulkModeRequest}
+              onValidationChange={setHasValidationErrors}
             />
           </div>
 
@@ -451,6 +469,28 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           )}
         </main>
       </div>
+
+      {/* Version history drawer — S18-002 */}
+      {showVersions && (
+        <VersionHistoryDrawer
+          projectId={projectId}
+          workflowId={workflowId}
+          onClose={() => setShowVersions(false)}
+          onRestored={() => {
+            // Reload the workflow definition after restore
+            apiClient
+              .get<{ definition: unknown; name: string }>(
+                `/projects/${projectId}/workflows/${workflowId}`,
+              )
+              .then((res) => {
+                if (res.success && res.data) {
+                  setDefinition(normalizeDefinition(res.data.definition));
+                  setWorkflowName(res.data.name);
+                }
+              });
+          }}
+        />
+      )}
     </div>
   );
 }

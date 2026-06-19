@@ -96,6 +96,40 @@ export class WorkflowController {
     return { success: true, data, error: null };
   }
 
+  // ── S18-002: Versioning endpoints ─────────────────────────────────────────
+
+  /** POST /projects/:projectId/workflows/:id/versions — snapshot current definition */
+  @Post(':id/versions')
+  async snapshotVersion(
+    @Param('id') id: string,
+    @Body() body: { label?: string },
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.snapshotVersion(id, user.id, body.label);
+    return { success: true, data, error: null };
+  }
+
+  /** GET /projects/:projectId/workflows/:id/versions — list all versions */
+  @Get(':id/versions')
+  async listVersions(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown[]>> {
+    const data = await this.workflowService.listVersions(id, user.id);
+    return { success: true, data, error: null };
+  }
+
+  /** POST /projects/:projectId/workflows/:id/versions/:versionId/restore */
+  @Post(':id/versions/:versionId/restore')
+  async restoreVersion(
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.restoreVersion(id, versionId, user.id);
+    return { success: true, data, error: null };
+  }
+
   @Delete(':id')
   @HttpCode(200)
   async remove(

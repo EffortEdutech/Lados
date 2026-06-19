@@ -189,6 +189,87 @@ export class WorkflowService {
     return created;
   }
 
+  // ── S18-002: Versioning ────────────────────────────────────────────────────
+
+  /**
+   * Snapshot the current definition as a new version.
+   * version_number = MAX(existing) + 1, or 1 if none yet.
+   */
+  async snapshotVersion(workflowId: string, userId: string, label?: string) {
+    const workflow = await this.findOne(workflowId, userId);
+    await this.assertProjectAccess(workflow.project_id as string, userId, ['owner', 'admin', 'member']);
+
+    // Compute next version number
+    const { data: latest } = await this.supabase.admin
+      .from('workflow_versions')
+      .select('version_number')
+      .eq('workflow_id', workflowId)
+      .order('version_number', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const nextVersion = ((latest?.version_number as number | null) ?? 0) + 1;
+
+    const { data, error } = await this.supabase.admin
+      .from('workflow_versions')
+      .insert({
+        workflow_id:    workflowId,
+        version_number: nextVersion,
+        definition:     workflow.definition,
+        label:          label ?? null,
+        created_by:     userId,
+      })
+      .select()
+      .single();
+
+    if (error ?? !data) throw new Error(error?.message ?? 'Failed to create version');
+    return data;
+  }
+
+  /** List all versions of a workflow, newest first */
+  async listVersions(workflowId: string, userId: string) {
+    const workflow = await this.findOne(workflowId, userId);
+    await this.assertProjectAccess(workflow.project_id as string, userId);
+
+    const { data, error } = await this.supabase.admin
+      .from('workflow_versions')
+      .select('id, version_number, label, created_by, created_at')
+      .eq('workflow_id', workflowId)
+      .order('version_number', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
+  /** Restore the workflow definition to a specific version snapshot */
+  async restoreVersion(workflowId: string, versionId: string, userId: string) {
+    const workflow = await this.findOne(workflowId, userId);
+    await this.assertProjectAccess(workflow.project_id as string, userId, ['owner', 'admin', 'member']);
+
+    const { data: version, error: vErr } = await this.supabase.admin
+      .from('workflow_versions')
+      .select('definition, version_number')
+      .eq('id', versionId)
+      .eq('workflow_id', workflowId)
+      .maybeSingle();
+
+    if (vErr ?? !version) throw new NotFoundException(`Version ${versionId} not found`);
+
+    // Snapshot current state before overwriting (so user can undo the restore)
+    await this.snapshotVersion(workflowId, userId, `Auto-save before restore to v${version.version_number as number}`);
+
+    // Overwrite live definition
+    const { data, error } = await this.supabase.admin
+      .from('workflows')
+      .update({ definition: version.definition })
+      .eq('id', workflowId)
+      .select('id, name, updated_at')
+      .single();
+
+    if (error ?? !data) throw new Error(error?.message ?? 'Restore failed');
+    return { restored: true, version_number: version.version_number, workflow: data };
+  }
+
   /** Delete a workflow (owner/admin only) */
   async delete(id: string, userId: string) {
     const workflow = await this.findOne(id, userId);

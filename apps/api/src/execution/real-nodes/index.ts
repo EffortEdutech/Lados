@@ -25,6 +25,7 @@ import { realSplitWorkPackage } from './qs-split-work-package';
 import { realGenerateRfq } from './procurement-generate-rfq';
 import { realGeneratePo }  from './procurement-generate-po';
 import { realCondition } from './workflow-condition';
+import { realCronTrigger } from './core-cron-trigger';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
@@ -41,9 +42,10 @@ export function buildRealNodeResolver(
 ): (nodeType: string) => NodeExecutor | null {
   const realNodes: Record<string, NodeExecutor> = {
     // ── Core Pack ─────────────────────────────────────────────────────────────
-    'core.human_approval': (ctx) => realHumanApproval(ctx, notificationService),
-    'core.logger':         (ctx) => realLogger(ctx),
-    'workflow.condition':  (ctx) => realCondition(ctx),
+    'core.human_approval':  (ctx) => realHumanApproval(ctx, notificationService),
+    'core.logger':          (ctx) => realLogger(ctx),
+    'core.cron_trigger':    (ctx) => realCronTrigger(ctx),
+    'workflow.condition':   (ctx) => realCondition(ctx),
 
     // ── Pipeline Pack ─────────────────────────────────────────────────────────
     'project.save_artifact': (ctx) => realSaveArtifact(ctx),
