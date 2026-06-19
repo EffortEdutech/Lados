@@ -36,6 +36,9 @@ export interface WorkflowInfo {
 
 // ─── Node instance ────────────────────────────────────────────────────────────
 
+/** V3 execution mode for a skill node */
+export type SkillMode = 'active' | 'muted' | 'bypassed';
+
 export interface WorkflowNodeInstance {
   /** Unique within this workflow */
   id: NodeInstanceId;
@@ -47,6 +50,13 @@ export interface WorkflowNodeInstance {
   position: { x: number; y: number };
   /** Node-specific config values */
   config?: Record<string, unknown>;
+  /**
+   * V3 execution mode.
+   * - active   (default): executes normally
+   * - muted:    skipped; outputs null for every output port
+   * - bypassed: skipped; passes first input value through to first output port
+   */
+  mode?: SkillMode;
 }
 
 // ─── Connection ───────────────────────────────────────────────────────────────

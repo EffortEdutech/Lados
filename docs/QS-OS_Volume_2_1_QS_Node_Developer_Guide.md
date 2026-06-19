@@ -1,8 +1,18 @@
 # QS-OS Workflow Engine Blueprint
 
-# Volume 2.1 -- QS Node Developer Guide
+# Volume 2.1 — QS Node Developer Guide (V1)
 
 Version: 1.0
+
+> ⚠️ **V3 COMPATIBILITY NOTICE** — Updated: 2026-06-18  
+> This guide was written for QS-OS V1. Practical implementation guidance remains valid but terminology has shifted.  
+> **V3 terminology:** "QS Node" → "Skill", "Node developer" → "Skill developer", "Pack" → "Capability Pack".  
+> Skill implementations in V3 must also declare `uses_services[]` and `data_pack_deps[]`.  
+> A new **Vol 16 — Skill SDK Specification** will supersede this guide.  
+> **Current authoritative reference:** `QS-OS_V3_Architecture_and_QS-WFUI_Continuation_Blueprint.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This guide is the implementation manual for developers building custom
 > nodes for the QS-OS Workflow Engine.

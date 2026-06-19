@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * WorkflowCanvas — React Flow canvas for the QS-OS workflow editor.
+ *
+ * Sprint 2:  initial React Flow integration
+ * Sprint 13: V3 — custom SkillNode with mode visual states (active/muted/bypassed),
+ *             right-click context menu for mode toggle, mode persisted in workflow JSON
+ */
+
 import { useCallback, useRef, useState } from 'react';
 import ReactFlow, {
   Background,
@@ -12,24 +20,91 @@ import ReactFlow, {
   type Node,
   type Edge,
   type NodeTypes,
+  type NodeProps,
   BackgroundVariant,
+  Handle,
+  Position,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import type { QSWorkflowDefinition, WorkflowNodeInstance, WorkflowConnection } from '@qsos/shared-types';
+import type {
+  QSWorkflowDefinition,
+  WorkflowNodeInstance,
+  WorkflowConnection,
+  SkillMode,
+} from '@qsos/shared-types';
 import PropertyPanel from './PropertyPanel';
 
-// Stable module-level constant — prevents React Flow nodeTypes warning in StrictMode.
-// Empty object tells React Flow to use its built-in default node types (default/input/output).
-const NODE_TYPES: NodeTypes = {};
+// ── Custom SkillNode ──────────────────────────────────────────────────────────
+//
+// Three visual states driven by data.mode:
+//   active   — white card, solid border (default)
+//   muted    — gray/dim, 🔇 badge, outputs null at runtime
+//   bypassed — dashed amber border, ⏭ badge, passes input[0] through at runtime
+
+function SkillNode({ data, selected }: NodeProps) {
+  const mode: SkillMode = (data.mode as SkillMode) ?? 'active';
+
+  const selectedRing = selected ? 'ring-2 ring-offset-1 ' : '';
+
+  const containerCls =
+    mode === 'muted'
+      ? `bg-gray-100 border border-gray-300 opacity-55 ${selectedRing}${selected ? 'ring-blue-300' : ''}`
+      : mode === 'bypassed'
+        ? `bg-white border-2 border-dashed border-amber-400 ${selectedRing}${selected ? 'ring-amber-300' : ''}`
+        : `bg-white border border-gray-300 ${selectedRing}${selected ? 'ring-blue-400' : ''}`;
+
+  return (
+    <div
+      className={`relative rounded px-3 py-2 text-xs font-medium min-w-[120px] text-center shadow-sm transition-all ${containerCls}`}
+    >
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: '#9ca3af', width: 8, height: 8 }}
+      />
+
+      {/* Mode badge — only when not active */}
+      {mode !== 'active' && (
+        <span
+          className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap ${
+            mode === 'muted'
+              ? 'bg-gray-200 text-gray-500'
+              : 'bg-amber-100 text-amber-600'
+          }`}
+        >
+          {mode === 'muted' ? '🔇 muted' : '⏭ bypass'}
+        </span>
+      )}
+
+      <span className={mode === 'muted' ? 'text-gray-400' : 'text-gray-800'}>
+        {data.label as string}
+      </span>
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ background: '#9ca3af', width: 8, height: 8 }}
+      />
+    </div>
+  );
+}
+
+// Stable module-level constant — prevents React Flow nodeTypes warning.
+const NODE_TYPES: NodeTypes = { skill: SkillNode };
 
 // ── Helpers: convert QS-OS types ↔ React Flow types ─────────────────────────
 
 function toRFNodes(nodes: WorkflowNodeInstance[]): Node[] {
   return nodes.map((n) => ({
     id: n.id,
-    type: 'default',
+    type: 'skill',
     position: n.position,
-    data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {} },
+    data: {
+      label: n.label ?? n.type,
+      nodeType: n.type,
+      config: n.config ?? {},
+      mode: n.mode ?? 'active',
+    },
   }));
 }
 
@@ -50,6 +125,7 @@ function fromRFNodes(rfNodes: Node[]): WorkflowNodeInstance[] {
     label: (n.data as { label: string }).label,
     position: n.position,
     config: (n.data as { config: Record<string, unknown> }).config,
+    mode: ((n.data as { mode?: SkillMode }).mode ?? 'active') as SkillMode,
   }));
 }
 
@@ -62,6 +138,20 @@ function fromRFEdges(rfEdges: Edge[]): WorkflowConnection[] {
     targetPortId: e.targetHandle ?? 'in',
   }));
 }
+
+// ── Context menu type ─────────────────────────────────────────────────────────
+
+interface ContextMenuState {
+  x: number;
+  y: number;
+  nodeId: string;
+}
+
+const MODE_OPTIONS: { mode: SkillMode; icon: string; label: string; desc: string }[] = [
+  { mode: 'active',   icon: '▶',  label: 'Active',  desc: 'Normal execution'    },
+  { mode: 'muted',    icon: '🔇', label: 'Mute',    desc: 'Skip, output null'   },
+  { mode: 'bypassed', icon: '⏭',  label: 'Bypass',  desc: 'Pass input through'  },
+];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +173,7 @@ export default function WorkflowCanvas({
   const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(definition.nodes ?? []));
   const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(definition.connections ?? []));
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onConnect = useCallback(
@@ -132,7 +223,7 @@ export default function WorkflowCanvas({
     [onEdgesChange, setEdges, nodes, scheduleAutoSave],
   );
 
-  /** Delete the currently selected node (called from PropertyPanel or keyboard) */
+  /** Delete the currently selected node */
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
       setNodes((nds) => {
@@ -150,21 +241,43 @@ export default function WorkflowCanvas({
     [setNodes, setEdges, scheduleAutoSave, edges, nodes],
   );
 
-  /** Update a node's config from the property panel */
+  /** Update a node's config from the Skill Inspector */
   const handleConfigChange = useCallback(
     (nodeId: string, newConfig: Record<string, unknown>) => {
       setNodes((nds) =>
         nds.map((n) =>
-          n.id === nodeId
-            ? { ...n, data: { ...n.data, config: newConfig } }
-            : n,
+          n.id === nodeId ? { ...n, data: { ...n.data, config: newConfig } } : n,
         ),
       );
     },
     [setNodes],
   );
 
-  /** Drop a node from the palette onto the canvas */
+  /** Set execution mode on a skill node (from context menu) */
+  const handleSetMode = useCallback(
+    (nodeId: string, mode: SkillMode) => {
+      setNodes((nds) => {
+        const updated = nds.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, mode } } : n,
+        );
+        scheduleAutoSave(updated, edges);
+        return updated;
+      });
+      setContextMenu(null);
+    },
+    [setNodes, scheduleAutoSave, edges],
+  );
+
+  /** Right-click on a node — show mode context menu */
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      event.preventDefault();
+      setContextMenu({ x: event.clientX, y: event.clientY, nodeId: node.id });
+    },
+    [],
+  );
+
+  /** Drop a skill from the palette onto the canvas */
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -180,9 +293,9 @@ export default function WorkflowCanvas({
 
       const newNode: Node = {
         id: `${nodeType}-${Date.now()}`,
-        type: 'default',
+        type: 'skill',
         position,
-        data: { label: nodeLabel || nodeType, nodeType, config: {} },
+        data: { label: nodeLabel || nodeType, nodeType, config: {}, mode: 'active' },
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -195,8 +308,13 @@ export default function WorkflowCanvas({
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+  const handlePaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setContextMenu(null);
+  }, []);
+
   return (
-    <div className="flex h-full w-full">
+    <div className="relative flex h-full w-full">
       {/* Canvas */}
       <div
         className="flex-1"
@@ -210,8 +328,12 @@ export default function WorkflowCanvas({
           onNodesChange={readOnly ? undefined : handleNodesChange}
           onEdgesChange={readOnly ? undefined : handleEdgesChange}
           onConnect={readOnly ? undefined : onConnect}
-          onNodeClick={(_, node) => setSelectedNode(node)}
-          onPaneClick={() => setSelectedNode(null)}
+          onNodeClick={(_, node) => {
+            setSelectedNode(node);
+            setContextMenu(null);
+          }}
+          onPaneClick={handlePaneClick}
+          onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
           deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
           fitView
           attributionPosition="bottom-right"
@@ -219,14 +341,17 @@ export default function WorkflowCanvas({
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
           <Controls />
           <MiniMap
-            nodeColor="#3b82f6"
+            nodeColor={(n) => {
+              const mode = (n.data as { mode?: SkillMode }).mode ?? 'active';
+              return mode === 'muted' ? '#d1d5db' : mode === 'bypassed' ? '#fbbf24' : '#3b82f6';
+            }}
             maskColor="rgba(0,0,0,0.08)"
             style={{ border: '1px solid #e5e7eb' }}
           />
         </ReactFlow>
       </div>
 
-      {/* Property panel */}
+      {/* Skill Inspector (PropertyPanel) */}
       <PropertyPanel
         selectedNode={selectedNode}
         onConfigChange={handleConfigChange}
@@ -234,6 +359,43 @@ export default function WorkflowCanvas({
         organizationId={organizationId}
         projectId={projectId}
       />
+
+      {/* Skill mode context menu */}
+      {contextMenu && (
+        <div
+          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
+          className="rounded-lg border border-gray-200 bg-white shadow-xl py-1 min-w-[160px]"
+          onMouseLeave={() => setContextMenu(null)}
+        >
+          <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100 mb-1">
+            Skill Mode
+          </p>
+          {MODE_OPTIONS.map(({ mode, icon, label, desc }) => {
+            const currentMode =
+              (nodes.find((n) => n.id === contextMenu.nodeId)?.data as { mode?: SkillMode })
+                ?.mode ?? 'active';
+            const isCurrentMode = currentMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => handleSetMode(contextMenu.nodeId, mode)}
+                className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-gray-50 transition-colors ${
+                  isCurrentMode ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`}
+              >
+                <span className="w-5 text-center flex-shrink-0">{icon}</span>
+                <span className="flex-1">
+                  {label}
+                  <span className="ml-1 text-[10px] text-gray-400 font-normal">— {desc}</span>
+                </span>
+                {isCurrentMode && (
+                  <span className="text-blue-400 text-[11px]">✓</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

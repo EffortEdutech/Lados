@@ -3251,3 +3251,162 @@ It takes the structured Workflow JSON, resolves Packs and Nodes, creates a durab
 Without the Execution Engine, QS-OS is only a visual editor.
 
 With the Execution Engine, QS-OS becomes a real Construction Workflow Operating System capable of running tendering, procurement, contract administration, progress claim, variation, payment, and reporting processes in a controlled and trustworthy way.
+
+---
+
+# V3 Addendum — Execution Engine Specification Updates
+
+**Addendum version:** V3 | **Added:** 2026-06-18
+
+This addendum documents execution engine behaviours added in V3 that are not present in the original specification above.
+
+## A1. Skill Execution Mode Handling
+
+Before executing any skill node, the engine must check the `mode` field from the workflow JSON node definition:
+
+```
+Pre-execution check (runs before any skill dispatch):
+  if node.mode == "muted"    → SKIP: emit null on all output ports, log as "muted"
+  if node.mode == "bypassed" → SKIP: pipe input[0] to output[0], null on others, log as "bypassed"
+  if node.mode == "active"   → EXECUTE: run the skill normally
+  if mode is absent          → EXECUTE: treat as "active"
+```
+
+### Execution log entry for muted/bypassed nodes
+
+```json
+{
+  "node_id": "node-clean-boq",
+  "skill_id": "skill_clean_boq_v1",
+  "status": "skipped",
+  "skip_reason": "muted",
+  "outputs": { "result": null },
+  "duration_ms": 0
+}
+```
+
+For bypassed nodes:
+```json
+{
+  "skip_reason": "bypassed",
+  "outputs": { "result": "<input value passed through>" }
+}
+```
+
+---
+
+## A2. Condition Node Execution (workflow.condition)
+
+The Condition Node (`workflow.condition`) is a built-in routing node evaluated by the execution engine — it does not call any external service.
+
+```
+Execution flow:
+  1. Receive input on the `value` port
+  2. Evaluate config.expression against the value
+     - Substitution: {{value}} → actual input value
+     - Substitution: {{node_X.outputs.Y}} → output from a previous node
+  3. If expression evaluates to true  → forward value to true_path output, null to false_path
+  4. If expression evaluates to false → forward value to false_path output, null to true_path
+  5. Write condition evaluation log entry (see below)
+  6. Continue graph traversal only on the non-null path
+```
+
+### Condition evaluation log entry
+
+```json
+{
+  "node_id": "node-confidence-check",
+  "node_type": "workflow.condition",
+  "status": "completed",
+  "condition": {
+    "expression": "{{value}} >= 0.9",
+    "evaluated_value": 0.93,
+    "result": true,
+    "path_taken": "true_path"
+  },
+  "duration_ms": 1
+}
+```
+
+### Supported expression operators
+
+| Operator | Example | Notes |
+|---|---|---|
+| `>=`, `<=`, `>`, `<` | `{{value}} >= 0.9` | Numeric comparison |
+| `==`, `!=` | `{{value}} == "approved"` | String or value equality |
+| `includes` | `{{value}} includes "electrical"` | String contains |
+| `!= null` | `{{value}} != null` | Null check |
+| `== true`, `== false` | `{{value}} == true` | Boolean check |
+
+---
+
+## A3. Core Services Layer
+
+V3 introduces a **Core Services** layer between the execution engine and external providers. Skills do not call external APIs directly — they call Core Services, which handle provider routing, retries, rate limiting, and audit logging.
+
+```
+Skill Execution:
+  [Skill Node]
+      ↓ calls service
+  [Core Services Layer]
+      ├── AI Service        → OpenAI / local model
+      ├── OCR Service       → Azure Document Intelligence / Tesseract
+      ├── Document Service  → PDF generation, Word generation
+      ├── Geometry Service  → Area calc, takeoff
+      ├── Storage Service   → Supabase Storage
+      ├── Search Service    → Vector search, keyword search
+      ├── Notification Service → Email, webhook, in-app
+      └── Billing Service   → Usage metering, quota enforcement
+```
+
+### Service call from within a skill
+
+Skills declare their service dependencies in `uses_services[]` on the registered_nodes record. The execution engine verifies service availability before dispatching the skill. If a required service is unavailable, the node is marked `failed` with reason `service_unavailable`.
+
+### Service execution log entry
+
+```json
+{
+  "node_id": "node-classify",
+  "skill_id": "skill_classify_trade_v1",
+  "service_calls": [
+    {
+      "service": "ai",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "tokens_used": 842,
+      "duration_ms": 1240,
+      "status": "success"
+    }
+  ]
+}
+```
+
+---
+
+## A4. Data Pack Resolution
+
+Skills that declare `data_pack_deps[]` require one or more Data Packs to be installed and active for the project before execution.
+
+```
+Pre-execution Data Pack check:
+  1. Load node's data_pack_deps[] from registered_nodes
+  2. For each declared dependency:
+     a. Check data_packs table — is the pack installed for this project's org?
+     b. Check pack status = "active"
+  3. If any required pack is missing or inactive → mark node "failed" with reason "missing_data_pack"
+  4. If all packs present → proceed with execution, inject pack connection config into skill context
+```
+
+---
+
+## A5. V3 Execution Status Values
+
+V3 adds two new values to the execution status vocabulary:
+
+| Status | Meaning (V3 addition) |
+|---|---|
+| `muted` | Node was explicitly skipped due to mode = "muted" |
+| `bypassed` | Node was explicitly skipped due to mode = "bypassed", input passed through |
+
+These join the existing statuses: `queued`, `running`, `completed`, `failed`, `skipped` (branch not taken).

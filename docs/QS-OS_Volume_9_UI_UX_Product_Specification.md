@@ -1,6 +1,16 @@
 # QS-OS Workflow Engine Blueprint
-# Volume 9 – UI/UX Product Specification
+# Volume 9 — UI/UX Product Specification (V1)
 Version: 1.0
+
+> ⚠️ **V3 PARTIAL SUPERSESSION NOTICE** — Updated: 2026-06-18  
+> This document covers UI/UX design for QS-OS V1/V2. It remains a useful reference for screen structure, navigation, and user journeys.  
+> **V3 UI changes not covered here:** Skill Library (pack-grouped, searchable), Skill Inspector (replaces Property Panel), Skill execution mode controls (Mute/Bypass), Skill Groups on canvas, Condition Node (teal ◇ diamond), Data Pack browser.  
+> **V3 terminology:** "Node Library" → "Skill Library", "Property Panel" → "Skill Inspector", "Node" → "Skill".  
+> **Current UI/UX reference:** `QS-OS_Volume_15_V3_UI_UX_Product_Specification.md` (V3 CURRENT)  
+> **Canvas controls reference:** `QS-OS_Switch_Mute_Bypass_Group_Design_Reference.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This specification defines the user interface and user experience design for QS-OS.
 >

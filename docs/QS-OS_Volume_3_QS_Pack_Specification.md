@@ -1,6 +1,15 @@
 # QS-OS Workflow Engine Blueprint
-# Volume 3 – QS Pack Specification
+# Volume 3 — QS Pack Specification (V1)
 Version: 1.0
+
+> ⚠️ **V3 COMPATIBILITY NOTICE** — Updated: 2026-06-18  
+> This document was written for QS-OS V1. Pack mechanics (install, version, license, distribute) remain valid.  
+> **V3 terminology:** "QS Pack" / "Pack" → **"Capability Pack"**. "Data Source Pack" → **"Data Pack"** (a new separate concept).  
+> V3 adds a dedicated **Data Pack** tier (Vol 12) distinct from Capability Packs. A future **Vol 17 — Marketplace Specification** will expand on distribution.  
+> **Current authoritative reference:** `QS-OS_V3_Architecture_and_QS-WFUI_Continuation_Blueprint.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This specification defines how QS-OS Packs are created, installed, versioned, secured, tested, licensed, distributed, and maintained.
 >

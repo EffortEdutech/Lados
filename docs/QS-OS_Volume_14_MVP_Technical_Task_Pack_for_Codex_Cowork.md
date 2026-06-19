@@ -1,6 +1,16 @@
 # QS-OS Workflow Engine Blueprint
-# Volume 14 – QS-OS MVP Technical Task Pack for Codex/Cowork
+# Volume 14 — QS-OS MVP Technical Task Pack for Codex/Cowork (V1)
 Version: 1.0
+
+> 🚫 **SUPERSEDED** — Updated: 2026-06-18  
+> This task pack has been **superseded** by the Master Sprint Plan which covers V3 architecture.  
+> Tasks documented here covering Sprints 1–10 are complete and archived.  
+> **For active AI coding agent task instructions, use:**  
+> **`QS-OS_Master_Sprint_Plan_and_Checklist.md`** (V3 CURRENT)  
+> This document is preserved as historical reference for early sprint task definitions.  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This document breaks the QS-OS MVP implementation into small, copy-paste-ready tasks for Codex, Cowork, AI coding agents, or human developers.
 >

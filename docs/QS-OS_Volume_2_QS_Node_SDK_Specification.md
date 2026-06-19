@@ -1,8 +1,18 @@
 # QS-OS Workflow Engine Blueprint
 
-# Volume 2 -- QS Node SDK Specification
+# Volume 2 — QS Node SDK Specification (V1)
 
 Version: 1.0
+
+> ⚠️ **V3 COMPATIBILITY NOTICE** — Updated: 2026-06-18  
+> This document was written for QS-OS V1. The SDK contract remains valid but terminology has changed in V3.  
+> **V3 terminology:** "QS Node" → "Skill", "Node SDK" → "Skill SDK", "Pack" → "Capability Pack".  
+> V3 adds: `skillId`, `packId`, `mode` (`active | muted | bypassed`) fields on every Skill; `uses_services[]` and `data_pack_deps[]` dependency declarations.  
+> A new **Vol 16 — Skill SDK Specification** will be the V3 update of this document.  
+> **Current authoritative reference:** `QS-OS_V3_Architecture_and_QS-WFUI_Continuation_Blueprint.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 ## Purpose
 

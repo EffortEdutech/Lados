@@ -3487,3 +3487,113 @@ It allows the visual canvas, Pack system, Node SDK, Execution Engine, marketplac
 This format is one of the most important foundations of QS-OS because it makes workflows portable, inspectable, versioned, executable, and safe.
 
 With this specification, QS-OS can move from concept into implementation with a clear contract for how every workflow is stored and interpreted.
+
+---
+
+# V3 Addendum — Workflow JSON Specification Updates
+
+**Addendum version:** V3 | **Added:** 2026-06-18
+
+This addendum documents fields and structures added to the Workflow JSON schema in V3 that are not present in the original specification above.
+
+## A1. Skill Node — Additional Fields (V3)
+
+Every skill node object gains three new fields in V3:
+
+```json
+{
+  "id": "node-clean-boq",
+  "type": "document.clean_boq",
+  "skillId": "skill_clean_boq_v1",
+  "packId": "pack_document_tools_v2",
+  "mode": "active",
+  "position": { "x": 360, "y": 100 },
+  "config": {}
+}
+```
+
+| Field | Type | Values | Description |
+|---|---|---|---|
+| `skillId` | string | registry ID | References `registered_nodes.id` in the database |
+| `packId` | string | registry ID | References `packs.id` in the database — which Capability Pack this skill comes from |
+| `mode` | enum | `"active"` \| `"muted"` \| `"bypassed"` | Execution mode for this skill (see below) |
+
+### mode field behaviour
+
+| Value | Execution effect | Visual |
+|---|---|---|
+| `"active"` | Node executes normally | Normal |
+| `"muted"` | Node is skipped; all outputs emit `null` | Grayed out, 🔇 icon |
+| `"bypassed"` | Node is skipped; first input is passed to first output; other outputs emit `null` | Dashed border, → icon |
+
+**Default:** If `mode` is absent, treat as `"active"`.
+
+---
+
+## A2. ui.groups — Mode Field (V3)
+
+The `ui.groups[]` array (defined in the original spec) gains a `mode` field to support bulk mute/bypass:
+
+```json
+{
+  "ui": {
+    "groups": [
+      {
+        "id": "group_rfq_generation",
+        "name": "RFQ Generation",
+        "color": "#8B5CF6",
+        "nodeIds": ["node-split-wp", "node-gen-rfq", "node-approval"],
+        "collapsed": false,
+        "mode": "active"
+      }
+    ]
+  }
+}
+```
+
+`mode` on a group is a **convenience field** — it reflects the aggregate mode of its member nodes. When a group mode is set, all member nodes receive that mode. Individual node modes are the authoritative source of truth at execution time.
+
+---
+
+## A3. Condition Node — New Node Type (V3)
+
+A new built-in node type `workflow.condition` is added in V3 for data-driven routing within a workflow.
+
+```json
+{
+  "id": "node-confidence-check",
+  "type": "workflow.condition",
+  "skillId": "skill_condition_v1",
+  "packId": "pack_core_v1",
+  "mode": "active",
+  "position": { "x": 520, "y": 160 },
+  "config": {
+    "expression": "{{value}} >= 0.9",
+    "true_label": "High Confidence",
+    "false_label": "Needs Review"
+  }
+}
+```
+
+**Handles:**
+- Input: `value` (any) — the value to evaluate
+- Output: `true_path` (any) — forwarded if expression is true
+- Output: `false_path` (any) — forwarded if expression is false
+
+**Condition Node is distinct from Pipeline SwitchNode:**
+- Condition Node lives on the **workflow canvas**, is **data-driven** (automatic), and routes between skill nodes
+- Pipeline SwitchNode lives on the **pipeline canvas**, is **user-driven** (human choice), and routes between whole workflows
+
+---
+
+## A4. Terminology Map: V1 → V3
+
+When processing workflow JSON from V1/V2 sources:
+
+| V1 field | V3 field | Notes |
+|---|---|---|
+| `type` | `type` | Unchanged — node type string |
+| *(not present)* | `skillId` | New in V3 — explicit registry reference |
+| *(not present)* | `packId` | New in V3 — explicit pack reference |
+| *(not present)* | `mode` | New in V3 — execution mode |
+| `ui.groups[].color` | `ui.groups[].color` + `ui.groups[].mode` | mode field added |

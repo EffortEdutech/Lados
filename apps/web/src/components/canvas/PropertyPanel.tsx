@@ -1,10 +1,12 @@
 'use client';
 
 /**
- * PropertyPanel — shown on the right when a node is selected on the canvas.
- * Dynamically renders config fields from the node's config_schema.
+ * PropertyPanel — "Skill Inspector" in V3 terminology.
+ * Shown on the right when a node is selected on the canvas.
  *
- * Sprint 5 (S5-007).
+ * Sprint 5  (S5-007): initial — config form from node config_schema.
+ * Sprint 13 (S13-004): V3 enrichment — pack name, description, input/output
+ *                       port list, uses_services chips, data_pack_deps chips.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -22,14 +24,64 @@ interface ConfigField {
   options?: Array<{ value: string; label: string }>;
 }
 
+interface NodePort {
+  name: string;
+  type: string;
+  description?: string;
+  required?: boolean;
+}
+
 interface NodeDefinition {
   type: string;
   name: string;
   description?: string;
   category: string;
   color?: string;
+  version?: string;
   config_schema: ConfigField[];
-  packs?: { display_name: string };
+  inputs?: NodePort[];
+  outputs?: NodePort[];
+  uses_services?: string[];
+  data_pack_deps?: string[];
+  packs?: { display_name: string; color?: string };
+}
+
+// ── Service chip helpers ──────────────────────────────────────────────────────
+
+const SERVICE_ICONS: Record<string, string> = {
+  'ai-service':           '🤖',
+  'storage-service':      '💾',
+  'audit-service':        '📋',
+  'auth-service':         '🔐',
+  'ocr-service':          '🔍',
+  'document-service':     '📄',
+  'notification-service': '🔔',
+};
+
+const SERVICE_LABELS: Record<string, string> = {
+  'ai-service':           'AI Service',
+  'storage-service':      'Storage',
+  'audit-service':        'Audit',
+  'auth-service':         'Auth',
+  'ocr-service':          'OCR',
+  'document-service':     'Document',
+  'notification-service': 'Notifications',
+};
+
+function ServiceChip({ svc }: { svc: string }) {
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
+      {SERVICE_ICONS[svc] ?? '⚙'} {SERVICE_LABELS[svc] ?? svc}
+    </span>
+  );
+}
+
+function DataPackChip({ slug }: { slug: string }) {
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
+      📦 {slug}
+    </span>
+  );
 }
 
 // ── File Upload inline component ─────────────────────────────────────────────
@@ -218,7 +270,7 @@ export default function PropertyPanel({
     return (
       <aside className="w-64 flex-shrink-0 border-l border-gray-200 bg-white p-4">
         <p className="text-xs text-gray-400 text-center mt-8">
-          Select a node to configure it
+          Select a skill to inspect it
         </p>
       </aside>
     );
@@ -226,31 +278,124 @@ export default function PropertyPanel({
 
   return (
     <aside className="w-64 flex-shrink-0 flex flex-col overflow-hidden border-l border-gray-200 bg-white">
-      {/* Header */}
+      {/* ── Header: Skill Inspector ────────────────────────────────────── */}
       <div
-        className="p-4 border-b border-gray-100"
-        style={{ borderTop: `3px solid ${nodeDef?.color ?? '#6B7280'}` }}
+        className="flex-shrink-0 p-3 border-b border-gray-100"
+        style={{ borderTop: `3px solid ${nodeDef?.color ?? nodeDef?.packs?.color ?? '#6B7280'}` }}
       >
-        <p className="text-xs text-gray-400 mb-0.5">
-          {nodeDef?.packs?.display_name ?? '—'} Pack
+        <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
+          Skill Inspector
         </p>
-        <h3 className="font-semibold text-gray-900 text-sm">
-          {nodeDef?.name ?? selectedNode.data?.label ?? 'Node'}
+        <p className="text-[10px] text-gray-400">
+          {nodeDef?.packs?.display_name ?? '—'} · {nodeDef?.version ?? 'v1.0.0'}
+        </p>
+        <h3 className="mt-0.5 font-semibold text-gray-900 text-sm leading-snug">
+          {nodeDef?.name ?? selectedNode.data?.label ?? 'Skill'}
         </h3>
         {nodeDef?.description && (
-          <p className="mt-1 text-xs text-gray-500">{nodeDef.description}</p>
+          <p className="mt-1 text-[11px] text-gray-500 leading-snug">{nodeDef.description}</p>
         )}
       </div>
 
-      {/* Config fields */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* ── Scrollable body ────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+
+      {/* Input / Output ports */}
+      {!loading && nodeDef && (
+        (nodeDef.inputs?.length || nodeDef.outputs?.length) ? (
+          <div className="px-3 py-2 border-b border-gray-100">
+            <div className="grid grid-cols-2 gap-2">
+              {/* Inputs */}
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  Inputs
+                </p>
+                {(nodeDef.inputs ?? []).length === 0 ? (
+                  <p className="text-[10px] text-gray-300 italic">none</p>
+                ) : (
+                  <ul className="space-y-0.5">
+                    {(nodeDef.inputs ?? []).map((port) => (
+                      <li key={port.name} className="text-[10px] text-gray-600">
+                        <span className="font-medium text-gray-700">{port.name}</span>
+                        <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Outputs */}
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  Outputs
+                </p>
+                {(nodeDef.outputs ?? []).length === 0 ? (
+                  <p className="text-[10px] text-gray-300 italic">none</p>
+                ) : (
+                  <ul className="space-y-0.5">
+                    {(nodeDef.outputs ?? []).map((port) => (
+                      <li key={port.name} className="text-[10px] text-gray-600">
+                        <span className="font-medium text-gray-700">{port.name}</span>
+                        <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null
+      )}
+
+      {/* Services + Data Pack dependencies */}
+      {!loading && nodeDef && (
+        (nodeDef.uses_services?.length || nodeDef.data_pack_deps?.length) ? (
+          <div className="px-3 py-2 border-b border-gray-100 space-y-1.5">
+            {nodeDef.uses_services && nodeDef.uses_services.length > 0 && (
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  Uses Services
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {nodeDef.uses_services.map((svc) => (
+                    <ServiceChip key={svc} svc={svc} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {nodeDef.data_pack_deps && nodeDef.data_pack_deps.length > 0 && (
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  Requires Data Packs
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {nodeDef.data_pack_deps.map((slug) => (
+                    <DataPackChip key={slug} slug={slug} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null
+      )}
+
+      {/* ── Config fields ───────────────────────────────────────────────── */}
+      <div className="p-3 space-y-4">
         {loading && (
           <p className="text-xs text-gray-400 text-center py-4">Loading…</p>
         )}
 
+        {!loading && !nodeDef && (
+          <p className="text-xs text-gray-400 text-center py-4 italic">
+            Could not load skill definition.
+            <br />
+            <span className="text-[10px] font-mono">{selectedNode.data?.nodeType as string}</span>
+          </p>
+        )}
+
         {!loading && nodeDef && nodeDef.config_schema.length === 0 && (
           <p className="text-xs text-gray-400 text-center py-4">
-            This node has no configuration.
+            This skill has no configuration.
           </p>
         )}
 
@@ -349,10 +494,12 @@ export default function PropertyPanel({
               )}
             </div>
           ))}
-      </div>
+      </div>  {/* end config fields div */}
 
-      {/* Footer — node type + delete */}
-      <div className="p-3 border-t border-gray-100 flex items-center gap-2">
+      </div>  {/* end scrollable body div */}
+
+      {/* Footer — skill type + delete */}
+      <div className="flex-shrink-0 p-3 border-t border-gray-100 flex items-center gap-2">
         <p className="text-[10px] font-mono text-gray-400 truncate flex-1">
           {selectedNode.data?.nodeType ?? '—'}
         </p>
@@ -360,7 +507,7 @@ export default function PropertyPanel({
           <button
             onClick={() => onDeleteNode(selectedNode.id)}
             className="flex-shrink-0 text-[10px] text-gray-300 hover:text-red-500 hover:bg-red-50 rounded px-1.5 py-0.5 transition-colors"
-            title="Delete node (Del)"
+            title="Delete skill (Del)"
           >
             🗑 Remove
           </button>

@@ -3188,3 +3188,143 @@ Audit Logs
 ```
 
 Once these are stable, QS-OS can expand into structured QS data, procurement, contract administration, marketplace, billing, BIM, and enterprise governance.
+
+---
+
+# V3 Addendum — Database Schema Updates
+
+**Addendum version:** V3 | **Added:** 2026-06-18  
+**Migration files:** `supabase/migrations/0013_*`, `0014_*`, `0015_*`
+
+This addendum documents new tables and column additions required for V3 architecture. All changes are additive — existing tables are unchanged except for new columns noted below.
+
+## A1. New Table: core_services
+
+Registry of available Core Services and their configuration.
+
+```sql
+-- Migration: 0013_core_services.sql
+CREATE TABLE core_services (
+  id            uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name          text NOT NULL,                        -- e.g. "ai", "ocr", "document"
+  display_name  text NOT NULL,                        -- e.g. "AI Service"
+  description   text,
+  status        text NOT NULL DEFAULT 'active',       -- 'active' | 'degraded' | 'offline'
+  provider      text,                                 -- e.g. "openai", "azure", "internal"
+  config        jsonb NOT NULL DEFAULT '{}',          -- provider-specific config (no secrets)
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now()
+);
+
+-- Seed: 8 core services
+INSERT INTO core_services (name, display_name, provider) VALUES
+  ('ai',           'AI Service',           'openai'),
+  ('ocr',          'OCR Service',          'azure'),
+  ('document',     'Document Service',     'internal'),
+  ('geometry',     'Geometry Service',     'internal'),
+  ('storage',      'Storage Service',      'supabase'),
+  ('search',       'Search Service',       'internal'),
+  ('notification', 'Notification Service', 'internal'),
+  ('billing',      'Billing Service',      'internal');
+```
+
+**RLS:** Public read. Admin write only.
+
+---
+
+## A2. New Table: data_packs
+
+Registry of available Data Packs and their installation status per organization.
+
+```sql
+-- Migration: 0014_data_packs.sql
+CREATE TABLE data_packs (
+  id              uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug            text NOT NULL UNIQUE,               -- e.g. "supplier-my"
+  name            text NOT NULL,                      -- "Malaysian Supplier Registry"
+  description     text,
+  category        text NOT NULL,                      -- "supplier" | "price" | "material" | "labour" | "bq_template"
+  version         text NOT NULL DEFAULT '1.0.0',
+  publisher       text,
+  status          text NOT NULL DEFAULT 'available',  -- 'available' | 'beta' | 'deprecated'
+  config_schema   jsonb NOT NULL DEFAULT '{}',        -- JSON Schema for connection config
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+-- Organization Data Pack installations
+CREATE TABLE org_data_pack_installations (
+  id            uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id        uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  data_pack_id  uuid NOT NULL REFERENCES data_packs(id) ON DELETE CASCADE,
+  status        text NOT NULL DEFAULT 'active',       -- 'active' | 'paused' | 'error'
+  config        jsonb NOT NULL DEFAULT '{}',          -- org-specific connection config
+  installed_at  timestamptz NOT NULL DEFAULT now(),
+  installed_by  uuid REFERENCES auth.users(id),
+  UNIQUE(org_id, data_pack_id)
+);
+```
+
+**RLS:** Org members read their own installations. Org admin write.
+
+---
+
+## A3. New Columns: registered_nodes
+
+Two new columns on the existing `registered_nodes` table to support V3 skill dependency declarations:
+
+```sql
+-- Migration: 0015_registered_nodes_v3_columns.sql
+ALTER TABLE registered_nodes
+  ADD COLUMN IF NOT EXISTS uses_services  text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS data_pack_deps text[] NOT NULL DEFAULT '{}';
+
+COMMENT ON COLUMN registered_nodes.uses_services IS
+  'Core service names this skill requires, e.g. ["ai", "storage"]';
+COMMENT ON COLUMN registered_nodes.data_pack_deps IS
+  'Data pack slugs this skill requires, e.g. ["supplier-my"]';
+```
+
+**Example updated seed rows:**
+
+```sql
+UPDATE registered_nodes SET
+  uses_services  = ARRAY['ai'],
+  data_pack_deps = ARRAY[]::text[]
+WHERE type = 'qs.classify_trade';
+
+UPDATE registered_nodes SET
+  uses_services  = ARRAY['ai'],
+  data_pack_deps = ARRAY[]::text[]
+WHERE type = 'procurement.generate_rfq';
+```
+
+---
+
+## A4. Schema Entity Map (V3)
+
+```
+organizations
+  └── projects
+        ├── workflows
+        │     ├── execution_runs
+        │     │     └── execution_logs
+        │     └── workflow_templates (reference)
+        ├── project_pipelines
+        ├── project_artifacts
+        └── org_data_pack_installations  ← NEW V3
+              └── data_packs             ← NEW V3
+
+packs
+  └── registered_nodes
+        ├── uses_services[]  ← NEW V3 column
+        └── data_pack_deps[] ← NEW V3 column
+
+core_services                ← NEW V3 table
+data_packs                   ← NEW V3 table
+```
+
+---
+
+## A5. V3 Workflow JSON — mode field
+
+The `mode` field (`"active" | "muted" | "bypassed"`) on skill nodes in workflow JSON is a **canvas-layer field** and is not stored as a separate database column. It lives inside the `workflow_definition` JSONB column of the `workflows` table, as defined in Vol 4 V3 Addendum A1.

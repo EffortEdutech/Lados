@@ -1,6 +1,15 @@
 # QS-OS Product Master Blueprint V2
-# Volume 6 – Complete Development Architecture
+# Volume 6 — Complete Development Architecture
 Version: 2.0
+
+> 🚫 **V3 SUPERSESSION NOTICE** — Updated: 2026-06-18  
+> This document has been **superseded** by the V3 architecture.  
+> It is preserved as historical reference and to document the V1→V2 architectural evolution.  
+> **Do not use this document as the authoritative product or technical reference.**  
+> **Current authoritative reference:** `QS-OS_V3_Architecture_and_QS-WFUI_Continuation_Blueprint.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This master blueprint consolidates the QS-OS technical documentation set into one complete product and development architecture.
 >

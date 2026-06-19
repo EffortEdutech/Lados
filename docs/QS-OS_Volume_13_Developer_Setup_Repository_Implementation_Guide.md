@@ -1,6 +1,15 @@
 # QS-OS Workflow Engine Blueprint
-# Volume 13 – Developer Setup and Repository Implementation Guide
+# Volume 13 — Developer Setup and Repository Implementation Guide (V1)
 Version: 1.0
+
+> ⚠️ **V3 COMPATIBILITY NOTICE** — Updated: 2026-06-18  
+> This guide remains valid. Monorepo structure, pnpm workspace setup, Supabase configuration, and environment variables are unchanged in V3.  
+> **V3 stack additions not covered here:** `packages/execution-engine` (added Sprint 6), `packages/workflow-json` (added Sprint 5). See sprint plan for current package list.  
+> **V3 terminology note:** References to "Node Library", "Pack" seed data now use "Skill Library", "Capability Pack" naming in the UI layer.  
+> **Active sprint tracking:** `QS-OS_Master_Sprint_Plan_and_Checklist.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This guide converts the QS-OS documentation and sprint backlog into a practical developer implementation manual.
 >

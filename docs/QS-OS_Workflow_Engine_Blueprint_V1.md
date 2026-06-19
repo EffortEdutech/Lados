@@ -1,5 +1,14 @@
 # QS-OS Workflow Engine Blueprint V1
 
+> ⚠️ **V3 COMPATIBILITY NOTICE** — Updated: 2026-06-18  
+> This document was written for QS-OS V1. It remains architecturally valid and should be read as the **conceptual foundation**.  
+> In V3: terminology shifts — "Node" → "Skill", "Pack" → "Capability Pack", "Node Library" → "Skill Library".  
+> New V3 concepts not covered here: Core Services layer, Data Packs, Skill execution modes (mute/bypass), Condition Node, Skill Groups.  
+> **Current authoritative reference:** `QS-OS_V3_Architecture_and_QS-WFUI_Continuation_Blueprint.md`  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
+
 **Vision**
 
 Build a domain-specific workflow platform for Quantity Surveying that

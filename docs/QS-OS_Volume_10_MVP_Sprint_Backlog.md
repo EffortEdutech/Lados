@@ -1,6 +1,15 @@
 # QS-OS Workflow Engine Blueprint
-# Volume 10 – MVP Sprint Backlog
+# Volume 10 — MVP Sprint Backlog (V1)
 Version: 1.0
+
+> 🚫 **SUPERSEDED** — Updated: 2026-06-18  
+> This sprint backlog has been **superseded** by the Master Sprint Plan.  
+> Sprints 1–12 documented here are complete. Active sprints from S13 onwards are tracked in:  
+> **`QS-OS_Master_Sprint_Plan_and_Checklist.md`** (V3 CURRENT)  
+> This document is preserved as historical reference for completed sprint work.  
+> **Document index:** `Master_Documentation_Index.md`
+
+---
 
 > This document converts the QS-OS architecture into a practical development backlog.
 >

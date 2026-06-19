@@ -3041,3 +3041,174 @@ Once these APIs are stable, QS-OS can expand into structured procurement, contra
 The API should be treated as a product contract.
 
 A clean API will make QS-OS easier to build, easier to test, easier to document, and easier to extend.
+
+---
+
+# V3 Addendum — API Specification Updates
+
+**Addendum version:** V3 | **Added:** 2026-06-18  
+**NestJS modules to add:** `DataPackModule`, `CoreServiceModule`, skill search on `NodeModule`
+
+This addendum documents new API endpoints required for V3 architecture that are not present in the original specification above.
+
+## A1. New Resource: Data Packs
+
+### GET /data-packs
+List all available Data Packs in the registry.
+
+**Auth:** Bearer JWT (any authenticated user)
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "slug": "supplier-my",
+      "name": "Malaysian Supplier Registry",
+      "category": "supplier",
+      "version": "1.0.0",
+      "status": "available",
+      "installed": false
+    }
+  ]
+}
+```
+
+**Query params:** `?category=supplier` | `?installed=true` (filter to org installations)
+
+---
+
+### GET /data-packs/:slug
+Get details of a specific Data Pack including its config schema.
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "slug": "supplier-my",
+  "name": "Malaysian Supplier Registry",
+  "description": "...",
+  "category": "supplier",
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "api_key": { "type": "string", "title": "API Key" }
+    }
+  }
+}
+```
+
+---
+
+### POST /data-packs/:slug/install
+Install a Data Pack for the authenticated user's organization.
+
+**Auth:** Bearer JWT (org admin only)  
+**Body:** `{ "config": { ...provider-specific config... } }`
+
+**Response:** `201 Created` with installation record
+
+---
+
+### DELETE /data-packs/:slug/install
+Uninstall (pause) a Data Pack installation for the org.
+
+**Auth:** Bearer JWT (org admin only)  
+**Response:** `200 OK`
+
+---
+
+## A2. New Resource: Core Services
+
+### GET /services
+List all Core Services and their current status.
+
+**Auth:** Bearer JWT (any authenticated user)
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "name": "ai",
+      "display_name": "AI Service",
+      "provider": "openai",
+      "status": "active"
+    },
+    {
+      "name": "ocr",
+      "display_name": "OCR Service",
+      "provider": "azure",
+      "status": "active"
+    }
+  ]
+}
+```
+
+---
+
+### GET /services/:name
+Get details and health status of a specific Core Service.
+
+**Response:**
+```json
+{
+  "name": "ai",
+  "display_name": "AI Service",
+  "provider": "openai",
+  "status": "active",
+  "last_health_check": "2026-06-18T10:00:00Z"
+}
+```
+
+---
+
+## A3. Extended: Skill / Node Discovery
+
+### GET /nodes/search
+Search registered skills (nodes) with V3 filter support.
+
+**Auth:** Bearer JWT  
+**Query params:**
+
+| Param | Type | Description |
+|---|---|---|
+| `q` | string | Keyword search on name + description |
+| `pack_id` | uuid | Filter by Capability Pack |
+| `uses_service` | string | Filter by required service, e.g. `ai` |
+| `data_pack` | string | Filter by required Data Pack slug |
+| `category` | string | Filter by node category |
+
+**Response:** Array of registered skill records with `uses_services[]` and `data_pack_deps[]` included.
+
+---
+
+### GET /nodes/:type
+Get a specific skill by its node type string.
+
+**V3 addition to existing response:** include `uses_services`, `data_pack_deps` fields.
+
+```json
+{
+  "type": "qs.classify_trade",
+  "name": "Classify Trade",
+  "pack_id": "uuid",
+  "uses_services": ["ai"],
+  "data_pack_deps": [],
+  "ui_schema": { ... },
+  "config_schema": { ... }
+}
+```
+
+---
+
+## A4. V3 API Module Summary
+
+| Module | New in V3 | Endpoints |
+|---|---|---|
+| `DataPackModule` | ✅ NEW | `GET /data-packs`, `GET /data-packs/:slug`, `POST /data-packs/:slug/install`, `DELETE /data-packs/:slug/install` |
+| `CoreServiceModule` | ✅ NEW | `GET /services`, `GET /services/:name` |
+| `NodeModule` | Extended | `GET /nodes/search` (new), `GET /nodes/:type` (extended response) |
+
+All existing endpoints in the original specification remain unchanged.

@@ -7,6 +7,7 @@ import NodePalette from '@/components/canvas/NodePalette';
 import ExecutionLogPanel from '@/components/canvas/ExecutionLogPanel';
 import FileUploadPanel from '@/components/canvas/FileUploadPanel';
 import LibraryPanel from '@/components/canvas/LibraryPanel';
+import DataPackBrowser from '@/components/canvas/DataPackBrowser';
 import { apiClient } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase/client';
 import type { QSWorkflowDefinition, WorkflowConnection, WorkflowNodeId } from '@qsos/shared-types';
@@ -125,7 +126,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   const [runError, setRunError] = useState<string | null>(null);
 
   // ── Sidebar tab ───────────────────────────────────────────────────────────
-  const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents'>('nodes');
+  const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents' | 'datapacks'>('nodes');
 
   // ── File upload state ──────────────────────────────────────────────────────
   const [showUploadPanel, setShowUploadPanel] = useState(false);
@@ -339,26 +340,29 @@ export default function WorkflowEditorPage({ params }: PageProps) {
         <div className="flex flex-col w-56 flex-shrink-0 border-r border-gray-200 bg-white">
           {/* Tabs */}
           <div className="flex border-b border-gray-200 flex-shrink-0">
-            {(['nodes', 'documents'] as const).map((tab) => (
+            {([
+              { id: 'nodes',     label: '⬡ Skills'    },
+              { id: 'datapacks', label: '📦 Data'      },
+              { id: 'documents', label: '📂 Files'     },
+            ] as const).map(({ id, label }) => (
               <button
-                key={tab}
-                onClick={() => setSidebarTab(tab)}
-                className={`flex-1 py-2 text-xs font-medium transition-colors ${
-                  sidebarTab === tab
+                key={id}
+                onClick={() => setSidebarTab(id)}
+                className={`flex-1 py-2 text-[10px] font-medium transition-colors ${
+                  sidebarTab === id
                     ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {tab === 'nodes' ? '⬡ Nodes' : '📂 Documents'}
+                {label}
               </button>
             ))}
           </div>
           {/* Panel content */}
           <div className="flex-1 overflow-hidden">
-            {sidebarTab === 'nodes'
-              ? <NodePalette />
-              : <LibraryPanel organizationId={organizationId} projectId={projectId} />
-            }
+            {sidebarTab === 'nodes'     && <NodePalette />}
+            {sidebarTab === 'datapacks' && <DataPackBrowser />}
+            {sidebarTab === 'documents' && <LibraryPanel organizationId={organizationId} projectId={projectId} />}
           </div>
         </div>
         <main className="relative flex-1 overflow-hidden flex flex-col">

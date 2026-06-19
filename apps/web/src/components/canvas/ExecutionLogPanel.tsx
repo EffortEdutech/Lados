@@ -1,11 +1,13 @@
 'use client';
 
 /**
- * ExecutionLogPanel
+ * ExecutionLogPanel — Skill Execution Log (V3)
  *
- * Displays per-node execution log entries after a workflow run.
- * Sprint 6: basic log rows
- * Sprint 9: artifact download section for procurement.generate_rfq outputs
+ * Displays per-skill execution log entries after a workflow run.
+ * Sprint 6:  basic log rows
+ * Sprint 9:  artifact download section for procurement.generate_rfq outputs
+ * Sprint 13: V3 — business-friendly skill names, pack chips, mode badges,
+ *             "skill" language throughout (was "node")
  */
 
 interface RfqArtifact {
@@ -46,6 +48,37 @@ interface Props {
   onClose: () => void;
 }
 
+// ── Pack label map ────────────────────────────────────────────────────────────
+// Derives a human-readable pack name from the nodeType prefix.
+// e.g. "qs.classify_trade" → prefix "qs" → "QS Pack"
+const PACK_LABELS: Record<string, string> = {
+  'qs':          'QS Pack',
+  'document':    'Document Pack',
+  'procurement': 'Procurement Pack',
+  'core':        'Core',
+  'project':     'Project Pack',
+  'workflow':    'Workflow',
+};
+const PACK_COLORS: Record<string, string> = {
+  'qs':          'bg-blue-50 text-blue-600',
+  'document':    'bg-purple-50 text-purple-600',
+  'procurement': 'bg-orange-50 text-orange-600',
+  'core':        'bg-gray-100 text-gray-500',
+  'project':     'bg-green-50 text-green-600',
+  'workflow':    'bg-teal-50 text-teal-600',
+};
+
+function getPackLabel(nodeType: string): string {
+  const prefix = nodeType.split('.')[0] ?? '';
+  return PACK_LABELS[prefix] ?? prefix;
+}
+function getPackColor(nodeType: string): string {
+  const prefix = nodeType.split('.')[0] ?? '';
+  return PACK_COLORS[prefix] ?? 'bg-gray-100 text-gray-500';
+}
+
+// ── Error hints ────────────────────────────────────────────────────────────────
+
 /** S10-004: User-friendly error code descriptions */
 const ERROR_HINTS: Record<string, string> = {
   NO_BOQ:             'No BOQ data received. Connect a Read BOQ node above this node.',
@@ -82,20 +115,41 @@ function NodeLogRow({ log }: { log: NodeLog }) {
   const nodeName   = log.nodeName   ?? raw['node_name']   as string ?? '—';
   const nodeType   = log.nodeType   ?? raw['node_type']   as string ?? '';
   const durationMs = log.durationMs ?? raw['duration_ms'] as number | undefined;
+  // V3: mode from log entry (execution engine may set this in Sprint 14+)
+  const mode       = raw['mode'] as string | undefined;
+
+  const packLabel = getPackLabel(nodeType);
+  const packColor = getPackColor(nodeType);
 
   return (
-    <div className="border-b border-gray-100 last:border-0 py-3 px-4">
+    <div className="border-b border-gray-100 last:border-0 py-2.5 px-4">
+      {/* Row 1: status dot + skill name + status badge + duration */}
       <div className="flex items-center gap-2">
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${styles.dot}`} />
-        <span className="text-sm font-medium text-gray-800 flex-1 truncate">{nodeName}</span>
-        <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${styles.badge}`}>
+        <span className="text-xs font-semibold text-gray-800 flex-1 truncate">{nodeName}</span>
+        {/* Mode badge — only when not active */}
+        {mode && mode !== 'active' && (
+          <span className={`text-[9px] font-bold uppercase px-1 py-0.5 rounded ${
+            mode === 'muted' ? 'bg-gray-100 text-gray-500' : 'bg-amber-100 text-amber-600'
+          }`}>
+            {mode === 'muted' ? '🔇' : '⏭'} {mode}
+          </span>
+        )}
+        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${styles.badge}`}>
           {log.status}
         </span>
         {durationMs !== undefined && (
-          <span className="text-xs text-gray-400 ml-1">{fmt(durationMs)}</span>
+          <span className="text-[10px] text-gray-400">{fmt(durationMs)}</span>
         )}
       </div>
-      <p className="ml-4 mt-0.5 text-[11px] text-gray-400 font-mono">{nodeType}</p>
+
+      {/* Row 2: pack chip + nodeType (secondary) */}
+      <div className="ml-4 mt-0.5 flex items-center gap-1.5">
+        <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${packColor}`}>
+          {packLabel}
+        </span>
+        <span className="text-[10px] text-gray-300 font-mono">{nodeType}</span>
+      </div>
 
       {/* Error */}
       {log.error && (
@@ -193,12 +247,12 @@ export default function ExecutionLogPanel({ run, logs, loading, onClose }: Props
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100 flex-shrink-0">
         <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-          Execution Log
+          Skill Execution Log
         </span>
 
         {run && (
           <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${runStatusStyle}`}>
-            {run.status} · {fmt(run.durationMs)} · {run.nodeCount} node{run.nodeCount !== 1 ? 's' : ''}
+            {run.status} · {fmt(run.durationMs)} · {run.nodeCount} skill{run.nodeCount !== 1 ? 's' : ''}
           </span>
         )}
 
