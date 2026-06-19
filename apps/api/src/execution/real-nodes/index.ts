@@ -23,6 +23,7 @@ import { realCleanBoq } from './qs-clean-boq';
 import { realClassifyTrade } from './qs-classify-trade';
 import { realSplitWorkPackage } from './qs-split-work-package';
 import { realGenerateRfq } from './procurement-generate-rfq';
+import { realGeneratePo }  from './procurement-generate-po';
 import { realCondition } from './workflow-condition';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
@@ -60,6 +61,7 @@ export function buildRealNodeResolver(
 
     // ── Procurement Pack ──────────────────────────────────────────────────────
     'procurement.generate_rfq': (ctx) => realGenerateRfq(ctx, libraryService),
+    'procurement.generate_po':  (ctx) => realGeneratePo(ctx, libraryService),
   };
 
   return (nodeType: string) => realNodes[nodeType] ?? null;

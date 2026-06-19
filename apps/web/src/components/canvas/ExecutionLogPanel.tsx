@@ -2,6 +2,7 @@
 
 /**
  * ExecutionLogPanel — Skill Execution Log (V3)
+ * Sprint 17: ArtifactSection now includes "Distribute to Suppliers" button
  *
  * Displays per-skill execution log entries after a workflow run.
  * Sprint 6:  basic log rows
@@ -255,39 +256,228 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function ArtifactSection({ artifacts }: { artifacts: RfqArtifact[] }) {
+// ── RFQ Distribute Modal ─────────────────────────────────────────────────────
+
+interface SupplierOption { id: string; name: string; trades: string[]; email: string | null; }
+
+function DistributeModal({
+  artifacts,
+  runId,
+  onClose,
+}: {
+  artifacts: RfqArtifact[];
+  runId: string | undefined;
+  onClose: () => void;
+}) {
+  const [suppliers, setSuppliers]   = useState<SupplierOption[]>([]);
+  const [orgId, setOrgId]           = useState<string | null>(null);
+  const [loading, setLoading]       = useState(true);
+  // Map: trade → Set of selected supplier IDs
+  const [selections, setSelections] = useState<Record<string, Set<string>>>({});
+  const [distributing, setDistributing] = useState(false);
+  const [done, setDone]             = useState(false);
+  const [error, setError]           = useState<string | null>(null);
+
+  // Load org + suppliers
+  useEffect(() => {
+    async function load() {
+      try {
+        const { apiClient } = await import('@/lib/api/client');
+        const orgRes = await apiClient.get<{ id: string }[]>('/organizations');
+        const org = orgRes.data?.[0];
+        if (!org) return;
+        setOrgId(org.id);
+        const supRes = await apiClient.get<SupplierOption[]>(
+          `/organizations/${org.id}/suppliers?status=active`,
+        );
+        setSuppliers(supRes.data ?? []);
+      } finally {
+        setLoading(false);
+      }
+    }
+    void load();
+  }, []);
+
+  function toggle(trade: string, supplierId: string) {
+    setSelections((prev) => {
+      const next = { ...prev };
+      const set = new Set(prev[trade] ?? []);
+      set.has(supplierId) ? set.delete(supplierId) : set.add(supplierId);
+      next[trade] = set;
+      return next;
+    });
+  }
+
+  async function handleDistribute() {
+    if (!orgId) return;
+    const { apiClient } = await import('@/lib/api/client');
+    setDistributing(true);
+    setError(null);
+    try {
+      const items: { supplier_id: string; trade: string; storage_path: string; run_id?: string }[] = [];
+      for (const artifact of artifacts) {
+        const chosen = selections[artifact.trade] ?? new Set();
+        for (const supplierId of chosen) {
+          items.push({
+            supplier_id:  supplierId,
+            trade:        artifact.trade,
+            storage_path: artifact.storage_path,
+            run_id:       runId,
+          });
+        }
+      }
+      if (items.length === 0) { setError('Select at least one supplier per trade.'); return; }
+      await apiClient.post(`/organizations/${orgId}/rfq-distributions`, { items });
+      setDone(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Distribution failed');
+    } finally {
+      setDistributing(false);
+    }
+  }
+
+  const totalSelected = Object.values(selections).reduce((s, set) => s + set.size, 0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
+        <div className="px-5 pt-5 pb-3 border-b border-gray-100 flex-shrink-0 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-900">📨 Distribute RFQs to Suppliers</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          {done ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3">✅</div>
+              <p className="text-sm font-semibold text-gray-800">
+                {totalSelected} distribution record{totalSelected !== 1 ? 's' : ''} created
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Track delivery status in the Suppliers page. Links expire in 2 hours.
+              </p>
+            </div>
+          ) : loading ? (
+            <p className="text-sm text-gray-400 text-center py-8 animate-pulse">Loading suppliers…</p>
+          ) : suppliers.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-sm text-gray-500">No active suppliers found.</p>
+              <p className="text-xs text-gray-400 mt-1">Add suppliers in the Suppliers page first.</p>
+            </div>
+          ) : (
+            artifacts.map((artifact) => {
+              const matching = suppliers.filter(
+                (s) => s.trades.includes(artifact.trade) || s.trades.length === 0,
+              );
+              const sel = selections[artifact.trade] ?? new Set<string>();
+              return (
+                <div key={artifact.trade} className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="bg-blue-50 px-3 py-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-blue-800">{artifact.label}</span>
+                    <span className="text-[10px] text-blue-500">{sel.size} selected</span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {matching.length === 0 ? (
+                      <p className="px-3 py-2 text-xs text-gray-400 italic">
+                        No suppliers registered for {artifact.trade} trade.
+                      </p>
+                    ) : (
+                      matching.map((s) => (
+                        <label key={s.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={sel.has(s.id)}
+                            onChange={() => toggle(artifact.trade, s.id)}
+                            className="rounded"
+                          />
+                          <span className="flex-1 min-w-0">
+                            <span className="text-xs font-medium text-gray-800 block truncate">{s.name}</span>
+                            {s.email && <span className="text-[10px] text-gray-400">{s.email}</span>}
+                          </span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+          {error && <p className="text-xs text-red-600">{error}</p>}
+        </div>
+
+        {!done && (
+          <div className="px-5 py-3 border-t border-gray-100 flex-shrink-0 flex gap-2">
+            <button
+              onClick={onClose}
+              className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDistribute}
+              disabled={distributing || suppliers.length === 0}
+              className="flex-1 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {distributing ? 'Saving…' : `Distribute (${totalSelected})`}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ArtifactSection({ artifacts, runId }: { artifacts: RfqArtifact[]; runId?: string }) {
+  const [showDistribute, setShowDistribute] = useState(false);
   if (artifacts.length === 0) return null;
   return (
-    <div className="border-t border-blue-100 bg-blue-50 px-4 py-3 flex-shrink-0">
-      <p className="text-[11px] font-semibold text-blue-800 uppercase tracking-wide mb-2">
-        📄 RFQ Documents Ready — {artifacts.length} file{artifacts.length > 1 ? 's' : ''} generated
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {artifacts.map((a) => (
-          <a
-            key={a.trade}
-            href={a.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            download
-            className="flex items-center gap-1.5 bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg px-3 py-1.5 transition-colors group"
+    <>
+      <div className="border-t border-blue-100 bg-blue-50 px-4 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-semibold text-blue-800 uppercase tracking-wide">
+            📄 RFQ Documents Ready — {artifacts.length} file{artifacts.length > 1 ? 's' : ''} generated
+          </p>
+          <button
+            onClick={() => setShowDistribute(true)}
+            className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
           >
-            <span className="text-blue-500 text-base">⬇</span>
-            <span className="flex flex-col min-w-0">
-              <span className="text-[11px] font-semibold text-blue-800 group-hover:text-blue-900 truncate max-w-[140px]">
-                {a.label}
+            📨 Distribute
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {artifacts.map((a) => (
+            <a
+              key={a.trade}
+              href={a.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+              className="flex items-center gap-1.5 bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg px-3 py-1.5 transition-colors group"
+            >
+              <span className="text-blue-500 text-base">⬇</span>
+              <span className="flex flex-col min-w-0">
+                <span className="text-[11px] font-semibold text-blue-800 group-hover:text-blue-900 truncate max-w-[140px]">
+                  {a.label}
+                </span>
+                <span className="text-[10px] text-blue-400">
+                  {a.item_count} items · {formatBytes(a.size_bytes)}
+                </span>
               </span>
-              <span className="text-[10px] text-blue-400">
-                {a.item_count} items · {formatBytes(a.size_bytes)}
-              </span>
-            </span>
-          </a>
-        ))}
+            </a>
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] text-blue-400 italic">
+          Links expire in 2 hours · AI-assisted, for human review only
+        </p>
       </div>
-      <p className="mt-2 text-[10px] text-blue-400 italic">
-        Links expire in 2 hours · AI-assisted, for human review only
-      </p>
-    </div>
+      {showDistribute && (
+        <DistributeModal
+          artifacts={artifacts}
+          runId={runId}
+          onClose={() => setShowDistribute(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -341,8 +531,8 @@ export default function ExecutionLogPanel({ run, logs, loading, onClose }: Props
         ))}
       </div>
 
-      {/* Artifact downloads (Sprint 9 — procurement.generate_rfq) */}
-      <ArtifactSection artifacts={artifacts} />
+      {/* Artifact downloads + distribute (Sprint 9 / Sprint 17) */}
+      <ArtifactSection artifacts={artifacts} runId={run?.runId} />
 
       {/* Run ID */}
       {run?.runId && (

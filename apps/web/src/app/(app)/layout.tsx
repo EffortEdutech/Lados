@@ -8,6 +8,7 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 const NAV = [
   { href: '/dashboard',          label: 'Dashboard',   icon: '⊞' },
   { href: '/projects',           label: 'Projects',    icon: '📁' },
+  { href: '/suppliers',          label: 'Suppliers',   icon: '🏗️' },
   { href: '/packs',              label: 'Packs',       icon: '📦' },
   { href: '/marketplace',        label: 'Marketplace', icon: '🛒' },
   { href: '/settings/services',  label: 'Services',    icon: '⚙' },

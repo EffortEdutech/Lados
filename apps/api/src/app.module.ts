@@ -17,6 +17,9 @@ import { ArtifactModule } from './artifact/artifact.module';
 import { DocumentModule } from './document/document.module';
 import { ServicesModule } from './services/services.module';
 import { NotificationModule } from './notification/notification.module';
+import { SupplierModule } from './supplier/supplier.module';
+import { RfqDistributionModule } from './rfq-distribution/rfq-distribution.module';
+import { QuotationModule } from './quotation/quotation.module';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -42,6 +45,9 @@ import { MulterModule } from '@nestjs/platform-express';
     DocumentModule,       // Sprint 14 — unified file-parsing service (global)
     ServicesModule,       // Sprint 14 — core service registry + GET /services
     NotificationModule,   // Sprint 14 — in-app notifications (global)
+    SupplierModule,       // Sprint 17 — supplier/contractor database
+    RfqDistributionModule, // Sprint 17 — RFQ distribution to suppliers
+    QuotationModule,      // Sprint 17 — quotation submission & comparison
     MulterModule.register({ dest: '/tmp/uploads' }),  // in-memory buffer preferred
   ],
 })
