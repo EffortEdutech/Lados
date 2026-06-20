@@ -1,72 +1,161 @@
 # Lados Core Engine V1 - Implementation Blueprint
 
-Date: 2026-06-20
+Date: 2026-06-20 (revised from initial draft)
 
-Source note: This blueprint restructures the raw Lados V3/LCE discussion captured in `QS-WFUI/docs/raw/Lados_Core_Engine.md` into an implementation document.
+Source note: This revision incorporates a full audit of the actual monorepo at `QS-WFUI/`. Every phase and guardrail has been reconciled against what is already built, partially built, or not yet started.
+
+---
 
 ## 1. Purpose
 
-Lados Core Engine V1, or LCE V1, is the frozen architecture direction for what was previously called Lados Version 3.
+Lados Core Engine V1 (LCE V1) is the reusable platform engine on which all Lados solutions are built. It was previously called Lados V3 and the codebase package namespace was `@qsos/`. Both names are retired.
 
-Frozen does not mean development stops. It means the product identity, scope, and architectural target are now locked:
+The new identity:
 
-- LCE is the reusable engine.
-- Solutions are built on top of LCE.
-- Contractor Edition is the first real validation solution.
-- LEOS, JKR, and full enterprise government workflows are deferred solution layers, not part of the first engine build.
+```
+Platform name:     Lados
+Engine:            Lados Core Engine  (LCE)
+Version:           LCE V1
+Package namespace: @lados/
+Former names:      QS-OS, V3, @qsos/  (historical references only)
+```
 
-The purpose of this document is to tell developers what to build from the current V3 direction:
+LCE is not a single business application. It is a software platform. Solutions — Contractor Edition, Procurement Edition, LEOS — are configurations of packs, resources, workflows, nodes, states, and AI tools built on top of LCE.
 
-```text
-Lados Core Engine V1
+```
+LCE
   = Workflow Engine
-  + Pack System
   + Node System
+  + Pack System
   + Resource Engine
   + Event Bus
   + State Engine
   + Security Engine
   + Foundation Pack
-  + AI-ready runtime context
-  + Internal pack/node registry
+  + AI Runtime
+  + Internal Registry
 ```
 
-The minimum successful product is not a full ERP and not a JKR-scale platform. The minimum successful product is a reusable workflow engine with one working Contractor Edition solution.
+The minimum successful product is a working engine with one real solution: Contractor Edition.
 
-## 2. Executive Summary
+---
 
-Lados should be treated as a software platform rather than a single business application.
+## 2. Current Codebase Reality
 
-Traditional ERP thinking:
+The monorepo at `QS-WFUI/` is the starting point for LCE V1. It is not a greenfield project. Understanding what is already built changes the implementation sequence.
 
-```text
-ERP
-  -> Modules
-  -> Screens
+### 2.1 Monorepo Structure
+
+```
+QS-WFUI/
+  apps/
+    api/          NestJS 10 — REST API, execution host, Supabase client
+    web/          Next.js 14 App Router — canvas UI, project/workflow management
+  packages/
+    execution-engine/   @lados/execution-engine  (was @qsos/)
+    node-sdk/           @lados/node-sdk
+    pack-sdk/           @lados/pack-sdk
+    shared-types/       @lados/shared-types
+    workflow-json/      @lados/workflow-json
+  packs/
+    core-pack/          @lados/core-pack
+    ai-pack/            @lados/ai-pack
+    document-pack/      @lados/document-pack
+    procurement-pack/   @lados/procurement-pack
+    qs-pack/            @lados/qs-pack
+  supabase/
+    migrations/         24 applied migrations
+    functions/          Edge function stubs
 ```
 
-Lados thinking:
+Tech stack:
 
-```text
-Engine
-  -> Packs
-  -> Resources
-  -> Workflows
-  -> Nodes
-  -> Screens
-```
+| Layer | Technology |
+| --- | --- |
+| API runtime | NestJS 10, TypeScript |
+| Frontend | Next.js 14 App Router, React Flow, Tailwind CSS |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth + JWT guard |
+| File storage | Supabase Storage |
+| AI | OpenAI Chat Completions API |
+| Monorepo | pnpm workspaces + Turborepo |
 
-The screen is the last expression of the system. The workflow is the product, and the engine provides the reusable capabilities that every solution depends on.
+### 2.2 What Is Already Built
 
-The first proof case is intentionally small:
+**Workflow Engine — foundation present**
 
-- 1 owner
-- 3 tipper lorries
-- 3 drivers
-- 1 backhoe
-- optional admin later
+- Workflow JSON schema, versioning, and validation (`@lados/workflow-json`)
+- Graph planner with cycle detection (`execution-engine/graph-planner.ts`)
+- Sequential in-process runner with node log capture (`execution-engine/runner.ts`)
+- Execution runs and logs persisted to Supabase (`execution_runs`, `execution_logs` tables)
+- Workflow save/load, export/import, version history
+- Audit log entries on run start and completion
 
-This is the correct validation case because it proves whether LCE can support a real small enterprise without forcing them into ERP complexity.
+**Node System — contract solid, real nodes partial**
+
+- Node SDK contract: `NodeManifest`, `NodeContext`, `NodeExecuteResult` (`@lados/node-sdk`)
+- Node categories: core, qs, procurement, document, ai, integration
+- Real nodes implemented (in `api/src/execution/real-nodes/`):
+  - `core.human_approval` — records approval task, auto-approves in MVP
+  - `core.logger`, `core.cron_trigger`, `workflow.condition`
+  - `project.save_artifact`, `project.read_artifact`
+  - `document.upload_file`, `document.read_excel`
+  - `qs.read_boq`, `qs.clean_boq`, `qs.classify_trade`, `qs.split_work_package`
+  - `procurement.generate_rfq`, `procurement.generate_po`
+- Node palette, PropertyPanel, and canvas connection validation on the UI
+
+**Pack System — manifest defined, installer missing**
+
+- Pack SDK: `PackManifest`, `PackPermission`, `PackNodeRegistration` (`@lados/pack-sdk`)
+- Five packs declared with manifests: core, ai, document, procurement, qs
+- Pack and node registry in Supabase (`packs`, `registered_nodes` tables)
+- Pack browser UI at `/packs` and `/packs/[packId]`
+- Packs currently seeded via SQL migrations — no dynamic installer yet
+
+**Security Engine — auth and membership present**
+
+- Supabase JWT guard on all protected routes
+- Organisation and project membership model
+- Role-based membership check on every workflow/execution/project action
+- Audit log table (`audit_log`) wired through workflow and execution events
+
+**UI — canvas and navigation present**
+
+- React Flow canvas with SkillNode (active/muted/bypassed modes)
+- Node palette, property panel, execution log panel, run history panel, version history drawer
+- Navigation: Dashboard, Projects, Suppliers, Packs, Marketplace, Services
+- Notification bell wired to backend notification service
+
+**AI — advisory service present**
+
+- OpenAI Chat Completions wrapper (`AiService`) with JSON mode support
+- AI nodes used for BOQ classification, RFQ extraction, document understanding
+- AI output marked advisory throughout; AI cannot approve or certify
+
+**Other modules present**
+
+- Supplier, RFQ distribution, quotation, organisation, project CRUD
+- Notification service (in-app notifications with `notification_tasks` table)
+- Pipeline canvas (parallel to workflow canvas — purpose: data pipeline)
+- File upload to Supabase Storage via FileService
+
+### 2.3 What Is Not Yet Built
+
+| Missing capability | Why it matters |
+| --- | --- |
+| Resource Engine | Business objects (Customer, Job, Trip, Vehicle, Invoice) do not exist as a unified resource layer. Currently each domain is its own module with its own tables. |
+| Event Bus | The audit_log exists but is not a formal typed event system. There are no event subscribers, handlers, or event-to-dashboard projections. |
+| State Engine | Resource lifecycle states exist as ad-hoc column values. There is no configurable state machine, no transition guard enforcement, and no state history. |
+| Real blocking approvals | `core.human_approval` auto-approves in MVP. No pause/resume async execution. |
+| Async execution queue | The runner is synchronous and in-process. Long workflows block the request thread. |
+| Pack installer | Packs are seeded via SQL. No runtime pack install, upgrade, enable/disable, or dependency resolution. |
+| Foundation Pack | Foundation is conceptual. Its capabilities (files, approvals, notifications, audit, AI context) live in separate modules, not in a single installable pack. |
+| Contractor Edition resources | Customer, Job, Trip, Driver, Vehicle, FuelReceipt, MaintenanceRecord do not exist in the schema. |
+| Namespace rename | All packages still use `@qsos/` — must be renamed to `@lados/`. |
+| UI identity rename | Sidebar and branding still show "QS-OS". |
+| Node isolation | Real node implementations live inside `api/src/execution/real-nodes/` rather than in their respective packs. `qs.read_boq` belongs in `@lados/qs-pack`, not in the API module. |
+
+---
 
 ## 3. Architecture Decisions
 
@@ -74,1426 +163,1061 @@ This is the correct validation case because it proves whether LCE can support a 
 
 | Decision | Locked Direction |
 | --- | --- |
-| Product name | Lados Core Engine |
-| Short name | LCE |
-| First architecture version | LCE V1 |
-| Former name | Lados Version 3 |
+| Platform name | Lados |
+| Engine name | Lados Core Engine (LCE) |
+| Engine version | LCE V1 |
+| Package namespace | @lados/ |
+| API app | apps/api (NestJS) |
+| Web app | apps/web (Next.js 14) |
+| Database | Supabase (PostgreSQL) |
 | First validation solution | Contractor Edition |
-| Deferred enterprise layer | LEOS / JKR / V4 |
-
-The name "V3" should be retired from product-facing documentation after the transition. It may remain only in historical migration notes.
+| Deferred solutions | LEOS, JKR, Full Procurement |
 
 ### 3.2 Engine Before Solution
 
-LCE must be implemented as a reusable engine. Fleet, finance, payroll, procurement, and project workflows must not be built as one-off application modules where reusable engine capabilities would be more appropriate.
+Every feature question must be asked at two levels:
 
-The design question changes from:
-
-```text
-How do we build fleet management?
+```
+Level 1 — Engine:    What reusable LCE capability does this need?
+Level 2 — Solution:  How does Contractor Edition configure or compose that capability?
 ```
 
-to:
-
-```text
-What reusable engine capability does fleet management need?
-```
+The screen is the last expression. The workflow and resource model are the product.
 
 ### 3.3 Solutions Are Pack Compositions
 
-A solution is a configured composition of packs, resources, workflows, states, nodes, UI surfaces, permissions, and AI tools.
+A solution is a named composition of packs installed on LCE:
 
-Examples:
-
-| Solution | Likely Packs |
+| Solution | Packs |
 | --- | --- |
 | Contractor Edition | Foundation, Job, Fleet, Equipment, Finance, HR, Document, Dashboard, AI |
-| Logistics Edition | Foundation, Job, Fleet, Dispatch, Finance, Maintenance, Dashboard, AI |
 | Procurement Edition | Foundation, Procurement, Approval, Finance, Document, Dashboard, AI |
 | LEOS / JKR | Foundation, Project, Tender, BOQ, Contract, Inspection, Payment, Variation, Asset, Archive |
 
+The existing packs (core, qs, document, procurement, ai) map into this composition model. They must be refactored to be proper LCE packs — not API modules with their implementation hard-wired into the execution host.
+
 ### 3.4 Resources Are First-Class Objects
 
-LCE must not treat workflow payloads as loose JSON only. Business objects must be modeled as Resources.
+Every important business object must be a Resource, not a one-off table with its own module.
 
-Examples:
+A Resource has:
 
-- Customer
-- Job
-- Trip
-- Driver
-- Vehicle
-- Backhoe
-- Invoice
-- Payment
-- Document
-- Project
-- Contract
-- Claim
-- Variation Order
-- Payment Certificate
-- Asset
+```
+id, tenantId / organisationId, resourceType, resourceKey,
+title, status, state, data (typed payload),
+relationships, createdBy, createdAt, updatedAt, archivedAt
+```
 
-Nodes should create, update, read, search, lock, archive, relate, and transition Resources.
+Existing entities (Supplier, Quotation, Project) will eventually move into the Resource layer. This migration is incremental — do not break existing modules before the Resource Engine is stable.
 
 ### 3.5 Events Are Mandatory
 
-Every important action must emit an event. Events are the basis for audit, dashboards, notifications, automation, AI context, and future replay.
+Every important action must emit a typed event. The existing `audit_log` table is the seed of the Event Bus but it is not the Event Bus. The Event Bus must be:
 
-Examples:
-
-- WorkflowStarted
-- WorkflowCompleted
-- NodeExecuted
-- ResourceCreated
-- ResourceUpdated
-- ApprovalRequested
-- ApprovalGranted
-- ApprovalRejected
-- DocumentUploaded
-- TripCompleted
-- InvoiceGenerated
-- PaymentReceived
-- ProjectArchived
+- Typed (each event has a declared schema and version)
+- Immutable (events are never updated or deleted)
+- Subscribable (handlers can react to events asynchronously)
+- Projectable (dashboards and AI can read event history)
 
 ### 3.6 States Are Configurable
 
-Enterprise software is not only about storing data. It is about controlling valid movement from one state to another.
+Resource lifecycle must be driven by configurable state machines. Invalid transitions must be blocked at the engine level, not scattered across business logic.
 
-State machines must be configurable per resource type.
+Example — Invoice:
 
-Example invoice lifecycle:
-
-```text
+```
 Draft -> Submitted -> Verified -> Approved -> Paid -> Archived
 ```
 
-Example vehicle lifecycle:
+Example — Vehicle:
 
-```text
+```
 Available -> Assigned -> In Service -> Maintenance -> Retired
 ```
 
-Example future JKR project lifecycle:
+### 3.7 AI Is Runtime-Aware
 
-```text
-Initiated -> Approved -> Tendering -> Awarded -> Construction -> Completed -> DLP -> Closed -> Archived
+AI must read the current resource, workflow, event history, and available tools before responding. It must not be a disconnected chatbot.
+
+The current `AiService` is a thin OpenAI wrapper. It must be extended into an AI Runtime that understands LCE context.
+
+AI output remains advisory unless explicitly accepted by a human workflow step. This guardrail is already coded into every real node — it must never be relaxed.
+
+### 3.8 Execution Must Become Async
+
+The current synchronous in-process runner is correct for MVP validation but cannot scale. The upgrade path is:
+
+```
+Current:  HTTP trigger -> synchronous runner -> response
+Target:   HTTP trigger -> job queue -> async worker -> webhook/SSE result
 ```
 
-### 3.7 AI Is Runtime-Aware, Not a Side Chatbot
+This change does not alter the `WorkflowRunner` interface. It changes how the API initiates and monitors runs.
 
-AI must understand the current runtime context:
+### 3.9 LEOS / JKR Remains Deferred
 
-- current user
-- current organisation
-- current workflow
-- current resource
-- current resource state
-- current event history
-- permissions
-- available tools
-- available nodes
-- available documents
+The existing QS pack (`qs.read_boq`, `qs.classify_trade`, etc.) is LEOS-adjacent scope. It should be maintained but not expanded until Contractor Edition proves the engine. New QS-specific resources, workflows, and nodes belong in a future QS/LEOS pack, not in LCE core.
 
-AI output remains advisory unless a human-approved workflow step accepts it.
-
-### 3.8 LEOS / JKR Is Deferred
-
-JKR-scale scope proves that the architecture can scale, but it should not be the first implementation.
-
-The correct layering is:
-
-```text
-LCE
-  -> Contractor Edition
-  -> Mature Project / Procurement / Finance packs
-  -> LEOS / JKR blueprint
-```
+---
 
 ## 4. Engine Modules
 
 ### 4.1 Workflow Engine
 
-Purpose:
+**Current state:** Foundation built. Stabilization needed before Resource Engine work begins.
 
-Orchestrate workflow templates, workflow instances, node execution, manual steps, approval steps, event triggers, scheduled triggers, retries, errors, and execution history.
+**What exists:**
+- `@lados/workflow-json` — schema, validation, builder, serialization
+- `@lados/execution-engine` — graph planner, sequential runner, log capture
+- `apps/api/src/workflow/` — CRUD, versioning, export/import
+- `apps/api/src/execution/` — trigger, run history, log retrieval, audit
 
-Minimum capabilities:
+**What needs work:**
+- Human approval must become a real blocking pause/resume (replace auto-approve)
+- Execution must move off the synchronous request thread (async queue)
+- Scheduled trigger (`core.cron_trigger`) needs a real cron scheduler, not a mock
+- Workflow version publishing — currently the definition is mutable; published versions must be immutable
 
-- Workflow template
-- Workflow instance
-- Workflow version
-- Execution context
-- Node execution
-- Pause
-- Resume
-- Cancel
-- Retry
-- Error handling
-- Execution log
-- Manual step
-- Approval step
-- Scheduled trigger
-- Event trigger
-
-Acceptance criteria:
-
-- A workflow can be designed, saved, versioned, published, instantiated, and executed.
-- Running executions bind to immutable workflow versions.
-- Failed nodes produce inspectable failure state and can be retried where safe.
-- Manual and approval steps pause execution until an authorized human acts.
+**Acceptance criteria:**
+- A workflow can be designed, saved, versioned, published, and executed
+- Running executions bind to immutable published versions
+- Approval nodes genuinely pause execution until a human acts
+- Failed nodes are inspectable and retryable where safe
 
 ### 4.2 Node System
 
-Purpose:
+**Current state:** SDK contract is solid. Real nodes exist but are misplaced in the API module.
 
-Provide reusable action units that can be installed, configured, tested, versioned, and executed by workflows.
+**What exists:**
+- `@lados/node-sdk` — `NodeManifest`, `NodeContext`, `NodeExecuteResult`, port types, config schema
+- `@lados/node-sdk/base-node.ts` — base class for node implementations
+- 14 real node implementations in `api/src/execution/real-nodes/`
+- `registered_nodes` table in Supabase
+- Node palette and property panel in the canvas
 
-Minimum node contract:
+**What needs work:**
+- Node implementations must move from `api/src/execution/real-nodes/` into their respective packs (`@lados/core-pack/src/nodes/`, `@lados/qs-pack/src/nodes/`, etc.)
+- The node resolver in `ExecutionService` must dynamically load from installed packs, not from a hardcoded import list
+- Universal node catalog (Create Resource, Update Resource, Change State, Emit Event, etc.) must be added to core pack
 
-- Node ID
-- Node name
-- Node category
-- Inputs
-- Outputs
-- Config schema
-- Validation rules
-- Execution function
-- Error handling
-- Required permissions
-- Events emitted
-- UI config form
-- Test cases
-- Version
+**Node categories and ownership:**
 
-Initial universal node catalog:
+| Category | Pack | Examples |
+| --- | --- | --- |
+| core | @lados/core-pack | Start, End, Logger, Condition, Loop, Wait, Human Approval, Cron Trigger |
+| resource | @lados/foundation-pack | Create Resource, Update Resource, Find Resource, Archive Resource, Change State |
+| event | @lados/foundation-pack | Emit Event |
+| document | @lados/document-pack | Upload File, Read Excel, Generate PDF |
+| ai | @lados/ai-pack | AI Analyze, AI Extract, AI Summarize |
+| procurement | @lados/procurement-pack | Generate RFQ, Generate PO |
+| qs | @lados/qs-pack | Read BOQ, Clean BOQ, Classify Trade, Split Work Package |
+| integration | future packs | Call API, Send Email, Webhook |
 
-| Node | Purpose |
-| --- | --- |
-| Create Resource | Create a typed resource instance |
-| Update Resource | Update allowed fields on a resource |
-| Find Resource | Search or load resources |
-| Delete Resource | Delete where policy allows |
-| Archive Resource | Archive without hard deletion |
-| Upload File | Attach a document or photo |
-| Generate PDF | Produce a document output |
-| Send Notification | Notify a user or role |
-| Request Approval | Create an approval task |
-| Approve | Record an approval decision |
-| Reject | Record a rejection decision |
-| Assign User | Assign owner/operator/reviewer |
-| Create Task | Create a human task |
-| Change State | Transition a resource state |
-| Emit Event | Emit a typed event |
-| Wait | Pause until time/event condition |
-| Condition | Branch based on rule |
-| Loop | Iterate through a list safely |
-| Call API | Call an allowlisted integration |
-| AI Analyze | Analyze records/documents |
-| AI Extract | Extract structured data |
-| AI Summarize | Summarize resource/event/document context |
-
-Acceptance criteria:
-
-- Nodes are reusable across solutions.
-- Node inputs and outputs are schema-validated.
-- Node execution is auditable.
-- Nodes cannot bypass permissions or human approval guards.
+**Acceptance criteria:**
+- Nodes are reusable across solutions
+- Node inputs and outputs are schema-validated at engine level
+- Node execution is auditable
+- Nodes cannot bypass the Resource Engine, Event Bus, State Engine, or Security Engine
 
 ### 4.3 Pack System
 
-Purpose:
+**Current state:** Manifest types defined, packs declared, seeded via SQL. No runtime installer.
 
-Allow LCE capabilities to be packaged as installable, versioned, dependency-aware packs.
+**What exists:**
+- `@lados/pack-sdk` — `PackManifest`, `PackPermission`, `PackNodeRegistration`, validation
+- Five pack manifests: core, ai, document, procurement, qs
+- `packs` and `registered_nodes` tables in Supabase
+- Pack browser UI at `/packs`
 
-Minimum pack manifest:
+**What needs work:**
+- Runtime pack installer: accept a pack manifest, validate dependencies, run migrations, register nodes
+- Pack enable/disable lifecycle
+- Pack version compatibility check against engine version
+- Pack dependency resolver (Foundation must be installed before Fleet, etc.)
+- Migration runner per pack (each pack owns its schema migrations)
+
+**Pack manifest must declare:**
 
 ```json
 {
-  "packKey": "foundation-pack",
-  "name": "Foundation Pack",
+  "packKey": "fleet-pack",
+  "name": "Fleet Pack",
   "version": "1.0.0",
   "engineCompatibility": ">=1.0.0 <2.0.0",
-  "resources": [],
-  "nodes": [],
-  "workflows": [],
-  "permissions": [],
-  "events": [],
-  "states": [],
-  "uiComponents": [],
-  "dependencies": [],
-  "migrations": []
+  "dependencies": ["foundation-pack"],
+  "resources": ["Vehicle", "Driver"],
+  "nodes": ["fleet.assign_vehicle", "fleet.record_fuel", "fleet.maintenance_alert"],
+  "workflows": ["fleet.daily_dispatch", "fleet.maintenance_review"],
+  "permissions": ["read:files", "write:database"],
+  "events": ["VehicleAssigned", "FuelReceiptUploaded", "MaintenanceDue"],
+  "states": ["vehicle_lifecycle"],
+  "migrations": ["0001_create_fleet_resources.sql"]
 }
 ```
 
-Minimum capabilities:
-
-- Pack manifest validation
-- Pack installer
-- Pack registry
-- Pack dependency resolver
-- Pack versioning
-- Pack enable / disable
-- Pack migration runner
-- Pack compatibility checks
-
-Acceptance criteria:
-
-- A pack can declare resources, nodes, workflows, permissions, events, states, UI components, dependencies, and migrations.
-- Installed packs are visible in an internal registry.
-- Pack upgrades create controlled migration plans, not silent breaking changes.
+**Acceptance criteria:**
+- A pack can be installed at runtime from a manifest
+- Installed packs appear in the internal registry
+- Pack upgrades produce a controlled migration plan
+- Broken pack dependencies are blocked
 
 ### 4.4 Resource Engine
 
-Purpose:
+**Current state:** Does not exist. Business objects are individual Supabase tables owned by NestJS modules.
 
-Provide a universal business object layer for all solutions.
+**Design:**
 
-Minimum capabilities:
+The Resource Engine is a universal business object layer. Every domain object — Customer, Job, Vehicle, Invoice, Contract — is a typed Resource instance stored in a shared resource table.
 
-- Resource type registry
-- Resource schema
-- Resource instance
-- Resource CRUD API
-- Resource relationship graph
-- Resource history
-- Resource search
-- Resource attachment
-- Resource permission hook
-- Resource state hook
-- Resource event emission
+Core resource table:
 
-Core resource fields:
+```sql
+create table lados_resources (
+  id              uuid primary key default gen_random_uuid(),
+  organisation_id uuid not null references organisations(id),
+  resource_type   text not null,           -- 'Vehicle', 'Invoice', 'Job', etc.
+  resource_key    text,                    -- human-readable key, e.g. 'INV-2026-001'
+  title           text,
+  status          text default 'active',
+  state           text,                    -- state machine state
+  data            jsonb default '{}',      -- typed payload per resource_type
+  relationships   jsonb default '[]',      -- links to other resources
+  created_by      uuid references auth.users(id),
+  created_at      timestamptz default now(),
+  updated_at      timestamptz default now(),
+  archived_at     timestamptz
+);
+```
 
-| Field | Purpose |
-| --- | --- |
-| id | Stable resource identifier |
-| tenantId / organisationId | Access boundary |
-| resourceType | Type such as Vehicle, Driver, Invoice |
-| resourceKey | Human-readable or generated key |
-| title | Display title |
-| status | Current high-level status |
-| state | State-machine state |
-| data | Typed payload |
-| relationships | Links to other resources |
-| createdBy | User who created it |
-| createdAt | Creation timestamp |
-| updatedAt | Last update timestamp |
-| archivedAt | Archive timestamp if any |
+Resource Engine API (NestJS service):
 
-Acceptance criteria:
+- `createResource(type, data, organisationId, userId)`
+- `updateResource(id, data, userId)`
+- `findResource(id, organisationId)`
+- `searchResources(type, filters, organisationId)`
+- `archiveResource(id, userId)`
+- `relateResources(sourceId, targetId, relationshipType)`
+- `getResourceHistory(id)`
+- `transitionState(id, toState, userId)` — delegates to State Engine
 
-- Contractor resources such as Customer, Job, Trip, Driver, Vehicle, Backhoe, Fuel Receipt, Invoice, and Payment can be represented.
-- Future JKR resources such as Project, Contract, Claim, VO, CPC, DLP, and Closing Account can be represented without changing the engine.
-- Resource changes produce events.
+Existing modules (Supplier, Project, Quotation) are not immediately replaced. They are progressively migrated into the Resource layer once the engine is stable.
+
+**Acceptance criteria:**
+- Contractor resources (Customer, Job, Trip, Driver, Vehicle, FuelReceipt, Invoice, Payment) can be created and queried through the engine
+- Resource changes emit typed events
+- Nodes can create and update resources through the Resource Engine
+- Future resource types require no engine changes
 
 ### 4.5 Event Bus
 
-Purpose:
+**Current state:** `audit_log` table exists and is written on key actions. Not a formal event system.
 
-Record and distribute important facts from workflows, resources, states, approvals, AI, and integrations.
+**Design:**
 
-Minimum capabilities:
+The Event Bus is a Supabase table (`lados_events`) with typed event envelopes, plus a subscriber registry and handler system.
 
-- Event table
-- Event publisher
-- Event subscriber
-- Event handler registry
-- Event filtering
-- Event replay support
-- Event audit view
-- Event-to-notification bridge
-- Event-to-dashboard projection
-- Event-to-AI-context feed
+Event table:
 
-Event envelope:
-
-```json
-{
-  "eventId": "uuid",
-  "eventType": "TripCompleted",
-  "eventVersion": "1.0.0",
-  "tenantId": "uuid",
-  "actorType": "user",
-  "actorId": "uuid",
-  "resourceType": "Trip",
-  "resourceId": "uuid",
-  "workflowId": "uuid",
-  "nodeId": "uuid",
-  "payload": {},
-  "correlationId": "uuid",
-  "causationId": "uuid",
-  "occurredAt": "timestamp"
-}
+```sql
+create table lados_events (
+  id              uuid primary key default gen_random_uuid(),
+  event_type      text not null,
+  event_version   text not null default '1.0.0',
+  organisation_id uuid not null,
+  actor_type      text not null,   -- 'user', 'system', 'workflow', 'node'
+  actor_id        uuid,
+  resource_type   text,
+  resource_id     uuid,
+  workflow_id     uuid,
+  node_id         text,
+  payload         jsonb default '{}',
+  correlation_id  uuid,
+  causation_id    uuid,
+  occurred_at     timestamptz default now()
+);
 ```
 
-Acceptance criteria:
+Events are immutable. No updates or deletes.
 
-- Every workflow execution and meaningful resource mutation emits an event.
-- Events are immutable.
-- Dashboards and AI can read event history.
-- Notifications can subscribe to selected event types.
+The existing `audit_log` rows are human-readable projections of events — they stay. The Event Bus is the raw fact store that drives dashboards, AI context, and notification triggers.
+
+**Event publisher:** every Resource mutation, State transition, Workflow step, and Approval action calls `EventBus.publish(event)`.
+
+**Event subscribers:** handlers registered per event type. Initial handlers: notification trigger, dashboard projection update, AI context cache invalidation.
+
+**Acceptance criteria:**
+- Every workflow execution and resource mutation emits a typed event
+- Events are immutable
+- Dashboard widgets read from event projections
+- AI context builder consumes event history
+- `audit_log` continues to receive human-readable summaries as a separate projection
 
 ### 4.6 State Engine
 
-Purpose:
+**Current state:** Does not exist. State is a free-form column value in individual tables.
 
-Control valid state transitions for resources and workflow objects.
+**Design:**
 
-Minimum capabilities:
+State machines are declared per resource type in pack manifests. The State Engine validates transitions and records state history.
 
-- State machine definition
-- Allowed transitions
-- Transition guards
-- Transition actions
-- Approval-based transitions
-- State history
-- State-based permissions
-- Event emission on transition
-
-State machine definition example:
+State machine definition:
 
 ```json
 {
   "resourceType": "Invoice",
   "states": ["Draft", "Submitted", "Verified", "Approved", "Paid", "Archived"],
   "transitions": [
-    { "from": "Draft", "to": "Submitted", "permission": "invoice.submit" },
-    { "from": "Submitted", "to": "Verified", "permission": "invoice.verify" },
-    { "from": "Verified", "to": "Approved", "permission": "invoice.approve" },
-    { "from": "Approved", "to": "Paid", "permission": "payment.record" },
-    { "from": "*", "to": "Archived", "permission": "resource.archive" }
+    { "from": "Draft",     "to": "Submitted", "permission": "invoice.submit" },
+    { "from": "Submitted", "to": "Verified",  "permission": "invoice.verify" },
+    { "from": "Verified",  "to": "Approved",  "permission": "invoice.approve", "requiresApproval": true },
+    { "from": "Approved",  "to": "Paid",      "permission": "payment.record" },
+    { "from": "*",         "to": "Archived",  "permission": "resource.archive" }
   ]
 }
 ```
 
-Acceptance criteria:
+State history table records every transition with actor, timestamp, and reason.
 
-- Invalid transitions are blocked.
-- Transition history is auditable.
-- Approval-required transitions create approval tasks.
-- State changes emit events.
+**Acceptance criteria:**
+- Invalid transitions are blocked before they reach the database
+- Transition history is auditable per resource instance
+- Approval-required transitions create approval tasks and emit events
+- State changes emit `ResourceStateChanged` events
 
 ### 4.7 Security Engine
 
-Purpose:
+**Current state:** Auth and membership present. Fine-grained permission enforcement is partial.
 
-Provide authentication, authorization, auditability, and future tenant readiness without overbuilding full enterprise multi-tenancy on day one.
+**What exists:**
+- Supabase Auth + JWT guard on all routes
+- Organisation membership model with roles
+- Per-endpoint membership assertions
 
-Minimum capabilities:
+**What needs work:**
+- Declarative permission policies per node, workflow, and resource operation
+- State-based permissions (can only submit when in Draft state)
+- API key support for programmatic access
+- Team-level access scoping (needed for enterprise solutions)
 
-- Authentication
-- Users
-- Roles
-- Permissions
-- Teams
-- Organisation / tenant awareness
-- Resource-level access
-- Workflow-level access
-- Node-level access
-- Audit log
-- API keys
-- Permission policy evaluation
+**Minimum roles for Contractor Edition:**
 
-Minimum identity fields:
+| Role | Can do |
+| --- | --- |
+| Owner | Everything |
+| Admin | All operations except billing and role management |
+| Member | Execute assigned tasks, record trips, upload documents |
+| Driver | View assigned jobs, record trip events |
+| Operator | View assigned equipment jobs, record hours |
 
-- organisationId / tenantId
-- userId
-- roleId
-- teamId
-- permission policy
-- audit trail
-
-Acceptance criteria:
-
-- A small contractor can run with Owner, Driver, Operator, and Admin roles.
-- Future enterprise users can be scoped by organisation, department, project, package, or vendor.
-- Users cannot execute nodes or transitions without required permission.
+**Acceptance criteria:**
+- Small contractor can run with Owner, Driver, and Operator roles
+- Future enterprise users can be scoped by organisation, department, project, or vendor
+- Users cannot execute nodes or trigger transitions without the required permission
 
 ### 4.8 AI Runtime
 
-Purpose:
+**Current state:** `AiService` is a thin OpenAI wrapper. Nodes call it directly. No context builder.
 
-Make AI an engine capability that reads resources, events, workflows, documents, permissions, and available tools.
+**What exists:**
+- `AiService` — OpenAI Chat Completions with JSON mode, keyword fallback when no API key
+- AI nodes: document extraction, BOQ classification, RFQ generation
+- Security guardrails coded at every AI call point
 
-Minimum capabilities:
+**What needs work:**
+- AI context builder: assembles current resource, workflow, event history, and permissions into a structured prompt context
+- Prompt template registry: named prompt templates per use case (owner assistant, document extractor, BOQ classifier)
+- AI tool calling layer: allows AI to call LCE tools (search resources, read events) rather than hallucinating
+- AI output ledger: stores every AI response with its source context and confidence markers
+- AI audit log: separate from the event bus — records AI calls, prompts, and outputs
 
-- AI provider interface
-- Prompt template registry
-- Context builder
-- Tool calling layer
-- Resource search tool
-- Workflow execution tool
-- Document understanding tool
-- AI node type
-- AI output ledger
-- AI audit log
-- Human review boundary for commercial decisions
+**Owner assistant example flow:**
 
-Owner assistant example:
+```
+Owner asks: "Which jobs are not invoiced yet?"
 
-User asks:
-
-```text
-How many trips today?
+AI Runtime:
+  1. Build context: current organisation, current user, permissions
+  2. Search resources: resourceType='Job', state != 'Invoiced'
+  3. Read events: JobCompleted events without InvoiceGenerated follow-up
+  4. Compose answer: "3 jobs completed this week are not yet invoiced..."
+  5. Store in AI output ledger with source resource IDs
 ```
 
-AI reads:
+**Guardrails (non-negotiable):**
+- AI cannot approve, certify, or release payment
+- AI cannot create final commercial facts without human acceptance
+- AI must preserve source references in all operational and commercial answers
+- AI output is marked advisory unless explicitly accepted by a human workflow step
 
-- Trip resources
-- Driver resources
-- Vehicle resources
-- Job resources
-- TripCompleted events
-- Fuel receipt resources
+### 4.9 Foundation Pack
 
-AI can answer:
+**Current state:** Does not exist as an installable pack. Capabilities are scattered across modules.
 
-```text
-Today: 9 trips, estimated revenue RM5,200, fuel RM630, estimated gross margin RM2,700.
-```
+**What Foundation Pack must provide:**
 
-Acceptance criteria:
+| Capability | Current location | Migration path |
+| --- | --- | --- |
+| Auth / Users | Supabase Auth + AuthModule | Foundation wraps Supabase Auth |
+| Roles / Permissions | Membership model | Foundation formalises into permission policies |
+| Files | FileModule + Supabase Storage | Foundation owns file resource type |
+| Notifications | NotificationModule | Foundation moves into pack |
+| Approvals | approval_tasks table | Foundation owns approval resource type |
+| Audit | audit_log table | Foundation keeps as projection layer |
+| Comments | not yet built | Foundation adds as a resource feature |
+| Tags / Labels | not yet built | Foundation adds |
+| Search | not yet built | Foundation adds cross-resource search |
+| AI Context | AiService | Foundation provides context builder |
 
-- AI responses are grounded in resources/events where possible.
-- AI cannot approve, certify, pay, or execute restricted commercial actions.
-- AI outputs are stored with context and source references.
+Foundation Pack is the mandatory base. Every other pack declares a dependency on it.
 
-### 4.9 Marketplace / Internal Registry
+### 4.10 Internal Registry
 
-Purpose:
+**Current state:** `packs` and `registered_nodes` tables exist. Pack browser UI at `/packs`. No install/upgrade flow.
 
-Start with an internal registry that later evolves into a full marketplace.
+**What needs work:**
+- Available pack catalog (packs that can be installed but aren't yet)
+- Installed pack registry (packs that are active on this engine instance)
+- Pack version and compatibility display
+- Enable/disable controls in the UI
+- Dependency graph viewer
 
-Minimum capabilities:
+**Acceptance criteria:**
+- Operators can browse, install, and disable packs without touching SQL migrations
+- Broken dependencies are blocked at install time
+- Pack versions are traceable
 
-- Installed packs
-- Available packs
-- Installed nodes
-- Workflow templates
-- Pack versions
-- Dependencies
-- Update status
-- Enable / disable
-- Compatibility checks
+### 4.11 UI Framework
 
-Acceptance criteria:
+**Current state:** Canvas, node palette, property panel, run history, and basic navigation exist. All scoped to the QS-OS project model.
 
-- Internal packs and nodes are discoverable.
-- Installed versions are traceable.
-- Broken dependencies are blocked.
-- The registry can later become a public marketplace without redesigning the engine.
+**What needs work:**
+- Rebrand: "QS-OS" → "Lados" in sidebar, page titles, metadata
+- Resource list and resource detail views (engine-level, not solution-specific)
+- Approval inbox: actionable list of pending approval tasks
+- Event/audit viewer: filterable event stream UI
+- AI assistant panel: owner-facing chat grounded in LCE context
+- Pack registry UI: install, upgrade, enable/disable
+- Dashboard: solution-configurable metric widgets
 
-### 4.10 UI Framework
+**Principle:** screens are the last expression. UI surfaces must be driven by resource types and workflow definitions, not hardcoded to one solution. A pack should be able to contribute a nav item and a set of views without forking the app shell.
 
-Purpose:
+---
 
-Provide the shared UI surfaces needed by engine and solution packs.
-
-Minimum surfaces:
-
-- Dashboard
-- Workflow designer
-- Workflow execution view
-- Resource list
-- Resource detail
-- Node configuration panel
-- Pack registry
-- Event/audit viewer
-- Approval inbox
-- Notification center
-- AI assistant panel
-
-Acceptance criteria:
-
-- A pack can contribute UI components without forking the shell.
-- Screens remain workflow/resource-driven rather than hardcoded to one solution.
-
-## 5. Foundation Pack
+## 5. Contractor Edition MVP
 
 ### 5.1 Purpose
 
-The Foundation Pack is mandatory for every solution. It prevents every business pack from rebuilding common functionality.
+Contractor Edition is the first LCE solution. It validates that the engine can support a real small business without ERP complexity.
 
-Every other pack depends on Foundation.
-
-```text
-Foundation Pack
-  -> Fleet Pack
-  -> Job Pack
-  -> Equipment Pack
-  -> Finance Pack
-  -> HR Pack
-  -> Procurement Pack
-  -> Project Pack
-```
-
-### 5.2 Foundation Capabilities
-
-| Capability | Purpose |
-| --- | --- |
-| Authentication | Sign in, session, identity |
-| Users | User records and profiles |
-| Roles | Role definitions |
-| Permissions | Permission policies |
-| Teams | Grouping of users |
-| Resources | Shared resource engine access |
-| Events | Shared event bus access |
-| Files | File and document storage |
-| Attachments | Link files to resources/events |
-| Comments | Discussion on resources/workflows |
-| Notifications | User and role notifications |
-| Approvals | Approval task model |
-| Audit Logs | Human-readable event projection |
-| Search | Cross-resource search |
-| Settings | Organisation and pack settings |
-| Localization | Language and region settings |
-| Tags / Labels | Classification and filtering |
-| Dashboards | Shared dashboard widgets |
-| Reports | Shared report/export shell |
-| AI Context | Standard AI context builder inputs |
-
-### 5.3 Foundation Resource Types
-
-Initial resource types:
-
-- User
-- Role
-- Permission
-- Team
-- File
-- Attachment
-- Comment
-- Notification
-- Approval
-- AuditLog
-- Tag
-- Report
-- SavedSearch
-- AIContextSnapshot
-
-### 5.4 Foundation Events
-
-Initial event types:
-
-- UserCreated
-- UserInvited
-- RoleAssigned
-- PermissionGranted
-- PermissionRevoked
-- FileUploaded
-- AttachmentLinked
-- CommentAdded
-- NotificationSent
-- ApprovalRequested
-- ApprovalGranted
-- ApprovalRejected
-- ResourceArchived
-- ReportGenerated
-- AIContextBuilt
-
-### 5.5 Acceptance Criteria
-
-- Every pack can use Foundation users, files, approvals, notifications, audit logs, and AI context.
-- Foundation permissions are enforced before resource, workflow, node, or state actions run.
-- Foundation events are visible in the event/audit viewer.
-
-## 6. Contractor Edition MVP
-
-### 6.1 Purpose
-
-Contractor Edition is the first validation solution for LCE V1.
-
-It should support a small contractor/logistics operation:
+Minimum viable operation:
 
 - 1 owner
 - 3 tipper lorries
 - 3 drivers
 - 1 backhoe
-- optional admin later
+- 1 optional admin
 
-The owner should open one application and run daily operations without ERP complexity.
+### 5.2 Navigation
 
-### 6.2 Workspace Navigation
-
-Initial navigation:
-
-```text
-Lados Contractor Edition
-  -> Dashboard
-  -> Jobs
-  -> Fleet
-  -> Drivers
-  -> Equipment
-  -> Customers
-  -> Finance
-  -> Documents
-  -> AI Assistant
+```
+Lados — Contractor Edition
+  Dashboard
+  Jobs
+  Fleet
+  Drivers
+  Equipment
+  Customers
+  Finance
+  Documents
+  AI Assistant
 ```
 
-### 6.3 Required Packs
+### 5.3 Required Packs
 
-| Pack | Scope |
+| Pack | Responsibility |
 | --- | --- |
 | Foundation Pack | Users, roles, files, approvals, audit, notifications, AI context |
 | Job Pack | Customers, jobs, trips, scheduling |
 | Fleet Pack | Vehicles, drivers, maintenance, fuel |
 | Equipment Pack | Backhoe, operator, hours, maintenance |
 | Finance Pack | Quotations, invoices, payments, expenses |
-| HR Pack | Attendance, payroll inputs, leave, allowances |
-| Document Pack | Upload, OCR, PDF, photos |
-| Dashboard Pack | Owner dashboard and operational metrics |
-| AI Pack | Owner assistant and document extraction |
+| HR Pack | Attendance, payroll inputs, allowances |
+| Document Pack | Upload, OCR, PDF generation, photos |
+| Dashboard Pack | Owner metrics and daily summary |
+| AI Pack | Owner assistant, document extraction |
 
-### 6.4 Core Resources
+### 5.4 Core Resources
 
 | Resource | Description |
 | --- | --- |
-| Customer | Party requesting transport/equipment service |
-| Job | Work order for transport, material, or equipment |
+| Customer | Party requesting transport or equipment service |
+| Job | Work order for transport, material, or equipment hire |
 | Trip | One completed transport cycle |
 | Driver | Driver profile, assignment, attendance |
 | Vehicle | Tipper lorry profile and lifecycle |
 | Equipment | Backhoe or other plant |
 | Operator | Equipment operator assignment |
 | FuelReceipt | Fuel expense evidence |
-| MaintenanceRecord | Vehicle/equipment service event |
+| MaintenanceRecord | Vehicle or equipment service event |
 | Invoice | Billing document |
 | Payment | Customer payment record |
 | Expense | Other operating expense |
 | PayrollRun | Salary calculation period |
-| Document | Uploaded document/photo |
+| Document | Uploaded document or photo |
 
-### 6.5 Core Workflows
+### 5.5 Core Workflows
 
-#### Workflow 1: Customer Calls
+**Workflow 1: Job Creation**
 
-Customer requests service, for example:
+Customer requests service. Owner creates Job with customer, location, material, rate, start time, and expected trips. LCE creates Job resource, transport tasks, and driver/vehicle assignment tasks.
 
-```text
-Need two lorries tomorrow at 8 AM.
-```
+**Workflow 2: Driver and Vehicle Assignment**
 
-Owner creates a Job with:
+Owner assigns lorries to drivers. Drivers receive job details, destination, and navigation link via notification.
 
-- Customer
-- Location
-- Material
-- Rate
-- Start time
-- Expected trips
+**Workflow 3: Trip Execution**
 
-LCE creates:
+Driver flow: Start Shift → Navigate → Arrive → Load → Unload → Trip Complete. Every tap emits an event and increments the trip count visible to the owner.
 
-- Job resource
-- Transport tasks
-- Driver assignment tasks
-- Vehicle assignment tasks
-- JobCreated event
+**Workflow 4: Equipment Work**
 
-#### Workflow 2: Assign Lorries
+Owner assigns backhoe and operator to job. LCE tracks operating hours, fuel, maintenance, and utilization.
 
-Owner assigns:
+**Workflow 5: Maintenance Reminder**
 
-- Lorry 1 to Driver Ali
-- Lorry 2 to Driver Ahmad
+Vehicle and equipment records track mileage, service intervals, insurance, and road tax. When due: Notification → Owner Approval → Service Job Created.
 
-Drivers receive:
+**Workflow 6: Fuel Receipt**
 
-- Today's job
-- Destination
-- Navigation link
-- Customer contact
+Driver uploads receipt. AI extracts amount, station, date, and vehicle. Human review required before fuel expense is posted to accounts.
 
-Events:
+**Workflow 7: Invoice Generation**
 
-- VehicleAssigned
-- DriverAssigned
-- DriverNotified
+Owner presses Generate Invoice on a completed job. LCE already knows trips, rates, equipment hours, and extra charges. Invoice draft is generated and issued after review.
 
-#### Workflow 3: Driver Trip Execution
+**Workflow 8: Payroll**
 
-Driver flow:
+Payroll Run reads trips, hours, overtime, allowances, and attendance. Calculates gross, EPF, SOCSO, and net pay. Requires Owner approval before finalisation.
 
-```text
-Start Shift -> Navigate -> Arrive -> Load -> Unload -> Trip Complete
-```
+**Workflow 9: AI Owner Assistant**
 
-Every tap creates an event.
-
-Events:
-
-- ShiftStarted
-- DriverArrived
-- LoadConfirmed
-- UnloadConfirmed
-- TripCompleted
-
-#### Workflow 4: Backhoe Work
-
-Owner adds equipment to a job:
-
-- Backhoe
-- Operator
-- Working hours
-
-LCE tracks:
-
-- Operating hours
-- Fuel
-- Maintenance
-- Utilization
-
-Events:
-
-- EquipmentAssigned
-- EquipmentWorkStarted
-- EquipmentHoursRecorded
-- EquipmentWorkCompleted
-
-#### Workflow 5: Trip Counting
-
-Driver records trips:
-
-```text
-Trip 1
-Trip 2
-Trip 3
-Trip 4
-```
-
-Owner sees live trip count:
-
-```text
-Ali: 7 trips completed
-```
-
-Events:
-
-- TripCountIncremented
-- TripCompleted
-
-#### Workflow 6: Maintenance
-
-Vehicle and equipment records track:
-
-- Mileage
-- Oil change
-- Tyres
-- Insurance
-- Road tax
-- Service due date
-
-When due:
-
-```text
-Notification -> Approve -> Create Service Job
-```
-
-Events:
-
-- MaintenanceDueDetected
-- MaintenanceApproved
-- ServiceJobCreated
-- MaintenanceCompleted
-
-#### Workflow 7: Fuel
-
-Driver uploads receipt.
-
-AI extracts:
-
-- Amount
-- Station
-- Date
-- Vehicle
-
-Events:
-
-- FuelReceiptUploaded
-- AIFuelReceiptExtracted
-- FuelExpenseRecorded
-
-Human review remains required where the extraction affects accounts.
-
-#### Workflow 8: Salary
-
-Salary Pack reads:
-
-- Trips
-- Hours
-- Overtime
-- Allowances
-- Attendance
-
-Calculates:
-
-- Gross salary
-- EPF
-- SOCSO
-- Net pay
-
-Events:
-
-- PayrollDraftGenerated
-- PayrollReviewed
-- PayrollApproved
-
-#### Workflow 9: Invoice
-
-When a customer job is complete, owner presses Generate Invoice.
-
-LCE already knows:
-
-- Trips
-- Rate
-- Equipment hours
-- Extra charges
-
-Events:
-
-- InvoiceDraftGenerated
-- InvoiceIssued
-- PaymentReceived
-
-#### Workflow 10: AI Owner Assistant
-
-Owner asks:
+Owner asks natural-language questions. AI reads resources and events, then answers with source-aware operational summaries. Examples:
 
 - How many trips today?
 - Which lorry earns the most?
 - Which driver is always late?
-- What is today's fuel cost?
+- What is today's estimated margin?
 - Which jobs are not invoiced yet?
 
-AI reads resources and events, then answers with source-aware operational summaries.
+### 5.6 Contractor Edition Acceptance Criteria
 
-### 6.6 Contractor Edition MVP Acceptance Criteria
+- Owner can create jobs and assign vehicles and drivers
+- Driver can execute trips with minimal taps
+- Trip counts update live for the owner
+- Backhoe work can be tracked by hours
+- Fuel receipt upload creates an extractable resource with human review
+- Maintenance reminders can create service jobs
+- Invoices are generated from completed trips and equipment hours
+- Dashboard shows trips, revenue, fuel, and estimated margin
+- AI assistant answers are grounded in resources and events
 
-- Owner can create jobs and assign vehicles/drivers.
-- Driver can execute trips with minimal taps.
-- Trip counts update live for the owner.
-- Backhoe work can be tracked by hours.
-- Fuel receipt upload creates an extractable resource.
-- Maintenance reminders can create service jobs.
-- Invoices can be generated from completed trips and equipment hours.
-- Dashboard can show trips, revenue, fuel, and estimated margin.
-- AI assistant answers from Resources and Events, not from loose conversation memory.
+---
 
-## 7. Implementation Sequence
+## 6. Implementation Sequence
 
-### Phase 0: Documentation And Naming Freeze
+The phases below replace the original Phase 0 through 12 sequence. They are reordered to match actual codebase state and to make each phase executable without blocking on the next.
 
-Goal:
+### Phase 0: Identity and Namespace Migration
 
-Rename the architecture direction and establish LCE V1 as the target.
+**Status:** Not started. Must be first.
 
-Tasks:
+**Goal:** Retire QS-OS and @qsos/. Establish Lados and @lados/ as the working identity.
 
-- Update documentation terminology from Lados V3 to Lados Core Engine / LCE V1.
-- Create the LCE documentation library structure.
-- Map existing V3 documents into LCE sections.
-- Keep legacy names only in historical notes.
+**Tasks:**
 
-Acceptance:
+- Rename all `@qsos/` package names to `@lados/` in every `package.json` and import
+- Update sidebar branding from "QS-OS" to "Lados"
+- Update page titles, metadata, and any remaining QS-OS references in the web app
+- Update internal documentation terminology: V3 → LCE V1, QS-OS → Lados
+- Create `docs/LCE_V1/` documentation library structure
 
-- Developers know that LCE V1 is the engine target.
-- V4/LEOS/JKR is not confused with the current implementation scope.
+**Acceptance:**
+- `grep -r "@qsos" .` returns zero hits outside of historical migration notes
+- The running app shows "Lados" in the sidebar and page titles
 
-### Phase 1: Stabilize Existing V3 Runtime
+### Phase 1: Workflow Engine Stabilization
 
-Goal:
+**Status:** Partially complete. Foundation is real. Gaps are specific.
 
-Complete the existing workflow, node, pack, and runtime foundation before adding larger platform concepts.
+**Goal:** Make the workflow engine production-grade before adding the Resource and Event layers.
 
-Tasks:
+**Tasks:**
 
-- Stabilize workflow designer.
-- Stabilize workflow runtime.
-- Stabilize node system.
-- Stabilize pack system.
-- Stabilize execution engine.
-- Stabilize canvas UI.
-- Stabilize node configuration panel.
-- Stabilize workflow save/load.
-- Stabilize workflow execution history.
+- Replace auto-approve in `core.human_approval` with real pause/resume: workflow run pauses at the approval node, resumes when a human clicks Approve in the UI
+- Add a job queue (e.g. BullMQ + Redis, or Supabase Edge Function queue) to move execution off the synchronous request thread
+- Implement published workflow versions: once published, a version's definition is immutable; new edits create a new draft version
+- Wire `core.cron_trigger` to a real cron scheduler instead of a mock
+- Stabilize workflow save, load, and canvas auto-save reliability
 
-Acceptance:
+**Acceptance:**
+- A workflow with an approval node genuinely pauses and resumes when the human acts
+- Long-running workflows do not block the HTTP response thread
+- Published workflow versions cannot be silently edited
 
-- A workflow can be designed and executed end to end.
-- Runtime logs are visible.
-- Existing node/pack concepts are not theoretical.
+### Phase 2: Node Isolation — Move Real Nodes into Packs
 
-### Phase 2: Resource Engine
+**Status:** Not started.
 
-Goal:
+**Goal:** Break the dependency between `api/src/execution/real-nodes/` and the pack system. Each node must live in its pack.
 
-Introduce first-class business objects.
+**Tasks:**
 
-Tasks:
+- Create `src/nodes/` directories in each pack (`@lados/core-pack`, `@lados/document-pack`, `@lados/qs-pack`, `@lados/procurement-pack`, `@lados/ai-pack`)
+- Move each `real-nodes/*.ts` file into the appropriate pack
+- Update `buildRealNodeResolver` in `ExecutionService` to import from packs rather than from local files
+- Define the executor contract: a pack exports a `resolveNode(type: string): NodeExecutor | null` function
+- Verify all 14 existing real nodes pass existing smoke tests after the move
 
-- Implement resource type registry.
-- Implement resource schema storage.
-- Implement resource CRUD API.
-- Implement resource relationship model.
-- Implement resource history.
-- Implement resource search.
-- Implement attachments.
-- Implement permission hooks.
-- Emit resource events.
+**Acceptance:**
+- `api/src/execution/real-nodes/` is empty or removed
+- Each pack owns its own node implementations
+- The execution engine resolves nodes by querying installed packs
 
-Acceptance:
+### Phase 3: Resource Engine
 
-- Contractor resources can be created and queried.
-- Resource changes are auditable.
-- Nodes can create/update resources through the engine.
+**Status:** Not started. Highest architectural priority.
 
-### Phase 3: Event Bus
+**Goal:** Introduce the universal business object layer.
 
-Goal:
+**Tasks:**
 
-Make every important action observable and auditable.
+- Create `lados_resources` table with the schema defined in Section 4.4
+- Create `ResourceEngine` NestJS service with CRUD, relationship, history, search, and permission hooks
+- Create `ResourceModule` and expose via REST API (`/resources`)
+- Create the `Change State` node that delegates to the State Engine (which can be a stub at this phase)
+- Create Contractor Edition resource types: Customer, Job, Trip, Driver, Vehicle, Equipment, FuelReceipt, MaintenanceRecord, Invoice, Payment, Expense
+- Create `Create Resource`, `Update Resource`, `Find Resource`, `Archive Resource` nodes in Foundation Pack
+- Emit a `ResourceCreated`, `ResourceUpdated`, `ResourceArchived` event for every mutation (these can write to `audit_log` initially, with the full Event Bus added in Phase 4)
 
-Tasks:
+**Acceptance:**
+- Contractor Edition resource types can be created, read, updated, and archived
+- Resource changes produce auditable records
+- Nodes can create and query resources through the engine
+- Future resource types (JKR Contract, Variation Order) require no engine changes
 
-- Implement event table.
-- Implement event publisher.
-- Implement subscriber/handler registry.
-- Implement event filtering.
-- Implement event audit view.
-- Implement event-to-notification bridge.
-- Implement event-to-dashboard projection.
+### Phase 4: Event Bus
 
-Acceptance:
+**Status:** Not started. `audit_log` is the seed.
 
-- Workflow, resource, state, approval, document, and AI actions emit typed events.
-- Events are immutable.
-- Dashboard and AI context can consume events.
+**Goal:** Make every important action observable and replayable.
 
-### Phase 4: State Engine
+**Tasks:**
 
-Goal:
+- Create `lados_events` table with the envelope schema in Section 4.5
+- Create `EventBus` NestJS service: `publish(event)`, `subscribe(eventType, handler)`, `getHistory(filters)`
+- Migrate resource mutation calls in Phase 3 to emit typed events to `lados_events` (in addition to `audit_log`)
+- Implement `event-to-notification` handler: selected event types trigger notifications
+- Implement `event-to-audit-log` handler: all events produce a human-readable `audit_log` row (replace current direct writes)
+- Expose event history API for dashboard and AI context consumption
+- Add event/audit viewer UI
 
-Control resource lifecycles through configurable state machines.
+**Acceptance:**
+- Workflow, resource, state, and approval actions emit typed events
+- Events are immutable
+- Dashboard widgets and AI context builder can read event history
 
-Tasks:
+### Phase 5: State Engine
 
-- Implement state machine definitions.
-- Implement transition rules.
-- Implement transition guards.
-- Implement transition actions.
-- Implement approval-based transitions.
-- Implement state history.
-- Implement state-based permissions.
+**Status:** Not started.
 
-Acceptance:
+**Goal:** Control resource lifecycles through configurable state machines.
 
-- Invalid state transitions are blocked.
-- State transitions create events and audit entries.
-- Contractor resource lifecycles work for Job, Trip, Vehicle, Invoice, and Payment.
+**Tasks:**
 
-### Phase 5: Security Engine
+- Create state machine definition storage (table or pack manifest field)
+- Create `StateEngine` NestJS service: `validateTransition`, `executeTransition`, `getHistory`
+- Integrate into `ResourceEngine.transitionState()` — all state changes go through the State Engine
+- Implement transition guards (permission check, approval requirement)
+- Implement transition actions (emit event, create approval task, notify)
+- Add state history table per resource instance
+- Wire `Change State` node to the real StateEngine (replacing Phase 3 stub)
 
-Goal:
+**Acceptance:**
+- Invalid state transitions are blocked
+- Transition history is auditable
+- Approval-required transitions pause execution
+- Contractor resource lifecycles work: Job, Trip, Vehicle, Invoice, Payment
 
-Provide the minimum secure operating model for small businesses and future enterprise expansion.
+### Phase 6: Security Engine Hardening
 
-Tasks:
+**Status:** Auth and membership exist. Permission enforcement is partial.
 
-- Implement users, roles, permissions, teams.
-- Implement organisation/tenant awareness.
-- Implement resource-level access.
-- Implement workflow-level access.
-- Implement node-level access.
-- Implement audit log.
-- Implement API key foundations.
+**Goal:** Provide a declarative, enforceable permission model.
 
-Acceptance:
+**Tasks:**
 
-- Owner can manage users.
-- Drivers only see assigned work.
-- Restricted workflow/node/state actions require permission.
+- Define permission policies as declarative rules per node type, resource operation, and state transition
+- Implement permission policy evaluator in `SecurityEngine` service
+- Replace ad-hoc membership assertions with policy evaluator calls
+- Add API key support for programmatic access
+- Implement Contractor Edition roles: Owner, Admin, Member, Driver, Operator
 
-### Phase 6: Foundation Pack
+**Acceptance:**
+- Owner can manage users and assign roles
+- Drivers see only assigned work
+- Restricted workflow, node, and state actions require the declared permission
 
-Goal:
+### Phase 7: Foundation Pack
 
-Package universal capabilities as the mandatory base pack.
+**Status:** Not started as an installable pack.
 
-Tasks:
+**Goal:** Package universal capabilities as the mandatory base pack.
 
-- Create Foundation Pack manifest.
-- Register Foundation resources.
-- Register Foundation events.
-- Register Foundation nodes.
-- Register Foundation permissions.
-- Register Foundation UI surfaces.
+**Tasks:**
 
-Acceptance:
+- Create `@lados/foundation-pack` with its pack manifest
+- Register Foundation resource types: User, Role, Permission, Team, File, Attachment, Comment, Notification, Approval, AuditLog, Tag
+- Register Foundation events: UserCreated, FileUploaded, ApprovalRequested, ApprovalGranted, etc.
+- Register Foundation nodes: Create Resource, Update Resource, Find Resource, Archive Resource, Change State, Emit Event, Assign User, Upload File, Request Approval, Approve, Reject, Send Notification
+- Move NotificationModule capabilities into Foundation Pack
+- Move approval task logic into Foundation Pack
 
-- Other packs depend on Foundation instead of reimplementing users, files, approvals, audit, notifications, and AI context.
+**Acceptance:**
+- Other packs depend on Foundation instead of reimplementing users, files, approvals, notifications, and AI context
+- Foundation permissions are enforced before resource, workflow, node, or state actions execute
 
-### Phase 7: Node SDK And Core Node Catalog
+### Phase 8: Pack Installer and Registry
 
-Goal:
+**Status:** Pack manifests defined. SQL seeding only. No runtime installer.
 
-Standardize reusable node development.
+**Goal:** Make packs installable at runtime without SQL migration hand-editing.
 
-Tasks:
+**Tasks:**
 
-- Define node manifest.
-- Define input/output schema rules.
-- Define config schema rules.
-- Define executor contract.
-- Define UI config form contract.
-- Define event emission contract.
-- Define node test contract.
-- Register universal node catalog.
+- Implement `PackInstaller` service: accept a manifest, validate dependencies, run migrations, register nodes
+- Implement `PackRegistry` service: list installed packs, check compatibility, resolve dependencies
+- Implement pack enable/disable lifecycle with state persistence
+- Add pack upgrade flow: validate compatibility, run incremental migrations
+- Update Pack Registry UI at `/packs` to support install, upgrade, and disable actions
 
-Acceptance:
+**Acceptance:**
+- Foundation, Job, Fleet, Equipment, Finance, HR, Document, Dashboard, and AI packs can be installed and managed without touching SQL directly
+- Broken dependencies are blocked
 
-- A developer can build a reusable node against a stable SDK.
-- Universal nodes work across Contractor Edition and future solutions.
+### Phase 9: Contractor Edition Build
 
-### Phase 8: Pack SDK And Registry
+**Status:** Not started as an LCE solution (existing QS features are a different scope).
 
-Goal:
+**Goal:** Build the first real LCE-powered solution end-to-end.
 
-Standardize pack development, installation, versioning, and dependencies.
+**Tasks:**
 
-Tasks:
+- Implement Job, Fleet, Equipment, Finance, HR, Dashboard, and AI packs for Contractor Edition
+- Implement all Contractor Edition resources through the Resource Engine
+- Implement all Contractor Edition workflows through the Workflow Engine
+- Implement driver mobile-friendly trip recording flow
+- Implement owner assignment and dispatch flow
+- Implement fuel receipt upload with AI extraction and human review
+- Implement maintenance reminder and service job workflow
+- Implement invoice generation from completed trips and equipment hours
+- Implement payroll draft calculation with approval flow
+- Implement owner dashboard with trips, revenue, fuel, and margin widgets
+- Implement AI owner assistant grounded in LCE resource and event context
 
-- Define pack manifest.
-- Implement pack installer.
-- Implement pack registry.
-- Implement dependency resolver.
-- Implement version compatibility checks.
-- Implement migration runner.
-- Implement enable/disable lifecycle.
+**Acceptance:**
+- Small contractor can run daily operations from one workspace
+- All Contractor Edition acceptance criteria in Section 5.6 pass
 
-Acceptance:
+### Phase 10: AI Runtime Upgrade
 
-- Foundation, Job, Fleet, Equipment, Finance, HR, Document, Dashboard, and AI packs can be registered and installed.
+**Status:** AiService is a thin wrapper. No context builder, no tool calling, no ledger.
 
-### Phase 9: Contractor Edition MVP
+**Goal:** Make AI an engine capability with full LCE context awareness.
 
-Goal:
+**Tasks:**
 
-Build the first real LCE-powered solution.
+- Implement AI context builder: assembles resource, workflow, event history, permissions, and available tools into structured context
+- Implement prompt template registry
+- Implement AI tool calling layer: AI can call `search_resources`, `get_events`, `get_workflow_status`
+- Implement AI output ledger: every AI response stored with its source context and resource references
+- Implement AI audit log
+- Wire owner assistant to the context builder and tool calling layer
 
-Tasks:
+**Acceptance:**
+- AI answers are grounded in resource and event data, not conversation memory alone
+- AI cannot bypass human approvals or permissions
+- AI outputs are stored with source references
 
-- Implement Contractor resource types.
-- Implement Contractor workflows.
-- Implement Contractor dashboard.
-- Implement driver mobile-simple flow or responsive driver screen.
-- Implement owner assignment flow.
-- Implement fuel receipt upload and AI extraction.
-- Implement maintenance reminder flow.
-- Implement invoice generation flow.
-- Implement AI owner assistant.
+### Phase 11: Internal Registry Maturity
 
-Acceptance:
+**Status:** Tables and basic UI exist. No install/upgrade flow.
 
-- A small contractor can run daily jobs, trips, fuel, maintenance, invoices, and dashboard from one workspace.
+**Goal:** Make the registry operator-usable.
 
-### Phase 10: AI Runtime
+**Tasks:**
 
-Goal:
+- Implement available pack catalog (packs that can be installed)
+- Implement update status indicator (installed version vs. available version)
+- Implement dependency graph view
+- Implement compatibility warnings for engine version mismatches
 
-Make AI context-aware and tool-aware inside the engine.
+**Acceptance:**
+- Operators can browse, install, upgrade, and disable packs
+- Installed pack versions are traceable
 
-Tasks:
+### Phase 12: Async Execution Queue
 
-- Implement provider interface.
-- Implement prompt registry.
-- Implement context builder.
-- Implement resource search tool.
-- Implement workflow execution tool.
-- Implement document understanding tool.
-- Implement AI node type.
-- Implement AI output ledger.
-- Implement AI audit log.
+**Status:** Synchronous in-process runner. Suitable for MVP but not for production.
 
-Acceptance:
+**Goal:** Move workflow execution to an async queue without changing the runner interface.
 
-- AI answers are grounded in resource/event/workflow/document context.
-- AI cannot bypass human approvals or permissions.
+**Tasks:**
 
-### Phase 11: Marketplace / Internal Registry
+- Select and integrate a job queue: BullMQ (Redis) or Supabase-native queue
+- Wrap `ExecutionService.triggerRun()` to enqueue instead of executing inline
+- Add worker process that dequeues and runs workflows
+- Add SSE or polling endpoint for the UI to receive execution progress
+- Ensure human approval pause/resume works correctly in the async model
 
-Goal:
+**Acceptance:**
+- Triggering a workflow returns immediately with a `runId`
+- The UI polls or streams progress until completion
+- Long-running workflows do not block the API
 
-Prepare pack and node distribution without launching a public marketplace yet.
+### Phase 13: LEOS / JKR Layer Preparation
 
-Tasks:
+**Status:** Deferred. Kept separate from core delivery.
 
-- Implement available pack catalog.
-- Implement installed pack registry.
-- Implement installed node registry.
-- Implement workflow template registry.
-- Implement update status.
-- Implement enable/disable controls.
+**Goal:** Document the LEOS/JKR solution without implementing it during LCE V1.
 
-Acceptance:
+**Tasks:**
 
-- Internal packs can be installed, upgraded, inspected, and disabled safely.
+- Maintain LEOS/JKR as a separate solution blueprint
+- Identify the packs it will need: Project, Tender, BOQ, Contract, Inspection, Payment, Variation, Asset, Archive
+- Identify resource types it will introduce
+- Confirm that LCE V1 Resource Engine, Event Bus, State Engine, and Security Engine can represent them without change
 
-### Phase 12: Prepare LEOS / JKR Layer Later
+**Acceptance:**
+- LEOS/JKR scope is documented and not mixed into LCE V1 delivery
+- The existing QS pack (`qs.read_boq`, etc.) is maintained but not expanded until Contractor Edition proves the engine
 
-Goal:
+---
 
-Capture enterprise/government architecture without polluting LCE V1 implementation.
+## 7. Deferred LEOS / JKR Scope
 
-Tasks:
+### 7.1 Deferred Resource Types
 
-- Keep LEOS/JKR as a separate blueprint.
-- Identify required packs and resource types.
-- Reuse LCE Resource, Event, State, Security, Workflow, Node, Pack, and AI engines.
-- Do not implement JKR workflows until Contractor Edition proves the engine.
+Reserved for future enterprise and government solution work:
 
-Acceptance:
+Organisation hierarchy, Portfolio, Programme, Project, Phase, Department, Agency, Consultant, Contractor, Tender, BOQ, Evaluation, Contract, Site instruction, Inspection, Progress claim, Payment certificate, Variation Order, EOT, CPC, DLP, Closing account, Asset, Archive record
 
-- LEOS/JKR scope is documented but not mixed into core engine delivery.
+### 7.2 Deferred Workflows
 
-## 8. Deferred LEOS / JKR Scope
+Project initiation, Budget approval, Tender preparation, Tender evaluation, Contract award, Construction monitoring, Inspection and NCR, Progress claim assessment, Payment certification, Variation management, EOT management, CPC issuance, DLP defect management, Final account, Asset handover, Records archival
 
-### 8.1 Deferred Resource Types
+### 7.3 Why Deferred
 
-The following should be reserved for future enterprise/government solution work:
+JKR-scale scope requires 300+ workflows, 800 to 1,500 nodes, complex organisation hierarchy, multi-party approvals, strict audit and archival rules, and government-specific document and payment procedures. This must not be used as the first implementation target.
 
-- Organisation hierarchy
-- Portfolio
-- Programme
-- Project
-- Phase
-- Department
-- Agency
-- Consultant
-- Contractor
-- Tender
-- BOQ
-- Evaluation
-- Contract
-- Site instruction
-- Inspection
-- Progress claim
-- Payment certificate
-- Variation Order
-- EOT
-- CPC
-- DLP
-- Closing account
-- Asset
-- Archive record
+### 7.4 Non-Negotiable Boundary
 
-### 8.2 Deferred Workflows
+LEOS / JKR must be built on top of LCE. It must not fork the engine. The existing QS pack is in scope for LCE V1 maintenance only — no expansion until Contractor Edition is proven.
 
-Deferred workflows include:
+---
 
-- Project initiation
-- Budget approval
-- Tender preparation
-- Tender evaluation
-- Contract award
-- Construction monitoring
-- Inspection and NCR
-- Progress claim assessment
-- Payment certification
-- Variation management
-- EOT management
-- CPC issuance
-- DLP defect management
-- Final account
-- Asset handover
-- Records archival
+## 8. Implementation Guardrails
 
-### 8.3 Why Deferred
+### 8.1 Engine Guardrails
 
-JKR-scale scope may require:
+- Do not build solution-specific logic into the engine when it belongs in a pack
+- Do not duplicate Foundation capabilities inside business packs
+- Do not allow nodes to bypass the Resource Engine, Event Bus, State Engine, or Security Engine
+- Do not mutate business resources without emitting events
+- Do not allow published workflow versions to be silently edited
+- Do not allow pack upgrades to break live workflows without a migration plan
+- Do not let real node implementations live in the API app — they belong in their packs
 
-- 300+ workflows
-- 800 to 1,500 nodes
-- complex organisation hierarchy
-- multi-party approvals
-- strict audit and archival rules
-- government-specific document and payment procedures
+### 8.2 AI Guardrails
 
-This should not be used as the first implementation target. It should validate engine scalability after LCE and Contractor Edition are working.
+These are already coded in the current codebase and must never be relaxed:
 
-### 8.4 Non-Negotiable Boundary
+- AI cannot approve
+- AI cannot certify
+- AI cannot release payment
+- AI cannot create final commercial facts without human acceptance
+- AI must preserve source references in operational and commercial answers
+- AI output is marked advisory unless accepted by a human workflow step
 
-LEOS / JKR must be built on top of LCE. It must not fork the engine.
+### 8.3 Contractor Edition Guardrails
 
-## 9. Documentation Library Structure
+- Driver UI must be tap-based and minimal
+- Owner UI must prioritise job assignment, trip visibility, maintenance, invoicing, and cash visibility
+- Payroll and finance outputs must distinguish Draft, Reviewed, Approved, and Paid states
+- Fuel receipt AI extraction must allow human correction before posting
+- Dashboard profit estimates must be marked Estimated unless fully reconciled
 
-Recommended Lados documentation library:
+### 8.4 Async Execution Guardrails
 
-```text
-Lados Documentation
-  01 LCE Architecture
-  02 LCE Runtime
-  03 LCE SDK
-  04 LCE Platform
-  05 LCE Intelligence
-  06 LCE Ecosystem
-  07 LCE Reference
-  20 Contractor Edition
-  30 RAFIQ
-  40 Procurement
-  50 LEOS
-```
+- The `WorkflowRunner` interface must not change when moving to async execution
+- Human approval pause/resume must be tested in the async model before production deployment
+- Every async run must have a reliable failure and retry path — silent failures are not acceptable
 
-Detailed documentation sections:
+---
 
-```text
-01 Introduction
-02 Architecture
-03 Runtime
-04 Workflow Engine
-05 Resource Engine
-06 Event System
-07 State Engine
-08 Security
-09 AI Runtime
-10 SDK
-11 Marketplace
-12 API
-13 UI Framework
-14 Storage
-15 Deployment
-16 Testing
-17 Reference
-```
+## 9. Developer Definition of Done
 
-Existing V3 document mapping:
+**For any LCE engine feature:**
 
-| Existing Document | New Home |
-| --- | --- |
-| Core Blueprint | LCE Architecture |
-| Workflow Specification | Workflow Engine |
-| Node SDK | LCE SDK / Node SDK |
-| Node Developer Guide | LCE Reference |
-| Runtime Specification | LCE Runtime |
-| UI Specification | UI Framework |
-| Figma Build Pack | UI Framework Reference |
-| Resource Engine draft | Resource Engine |
-| Event Bus draft | Event System |
-| State Engine draft | State Engine |
-| Security Engine draft | Security / Platform |
-| AI Runtime draft | Intelligence |
-| Marketplace draft | Ecosystem |
+- Resource model updated where business objects are involved
+- Events emitted for every important action
+- State transition rules defined where a lifecycle is involved
+- Permission checks implemented at the engine level
+- Audit view updated
+- Pack or node manifest updated where applicable
+- Tests or smoke checks added for runtime behaviour
+- AI context impact considered where the feature creates useful knowledge
+- Documentation updated in the appropriate LCE section
+
+**For any Contractor Edition feature:**
+
+- Owner flow is complete
+- Driver or operator flow is complete where applicable
+- Resource, event, state, and security behaviour is wired through LCE — not around it
+- Dashboard impact is considered
+- Invoice, payroll, and finance outputs are clearly Draft, Reviewed, Approved, or Paid
+- AI behaviour is grounded and advisory
+
+**For any node implementation:**
+
+- Node lives in its pack, not in the API module
+- Inputs and outputs are schema-validated
+- Config schema is declared in the node manifest
+- Node emits the events it declares in its manifest
+- Node cannot bypass permission or approval guards
+
+---
 
 ## 10. Scale Targets
 
-These are planning numbers, not hard limits.
-
 ### 10.1 LCE V1
 
-| Area | Target Range |
+| Area | Target |
 | --- | --- |
 | Engine modules | 80 to 150 |
-| Classes/services | 500 to 800 |
-| APIs | 200 to 400 |
+| NestJS services | 30 to 60 |
+| REST API endpoints | 150 to 300 |
 | UI components | 150 to 250 |
-| Reusable core nodes | 80 to 120 |
-| System packs | 20 to 40 |
+| Core nodes (Foundation) | 20 to 30 |
+| Total nodes across packs | 80 to 120 |
+| System packs | 10 to 20 |
 
 ### 10.2 Contractor Edition
 
-| Area | Target Range |
+| Area | Target |
 | --- | --- |
 | Workflows | 40 to 70 |
-| Nodes | 100 to 200 |
-| Core resources | 15 to 30 |
-| Operational dashboards | 5 to 10 |
+| Nodes (all packs) | 100 to 200 |
+| Resource types | 15 to 25 |
+| Dashboards | 5 to 10 |
 
-### 10.3 Future JKR / LEOS
+### 10.3 Future LEOS / JKR
 
-| Area | Target Range |
+| Area | Target |
 | --- | --- |
 | Workflows | 300+ |
 | Nodes | 800 to 1,500 |
 | Resource types | 80+ |
-| Approval/state models | Many, solution-specific |
 
-The engine should not grow linearly with solution complexity. Solutions grow through reused nodes, packs, states, resources, and workflow templates.
+The engine must not grow linearly with solution complexity. Solutions grow through reused nodes, packs, states, resources, and workflow templates. The engine stays compact.
 
-## 11. Implementation Guardrails
+---
 
-### 11.1 Engine Guardrails
+## 11. Documentation Library Structure
 
-- Do not build solution-specific logic into the engine when it belongs in a pack.
-- Do not duplicate Foundation capabilities inside business packs.
-- Do not allow nodes to bypass Resource Engine, Event Bus, State Engine, or Security Engine.
-- Do not mutate important business resources without events.
-- Do not allow published workflow versions to be silently changed.
-- Do not allow pack upgrades to rewrite live workflows silently.
-
-### 11.2 AI Guardrails
-
-- AI cannot approve.
-- AI cannot certify.
-- AI cannot release payment.
-- AI cannot create final commercial facts without human acceptance where required.
-- AI must preserve source references where it gives operational or commercial conclusions.
-- AI output must be marked advisory unless accepted by a human workflow step.
-
-### 11.3 Contractor Edition Guardrails
-
-- Driver UI must be simple and tap-based.
-- Owner UI must prioritize job assignment, trip visibility, maintenance, invoicing, and cash visibility.
-- Payroll and finance outputs must distinguish draft, reviewed, approved, and paid states.
-- Fuel receipt AI extraction must allow human correction.
-- Dashboard profit estimates must be marked estimated unless fully reconciled.
-
-## 12. Developer Definition Of Done
-
-For any LCE feature:
-
-- Resource model updated where business objects are involved.
-- Events emitted for important actions.
-- State transition rules defined where lifecycle is involved.
-- Permission checks implemented.
-- Audit view/projection updated.
-- Pack or node manifest updated where applicable.
-- Tests or smoke checks added for runtime behavior.
-- AI context impact considered where the feature creates useful knowledge.
-- Documentation updated in the appropriate LCE section.
-
-For any Contractor Edition feature:
-
-- Owner flow is complete.
-- Driver/operator flow is complete where applicable.
-- Resource/event/state/security behavior is wired through LCE.
-- Dashboard impact is considered.
-- Invoice/payroll/finance outputs are clearly draft/reviewed/approved/paid.
-- AI behavior is grounded and advisory.
-
-## 13. Immediate Next Actions
-
-1. Accept this blueprint as the working LCE V1 implementation target.
-2. Create the LCE documentation library structure.
-3. Rename product-facing V3 references to LCE V1.
-4. Audit the current workflow/node/pack runtime against the Phase 1 checklist.
-5. Start Resource Engine implementation.
-6. Start Contractor Edition resource and workflow modeling in parallel, but do not hardcode it outside pack boundaries.
-
-## 14. Final Position
-
-Lados Core Engine V1 is the compact reusable platform.
-
-Contractor Edition is the first proof that the engine works in the real world.
-
-LEOS / JKR is the later proof that the same engine can scale.
-
-The implementation priority is therefore:
-
-```text
-LCE V1 first.
-Contractor Edition second.
-AI and registry maturity third.
-LEOS / JKR later.
+```
+docs/
+  LCE_V1/
+    01_Introduction.md
+    02_Architecture.md
+    03_Workflow_Engine.md
+    04_Node_System.md
+    05_Pack_System.md
+    06_Resource_Engine.md
+    07_Event_Bus.md
+    08_State_Engine.md
+    09_Security_Engine.md
+    10_AI_Runtime.md
+    11_Foundation_Pack.md
+    12_Internal_Registry.md
+    13_UI_Framework.md
+    14_Async_Execution.md
+    15_API_Reference.md
+    16_Testing.md
+  Contractor_Edition/
+    01_Overview.md
+    02_Resources.md
+    03_Workflows.md
+    04_Packs.md
+    05_Driver_Flow.md
+    06_Owner_Flow.md
+  LEOS/
+    01_Deferred_Blueprint.md
 ```
 
-This keeps the engine elegant, reusable, and buildable while preserving the larger long-term vision.
+Existing document mapping:
+
+| Existing document | New home |
+| --- | --- |
+| Lados_Core_Engine_V1_Implementation_Blueprint.md | docs/LCE_V1/02_Architecture.md |
+| Workflow specifications | docs/LCE_V1/03_Workflow_Engine.md |
+| Node SDK | docs/LCE_V1/04_Node_System.md |
+| @lados/pack-sdk types | docs/LCE_V1/05_Pack_System.md |
+| Resource Engine design | docs/LCE_V1/06_Resource_Engine.md |
+| Event Bus design | docs/LCE_V1/07_Event_Bus.md |
+| State Engine design | docs/LCE_V1/08_State_Engine.md |
+| Supabase migrations | docs/LCE_V1/15_API_Reference.md |
+
+---
+
+## 12. Immediate Next Actions
+
+In priority order:
+
+1. Execute Phase 0: rename `@qsos/` → `@lados/`, update UI identity to Lados
+2. Execute Phase 1: replace auto-approve with real pause/resume in `core.human_approval`; add job queue for async execution
+3. Execute Phase 2: move real node implementations from `api/src/execution/real-nodes/` into their respective packs
+4. Begin Phase 3: design and build `lados_resources` table and `ResourceEngine` service
+5. Model Contractor Edition resource types against the Resource Engine schema before writing any pack code
+
+---
+
+## 13. Final Position
+
+```
+LCE is the engine.
+Packs are the domain vocabulary.
+Solutions are pack compositions.
+Contractor Edition proves the engine.
+LEOS / JKR proves it scales.
+```
+
+The implementation sequence is:
+
+```
+Phase 0  — Identity: @lados/, Lados branding
+Phase 1  — Workflow Engine: real approvals, async execution, immutable versions
+Phase 2  — Node Isolation: nodes move into packs
+Phase 3  — Resource Engine: first-class business objects
+Phase 4  — Event Bus: typed, immutable, subscribable
+Phase 5  — State Engine: configurable lifecycle enforcement
+Phase 6  — Security Engine: declarative permission policies
+Phase 7  — Foundation Pack: universal capabilities packaged
+Phase 8  — Pack Installer: runtime install, upgrade, enable, disable
+Phase 9  — Contractor Edition: first real solution
+Phase 10 — AI Runtime: context-aware, tool-calling, auditable
+Phase 11 — Registry: operator-grade pack management
+Phase 12 — Async Execution Queue: production-grade runner
+Phase 13 — LEOS / JKR Blueprint: documented, not built
+```
+
+This order means the engine is solid before the solution is built, and the solution validates the engine before enterprise-scale complexity is introduced.

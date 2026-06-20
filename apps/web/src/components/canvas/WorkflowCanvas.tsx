@@ -578,6 +578,24 @@ function WorkflowCanvasInner({
     [setNodes],
   );
 
+  // ── Label change ───────────────────────────────────────────────────────────
+
+  const handleLabelChange = useCallback(
+    (nodeId: string, label: string) => {
+      setNodes((nds) => {
+        const updated = nds.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, label } } : n,
+        );
+        scheduleAutoSave(updated, edges);
+        return updated;
+      });
+      setSelectedNode((prev) =>
+        prev?.id === nodeId ? { ...prev, data: { ...prev.data, label } } : prev,
+      );
+    },
+    [setNodes, scheduleAutoSave, edges],
+  );
+
   // ── Skill mode ────────────────────────────────────────────────────────────
 
   const handleSetMode = useCallback(
@@ -773,6 +791,7 @@ function WorkflowCanvasInner({
       <PropertyPanel
         selectedNode={selectedNode}
         onConfigChange={handleConfigChange}
+        onLabelChange={readOnly ? undefined : handleLabelChange}
         onDeleteNode={readOnly ? undefined : handleDeleteNode}
         organizationId={organizationId}
         projectId={projectId}

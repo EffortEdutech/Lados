@@ -25,7 +25,8 @@ interface ConfigField {
 }
 
 interface NodePort {
-  name: string;
+  id: string;
+  label?: string;
   type: string;
   description?: string;
   required?: boolean;
@@ -215,6 +216,7 @@ function LibraryPickerField({
 interface PropertyPanelProps {
   selectedNode: Node | null;
   onConfigChange: (nodeId: string, config: Record<string, unknown>) => void;
+  onLabelChange?: (nodeId: string, label: string) => void;
   onDeleteNode?: (nodeId: string) => void;
   organizationId?: string;
   projectId?: string;
@@ -223,6 +225,7 @@ interface PropertyPanelProps {
 export default function PropertyPanel({
   selectedNode,
   onConfigChange,
+  onLabelChange,
   onDeleteNode,
   organizationId,
   projectId,
@@ -230,13 +233,17 @@ export default function PropertyPanel({
   const [nodeDef, setNodeDef] = useState<NodeDefinition | null>(null);
   const [config, setConfig] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(false);
+  const [labelValue, setLabelValue] = useState('');
 
   useEffect(() => {
     if (!selectedNode) {
       setNodeDef(null);
       setConfig({});
+      setLabelValue('');
       return;
     }
+
+    setLabelValue((selectedNode.data?.label as string) ?? '');
 
     const nodeType = selectedNode.data?.nodeType as string | undefined;
     if (!nodeType) return;
@@ -289,9 +296,17 @@ export default function PropertyPanel({
         <p className="text-[10px] text-gray-400">
           {nodeDef?.packs?.display_name ?? '—'} · {nodeDef?.version ?? 'v1.0.0'}
         </p>
-        <h3 className="mt-0.5 font-semibold text-gray-900 text-sm leading-snug">
-          {nodeDef?.name ?? selectedNode.data?.label ?? 'Skill'}
-        </h3>
+        <input
+          type="text"
+          value={labelValue}
+          onChange={(e) => {
+            setLabelValue(e.target.value);
+            if (selectedNode) onLabelChange?.(selectedNode.id, e.target.value);
+          }}
+          placeholder={nodeDef?.name ?? 'Node label'}
+          title="Click to rename this node"
+          className="mt-0.5 w-full rounded border border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent px-1 py-0.5 font-semibold text-gray-900 text-sm leading-snug"
+        />
         {nodeDef?.description && (
           <p className="mt-1 text-[11px] text-gray-500 leading-snug">{nodeDef.description}</p>
         )}
@@ -315,8 +330,8 @@ export default function PropertyPanel({
                 ) : (
                   <ul className="space-y-0.5">
                     {(nodeDef.inputs ?? []).map((port) => (
-                      <li key={port.name} className="text-[10px] text-gray-600">
-                        <span className="font-medium text-gray-700">{port.name}</span>
+                      <li key={port.id} className="text-[10px] text-gray-600">
+                        <span className="font-medium text-gray-700">{port.label ?? port.id}</span>
                         <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
                       </li>
                     ))}
@@ -334,8 +349,8 @@ export default function PropertyPanel({
                 ) : (
                   <ul className="space-y-0.5">
                     {(nodeDef.outputs ?? []).map((port) => (
-                      <li key={port.name} className="text-[10px] text-gray-600">
-                        <span className="font-medium text-gray-700">{port.name}</span>
+                      <li key={port.id} className="text-[10px] text-gray-600">
+                        <span className="font-medium text-gray-700">{port.label ?? port.id}</span>
                         <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
                       </li>
                     ))}
