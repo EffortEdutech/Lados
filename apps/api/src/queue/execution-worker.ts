@@ -28,7 +28,7 @@ import { StateEngineService } from '../state-engine/state-engine.service';
 import { SecurityEngineService } from '../security/security.service';
 import { ApprovalTaskCreator } from '../approval/approval-task.creator';
 import { ArtifactService }  from '../artifact/artifact.service';
-import { ExecutionQueueService } from './execution-queue.service';
+import { ExecutionQueueService, parseRedisUrl } from './execution-queue.service';
 import { buildRealNodeResolver } from '../execution/real-nodes';
 import { runWorkflow } from '@lados/execution-engine';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
@@ -69,11 +69,15 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleInit() {
-    const connectionOptions: ConnectionOptions | undefined = this.queueService.getConnectionOptions();
-    if (!connectionOptions) {
+    // Read REDIS_URL directly — avoids NestJS module init order dependency
+    // (QueueModule and ExecutionModule initialize in parallel; getConnectionOptions()
+    // may still be undefined when this runs even though Redis IS configured).
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) {
       this.logger.warn('No Redis config — worker not started (in-process fallback active)');
       return;
     }
+    const connectionOptions: ConnectionOptions = parseRedisUrl(redisUrl);
 
     this.worker = new Worker<ExecutionJobPayload>(
       EXECUTION_QUEUE_NAME,

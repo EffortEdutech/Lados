@@ -14,7 +14,11 @@
 import { Global, Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ExecutionQueueService } from './execution-queue.service';
-import { ExecutionWorker }      from './execution-worker';
+
+// ExecutionWorker lives in ExecutionModule — it needs FileModule, LibraryModule,
+// ResourceModule, StateEngineModule, ApprovalCoreModule, ArtifactModule etc.,
+// which are already imported there. Keeping the worker there avoids importing
+// every feature module into this lightweight QueueModule.
 
 @Global()
 @Module({
@@ -22,7 +26,7 @@ import { ExecutionWorker }      from './execution-worker';
     // EventEmitter for SSE progress (in-process pub/sub — worker → SSE controller)
     EventEmitterModule.forRoot({ wildcard: false, delimiter: '.', global: true }),
   ],
-  providers: [ExecutionQueueService, ExecutionWorker],
+  providers: [ExecutionQueueService],
   exports:   [ExecutionQueueService],
 })
 export class QueueModule {}

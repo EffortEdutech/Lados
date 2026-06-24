@@ -17,7 +17,7 @@ import {
 } from './queue.constants';
 
 /** Parse a Redis URL into BullMQ ConnectionOptions (no ioredis import needed). */
-function parseRedisUrl(url: string): ConnectionOptions {
+export function parseRedisUrl(url: string): ConnectionOptions {
   const parsed = new URL(url);
   return {
     host:                parsed.hostname,
