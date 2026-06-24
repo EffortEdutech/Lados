@@ -1,0 +1,166 @@
+/**
+ * AiController — Phase 10 (AI Runtime)
+ *
+ * POST /ai/assist   — Owner assistant chat endpoint (auth required, owner|admin only)
+ * GET  /ai/status   — Whether the AI service is configured (public — no auth)
+ * GET  /ai/history  — Ledger rows for a session (auth required, owner|admin only)
+ *
+ * All success responses follow the standard ApiResponse envelope:
+ *   { success: true, data: <T>, error: null }
+ *
+ * The assistant is READ-ONLY. It cannot approve, transition, or mutate anything.
+ *
+ * Sprint 10 (S10-005)
+ */
+
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Post,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsObject,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import type { ApiResponse } from '@lados/shared-types';
+import { AiService, AssistRequest, AssistResponse, ParsedCommandIntent } from './ai.service';
+import { WorkflowTriggerService, WorkflowTriggerRequest } from './workflow-trigger.service';
+import { WorkflowSuggestService } from './workflow-suggest.service';
+import { WorkflowEditService }    from './workflow-edit.service';
+import { SupabaseJwtGuard } from '../common/guards/supabase-jwt.guard';
+import { SupabaseService } from '../common/supabase/supabase.service';
+import { ResourceService, ResourceType } from '../resource/resource.service';
+import { ExecutionService } from '../execution/execution.service';
+import type { AuthenticatedRequest } from '../common/types/authenticated-request';
+
+// ── DTOs ──────────────────────────────────────────────────────────────────────
+
+class HistoryMessageDto {
+  @IsIn(['user', 'assistant'])
+  role!: 'user' | 'assistant';
+
+  @IsString()
+  @MaxLength(4000)
+  content!: string;
+}
+
+class AssistDto {
+  @IsString()
+  orgId!: string;
+
+  @IsString()
+  @MaxLength(2000)
+  message!: string;
+
+  @IsString()
+  sessionId!: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => HistoryMessageDto)
+  history?: HistoryMessageDto[];
+}
+
+class WorkflowTriggerDto implements WorkflowTriggerRequest {
+  @IsString()
+  orgId!: string;
+
+  @IsString()
+  @MaxLength(2000)
+  command!: string;
+
+  @IsOptional()
+  session?: WorkflowTriggerRequest['session'];
+
+  @IsOptional()
+  @IsString()
+  answer?: string;
+
+  @IsOptional()
+  execute?: boolean;
+
+  @IsOptional()
+  @IsString()
+  unskipNodeId?: string;
+}
+
+class WorkflowSuggestDto {
+  @IsString()
+  orgId!: string;
+
+  @IsString()
+  @MaxLength(500)
+  description!: string;
+}
+
+class WorkflowEditNodeDto {
+  @IsString() id!:    string;
+  @IsString() type!:  string;
+  @IsString() label!: string;
+}
+
+class WorkflowEditAvailableDto {
+  @IsString()           type!:         string;
+  @IsString()           name!:         string;
+  @IsOptional()
+  @IsString()           description?:  string;
+}
+
+class WorkflowEditDto {
+  @IsString()
+  orgId!: string;
+
+  @IsString()
+  @MaxLength(500)
+  message!: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WorkflowEditNodeDto)
+  currentNodes!: WorkflowEditNodeDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WorkflowEditAvailableDto)
+  allAvailableNodes!: WorkflowEditAvailableDto[];
+}
+
+class WorkflowCommandDto {
+  @IsString()
+  orgId!: string;
+
+  @IsString()
+  @MaxLength(2000)
+  command!: string;
+
+  /** Phase B: set to true to execute the confirmed intent */
+  @IsOptional()
+  @IsBoolean()
+  confirmed?: boolean;
+
+  /** Phase B: the intent returned from Phase A, sent back for execution */
+  @IsOptional()
+  @IsObject()
+  intent?: ParsedCommandIntent;
+}
+
+// ── Convenience wrapper ───────────────────────────────────────────────────────
+
+function ok<T>(data: T): ApiResponse<T> {
+  return { success: true, data, error: null };
+}
+
+// ── Controller ─────────────────────────────────�

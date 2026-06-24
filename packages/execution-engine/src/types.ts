@@ -100,6 +100,24 @@ export interface ResumeCheckpoint {
   };
 }
 
+// ── Skip node spec ────────────────────────────────────────────────────────────
+
+/**
+ * Specifies a node that should be skipped at execution time.
+ * Used by the AI workflow trigger to bypass optional nodes
+ * (e.g. "create customer" when the customer already exists).
+ *
+ * `outputs` are injected as if the node had run — downstream nodes
+ * that depend on this node's outputs will receive them normally.
+ */
+export interface SkipNodeSpec {
+  nodeId:   string;
+  /** Outputs to inject — used by downstream nodes as if the node had run */
+  outputs?: Record<string, unknown>;
+  /** Human-readable reason shown in the execution log */
+  reason?:  string;
+}
+
 // ── Runner options ────────────────────────────────────────────────────────────
 
 export interface RunnerOptions {
@@ -123,6 +141,14 @@ export interface RunnerOptions {
    * instead of starting from scratch.
    */
   resumeFromCheckpoint?: ResumeCheckpoint;
+  /**
+   * Phase 11: AI-requested node skips.
+   * Each spec names a node to skip and provides the outputs to inject
+   * so downstream nodes still receive the data they expect.
+   * Example: skip "create_customer" when TSBSB already exists in the DB,
+   * inject { customerId: 'existing-uuid' } as the node's outputs.
+   */
+  skipNodes?: SkipNodeSpec[];
 }
 
 // ── Mock node executor type ───────────────────────────────────────────────────

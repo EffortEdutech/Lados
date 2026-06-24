@@ -1,0 +1,142 @@
+{
+  "id": "contractor.fuel.extract-and-approve",
+  "name": "AI Fuel Receipt — Extract & Approve",
+  "description": "Runs GPT-4o-mini vision on a fuel receipt image to extract amount, litres, station, and date. Advisory output is written to the receipt resource. A human must review and approve before values are used commercially. AI guardrail: approvedByHuman is always false until owner/admin explicitly approves.",
+  "version": "1.0.0",
+  "packId": "lados.contractor-pack",
+  "tags": ["contractor", "fuel", "ai", "vision", "approval"],
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "type": "core.cron_trigger",
+      "label": "Manual Trigger",
+      "position": { "x": 100, "y": 200 },
+      "config": {},
+      "inputSchema": [
+        {
+          "key": "receiptId",
+          "label": "Fuel Receipt",
+          "type": "string",
+          "required": true,
+          "ui:widget": "resource-picker",
+          "ui:resourceType": "fuel_receipt",
+          "ui:displayField": "name",
+          "ui:filterByState": ["pending_review"]
+        }
+      ]
+    },
+    {
+      "id": "node-extract",
+      "type": "contractor.extract_fuel_data",
+      "label": "🤖 AI Extract Receipt Data",
+      "position": { "x": 350, "y": 200 },
+      "config": {},
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "trigger-1", "fromOutput": "receiptId", "toInput": "receiptId" }
+        ]
+      }
+    },
+    {
+      "id": "node-notify-extracted",
+      "type": "foundation.send_notification",
+      "label": "Notify — Extraction Complete",
+      "position": { "x": 600, "y": 100 },
+      "config": {
+        "channel": "in_app",
+        "title": "Fuel Receipt — AI Extraction Done",
+        "body": "AI has extracted data from the fuel receipt. Please review and approve before values are posted to finance."
+      },
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "node-extract", "fromOutput": "receiptId", "toInput": "resourceId" }
+        ]
+      }
+    },
+    {
+      "id": "node-approval",
+      "type": "foundation.request_approval",
+      "label": "Owner Review & Approve",
+      "position": { "x": 850, "y": 200 },
+      "config": {
+        "title": "Fuel Receipt — Human Approval Required",
+        "description": "Review the AI-extracted values (amount, litres, station, date). Approve to confirm them for finance, or reject to send back for manual entry.",
+        "roles": ["owner", "admin"]
+      },
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "trigger-1",   "fromOutput": "receiptId", "toInput": "resourceId" }
+        ]
+      }
+    },
+    {
+      "id": "node-approve-state",
+      "type": "state.change",
+      "label": "Mark Receipt Approved",
+      "position": { "x": 1100, "y": 100 },
+      "config": {
+        "toState": "approved"
+      },
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "trigger-1", "fromOutput": "receiptId", "toInput": "resourceId" }
+        ]
+      }
+    },
+    {
+      "id": "node-notify-approved",
+      "type": "foundation.send_notification",
+      "label": "Notify — Receipt Approved",
+      "position": { "x": 1350, "y": 100 },
+      "config": {
+        "channel": "in_app",
+        "title": "Fuel Receipt Approved",
+        "body": "The fuel receipt has been approved by management and values are now confirmed for finance."
+      },
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "node-approve-state", "fromOutput": "resourceId", "toInput": "resourceId" }
+        ]
+      }
+    },
+    {
+      "id": "node-reject-state",
+      "type": "state.change",
+      "label": "Mark Receipt Rejected",
+      "position": { "x": 1100, "y": 320 },
+      "config": {
+        "toState": "rejected"
+      },
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "trigger-1", "fromOutput": "receiptId", "toInput": "resourceId" }
+        ]
+      }
+    },
+    {
+      "id": "node-notify-rejected",
+      "type": "foundation.send_notification",
+      "label": "Notify — Receipt Rejected",
+      "position": { "x": 1350, "y": 320 },
+      "config": {
+        "channel": "in_app",
+        "title": "Fuel Receipt Rejected",
+        "body": "The fuel receipt was rejected. Please re-upload a clearer image or enter values manually."
+      },
+      "connections": {
+        "inputs": [
+          { "fromNodeId": "node-reject-state", "fromOutput": "resourceId", "toInput": "resourceId" }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "trigger-1",         "target": "node-extract" },
+    { "id": "e2", "source": "node-extract",       "target": "node-notify-extracted" },
+    { "id": "e3", "source": "node-notify-extracted", "target": "node-approval" },
+    { "id": "e4", "source": "node-approval",      "target": "node-approve-state",  "label": "approved" },
+    { "id": "e5", "source": "node-approve-state", "target": "node-notify-approved" },
+    { "id": "e6", "source": "node-approval",      "target": "node-reject-state",   "label": "rejected" },
+    { "id": "e7", "source": "node-reject-state",  "target": "node-notify-rejected" }
+  ]
+}

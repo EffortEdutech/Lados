@@ -72,24 +72,4 @@ export class TransitionStateDto {
 
 export class ListResourcesDto {
   // organizationId is passed as a query param by the frontend but handled separately
-  // via @Query('organizationId') — must be declared here to pass forbidNonWhitelisted
-  @IsOptional()
-  @IsString()
-  organizationId?: string;
-
-  @IsOptional()
-  @IsIn(RESOURCE_TYPES)
-  type?: string;
-
-  @IsOptional()
-  @IsString()
-  state?: string;
-
-  @IsOptional()
-  @IsUUID()
-  projectId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  parentId?: string;
-}
+  // via @Query('organizationId

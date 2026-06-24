@@ -1,11 +1,9 @@
-import { IsOptional, IsObject } from 'class-validator';
+import { IsOptional, IsObject, IsArray, ValidateNested, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class TriggerRunDto {
+export class SkipNodeDto {
+  @IsString()
+  nodeId!: string;
+
   @IsOptional()
   @IsObject()
-  inputs?: Record<string, unknown>;
-
-  @IsOptional()
-  @IsObject()
-  variables?: Record<string, unknown>;
-}

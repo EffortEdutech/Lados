@@ -16,11 +16,19 @@
  * Inline actions:
  *   - node === 'state.change'  → POST /resources/:id/transition directly
  *   - other node types         → POST /resources/:id/execute-action via WorkflowActionModal
+ *
+ * M7 — Driver UI:
+ *   When the logged-in user has role 'driver' in their org:
+ *   - Only the 'trip' tab is shown
+ *   - Trips are filtered to those assigned to the driver's own resource
+ *   - A driver banner is shown at the top
+ *   - No access to financial/invoice/payroll tabs
  */
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api/client';
+import { createClient } from '@/lib/supabase/client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -107,6 +115,7 @@ const STATE_COLORS: Record<string, string> = {
   cancelled:        'bg-red-100 text-red-600',
   available:        'bg-emerald-100 text-emerald-700',
   scheduled:        'bg-indigo-100 text-indigo-700',
+  dispatched:       'bg-yellow-100 text-yellow-700',
 };
 
 function StateBadge({ state }: { state: string }) {
@@ -126,12 +135,14 @@ function ResourceCard({
   orgId,
   onAction,
   actionBusy,
+  driverMode,
 }: {
   resource:    Resource;
   viewConfig?: PackResourceDefinition;
   orgId:       string;
   onAction:    (resource: Resource, action: ResourceInlineAction) => void;
-  actionBusy:  string | null; // resourceId being actioned
+  actionBusy:  string | null;
+  driverMode:  boolean;
 }) {
   const list    = viewConfig?.views?.list;
   const actions = viewConfig?.views?.inlineActions ?? [];
@@ -144,8 +155,16 @@ function ResourceCard({
   const visibleActions = actions.filter((a) => a.visibleInStates.includes(resource.state));
   const isBusy = actionBusy === resource.id;
 
+  // In driver mode show only the primary state-change actions, not financial nodes
+  const DRIVER_HIDDEN_NODES = ['contractor.generate_invoice', 'contractor.approve_payroll'];
+  const filteredActions = driverMode
+    ? visibleActions.filter((a) => !DRIVER_HIDDEN_NODES.includes(a.node))
+    : visibleActions;
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all">
+    <div className={`rounded-xl border bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all ${
+      driverMode ? 'border-yellow-200' : 'border-gray-200'
+    }`}>
       <div className="p-4">
         {/* Top row */}
         <div className="flex items-start justify-between gap-2">
@@ -174,12 +193,48 @@ function ResourceCard({
           )}
           <span className="text-[10px] font-mono text-gray-300">{resource.id.slice(0, 8)}</span>
         </div>
+
+        {/* Fuel receipt — show AI extracted data if present */}
+        {resource.type === 'fuel_receipt' && resource.data?.aiExtracted && (() => {
+          type AiEx = { amount?: number|null; liters?: number|null; fuelType?: string; confidence?: number; approvedByHuman?: boolean };
+          const ai = resource.data.aiExtracted as AiEx;
+          if (ai.amount == null && ai.liters == null) return null;
+          return (
+            <div className="mt-2 pl-7">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] text-purple-600 bg-purple-50 rounded px-1.5 py-0.5">🤖 AI extracted</span>
+                {ai.amount   != null && <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 rounded px-1.5 py-0.5">MYR {ai.amount.toFixed(2)}</span>}
+                {ai.liters   != null && <span className="text-[11px] text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">{ai.liters} L</span>}
+                {ai.fuelType          && <span className="text-[11px] text-gray-600 bg-gray-100 rounded px-1.5 py-0.5">{ai.fuelType}</span>}
+                {ai.confidence != null && <span className="text-[10px] text-gray-400">{(ai.confidence * 100).toFixed(0)}% conf.</span>}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Driver mode: show load details inline */}
+        {driverMode && resource.data && (
+          <div className="mt-2 pl-7 space-y-0.5">
+            {resource.data.loadType && (
+              <p className="text-[11px] text-gray-500">
+                Load: <span className="font-medium text-gray-700">
+                  {String(resource.data.loadQuantity ?? '')} {String(resource.data.loadUnit ?? '')} {String(resource.data.loadType)}
+                </span>
+              </p>
+            )}
+            {resource.data.origin && (
+              <p className="text-[11px] text-gray-500">
+                {String(resource.data.origin)} → {String(resource.data.destination ?? '—')}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Inline actions */}
-      {visibleActions.length > 0 && (
+      {filteredActions.length > 0 && (
         <div className="border-t border-gray-100 px-4 py-2.5 flex flex-wrap gap-2">
-          {visibleActions.map((action) => {
+          {filteredActions.map((action) => {
             const isStateChange = action.node === 'state.change';
             return (
               <button
@@ -187,9 +242,11 @@ function ResourceCard({
                 onClick={() => onAction(resource, action)}
                 disabled={isBusy}
                 className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 ${
-                  isStateChange
-                    ? 'bg-gray-50 border border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
-                    : 'bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300'
+                  driverMode
+                    ? 'bg-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-100'
+                    : isStateChange
+                      ? 'bg-gray-50 border border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
+                      : 'bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300'
                 }`}
               >
                 {action.icon && <span>{action.icon}</span>}
@@ -250,20 +307,35 @@ function ConfirmModal({
 // ── Workflow Action Modal ─────────────────────────────────────────────────────
 //
 // Renders a dynamic form for any pack node that is NOT state.change.
-// The form fields are derived from the node's input schema (fetched from
-// GET /packs/:packId) so this component works generically for any node type.
 //
-// Pre-fills the resourceId field if the schema contains a matching key
-// (jobId, vehicleId, resourceId, etc. that reference the current resource).
+// Smart field rendering:
+//   - Fields ending in "Id" (vehicleId, driverId, customerId, jobId …)
+//     → resource picker dropdown loaded from GET /resources?type={xyz}
+//   - Fields named "scheduledDate" or "date" → <input type="date">
+//   - Fields named "notes", "description", "remarks" → <textarea>
+//   - Everything else → <input type="text|number">
 //
+// Fields whose key matches the current resource type (e.g. jobId when
+// browsing a job) are pre-filled and shown as read-only.
 
 interface NodeInputSchema {
-  key:         string;
-  label:       string;
-  type:        string;
-  required?:   boolean;
+  key:          string;
+  label:        string;
+  type:         string;
+  required?:    boolean;
   description?: string;
-  placeholder?: string;
+}
+
+interface ResourceOption {
+  id:    string;
+  name:  string;
+  state: string;
+}
+
+/** Derive the resource type from a field key like "vehicleId" → "vehicle" */
+function resourceTypeFromKey(key: string): string | null {
+  if (!key.endsWith('Id') || key === 'resourceId') return null;
+  return key.slice(0, -2); // strip trailing "Id"
 }
 
 function WorkflowActionModal({
@@ -281,31 +353,28 @@ function WorkflowActionModal({
   onSuccess: (msg: string) => void;
   onCancel:  () => void;
 }) {
-  const [schema,  setSchema]  = useState<NodeInputSchema[]>([]);
-  const [values,  setValues]  = useState<Record<string, string>>({});
-  const [busy,    setBusy]    = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [schema,          setSchema]          = useState<NodeInputSchema[]>([]);
+  const [values,          setValues]          = useState<Record<string, string>>({});
+  const [resourceOptions, setResourceOptions] = useState<Record<string, ResourceOption[]>>({});
+  const [busy,            setBusy]            = useState(false);
+  const [error,           setError]           = useState<string | null>(null);
+  const [loading,         setLoading]         = useState(true);
+  const [result,          setResult]          = useState<Record<string, unknown> | null>(null);
 
-  // Load node input schema from the pack manifest.
-  // registered_nodes.inputs format: [{ name, type, required, description? }]
-  // We map `name` → `key` so the form can drive generically.
   useEffect(() => {
     if (!packId) { setLoading(false); return; }
+
     apiClient
       .get<{
         nodes: Array<{
-          type: string;
+          type:    string;
           inputs?: Array<{ name: string; type: string; required?: boolean; description?: string }>;
         }>;
-      }>(
-        `/packs/${encodeURIComponent(packId)}`,
-      )
-      .then((res) => {
-        const node = (res.data?.nodes ?? []).find((n) => n.type === action.node);
+      }>(`/packs/${encodeURIComponent(packId)}`)
+      .then(async (res) => {
+        const node      = (res.data?.nodes ?? []).find((n) => n.type === action.node);
         const rawInputs = node?.inputs ?? [];
 
-        // Map DB format → modal's NodeInputSchema (name → key, auto-label)
         const fields: NodeInputSchema[] = rawInputs.map((inp) => ({
           key:         inp.name,
           label:       inp.name
@@ -319,7 +388,8 @@ function WorkflowActionModal({
 
         setSchema(fields);
 
-        // Pre-fill: if the resource is a job, pre-fill jobId
+        // Pre-fill values: own resource type pre-fills its Id field,
+        // and any data fields already on the resource are pre-filled too.
         const pre: Record<string, string> = {};
         for (const f of fields) {
           if (f.key === `${resource.type}Id`) {
@@ -329,34 +399,62 @@ function WorkflowActionModal({
           }
         }
         setValues(pre);
+
+        // For each *Id field (except the current resource's own type),
+        // fetch the resource list so we can show a picker dropdown.
+        const pickerFetches = fields
+          .filter((f) => {
+            const rt = resourceTypeFromKey(f.key);
+            return rt !== null && rt !== resource.type; // own type is pre-filled / read-only
+          })
+          .map(async (f) => {
+            const rt  = resourceTypeFromKey(f.key)!;
+            const r   = await apiClient.get<ResourceOption[]>(
+              `/resources?organizationId=${orgId}&type=${rt}`,
+            );
+            return { key: f.key, options: r.data ?? [] };
+          });
+
+        const results = await Promise.allSettled(pickerFetches);
+        const opts: Record<string, ResourceOption[]> = {};
+        for (const r of results) {
+          if (r.status === 'fulfilled') {
+            opts[r.value.key] = r.value.options;
+          }
+        }
+        setResourceOptions(opts);
       })
       .catch(() => setSchema([]))
       .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [packId, action.node]);
+  }, [packId, action.node, orgId]);
 
   const handleSubmit = async () => {
     setBusy(true);
     setError(null);
     try {
-      // Build inputs — merge form values with resource context
       const inputs: Record<string, unknown> = { ...values };
-      // Always pass the resource's own ID and type for nodes that need context
       inputs['resourceId'] ??= resource.id;
 
-      const res = await apiClient.post<{ success: boolean; data: { status: string; outputs: Record<string, unknown>; error?: unknown } }>(
+      const res = await apiClient.post<{
+        success: boolean;
+        data: { status: string; outputs: Record<string, unknown>; error?: unknown };
+      }>(
         `/resources/${resource.id}/execute-action?organizationId=${orgId}`,
         { node: action.node, inputs },
       );
 
-      if (res.data?.success === false || res.data?.data?.status === 'failure') {
-        const errData = res.data?.data?.error;
+      // apiClient returns parsed JSON directly — res IS the body, not an axios wrapper
+      // Response shape: { success: bool, data: { status: string, outputs: {...}, error?: {...} } }
+      if (res.success === false || res.data?.status === 'failure') {
+        const errData = res.data?.error;
         const msg = typeof errData === 'object' && errData !== null && 'message' in errData
           ? String((errData as { message: string }).message)
           : JSON.stringify(errData ?? 'Action failed');
         setError(msg);
       } else {
-        onSuccess(`${action.label} completed for ${resource.name}`);
+        // Show the outputs to the user before closing
+        setResult((res.data?.outputs as Record<string, unknown>) ?? {});
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Action failed');
@@ -364,6 +462,126 @@ function WorkflowActionModal({
       setBusy(false);
     }
   };
+
+  // ── Field renderer ────────────────────────────────────────────────────────
+
+  function renderField(field: NodeInputSchema) {
+    const isOwnRef  = field.key === `${resource.type}Id`;
+    const resType   = resourceTypeFromKey(field.key);
+    const isDateFld = field.key.toLowerCase().includes('date');
+    const isTextarea = ['notes', 'description', 'remarks', 'comment'].includes(field.key.toLowerCase());
+
+    const commonCls = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-gray-50';
+
+    // Pre-filled, read-only: own resource reference
+    if (isOwnRef) {
+      return (
+        <div className={`${commonCls} bg-gray-50 text-gray-500 cursor-default`}>
+          {resource.name}
+          <span className="ml-2 text-[10px] text-gray-400 font-mono">{resource.id.slice(0, 8)}…</span>
+        </div>
+      );
+    }
+
+    // Resource picker dropdown
+    if (resType && field.key in resourceOptions) {
+      const options = resourceOptions[field.key];
+      return (
+        <select
+          value={values[field.key] ?? ''}
+          onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
+          disabled={busy}
+          className={commonCls}
+        >
+          <option value="">— Select {resType} —</option>
+          {options.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.name} ({opt.state})
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    // Loading picker options
+    if (resType && !(field.key in resourceOptions) && loading === false) {
+      return (
+        <select disabled className={commonCls}>
+          <option>No {resType}s found</option>
+        </select>
+      );
+    }
+
+    // Date field
+    if (isDateFld) {
+      return (
+        <input
+          type="date"
+          value={values[field.key] ?? ''}
+          onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
+          disabled={busy}
+          className={commonCls}
+        />
+      );
+    }
+
+    // Textarea
+    if (isTextarea) {
+      return (
+        <textarea
+          rows={3}
+          value={values[field.key] ?? ''}
+          onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
+          placeholder={`Enter ${field.label.toLowerCase()}…`}
+          disabled={busy}
+          className={`${commonCls} resize-none`}
+        />
+      );
+    }
+
+    // File / image upload — converts to base64 data URI sent inline with the request
+    if (field.type === 'file' || field.type === 'image') {
+      const hasFile = !!values[field.key];
+      return (
+        <div>
+          <label className={`flex items-center gap-2 cursor-pointer ${commonCls} ${busy ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}>
+            <span className="text-lg">📎</span>
+            <span className="text-gray-600">{hasFile ? '✓ Image selected — click to change' : 'Click to choose receipt image…'}</span>
+            <input
+              type="file"
+              accept="image/*"
+              disabled={busy}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  setValues((v) => ({ ...v, [field.key]: reader.result as string }));
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+          </label>
+          {hasFile && (
+            <p className="text-[10px] text-green-600 mt-1">Image ready — click Extract Data to process</p>
+          )}
+        </div>
+      );
+    }
+
+    // Default: text / number
+    return (
+      <input
+        type={field.type === 'number' ? 'number' : 'text'}
+        value={values[field.key] ?? ''}
+        onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
+        placeholder={`Enter ${field.label.toLowerCase()}…`}
+        disabled={busy}
+        className={commonCls}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -377,442 +595,30 @@ function WorkflowActionModal({
           <button onClick={onCancel} disabled={busy} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
         </div>
 
-        {/* Node type badge */}
-        <p className="mb-4 text-[10px] font-mono text-gray-400 bg-gray-50 rounded px-2 py-1 truncate">
-          {action.node}
-        </p>
-
-        {loading && (
-          <p className="text-sm text-gray-400 text-center py-6">Loading form…</p>
-        )}
-
-        {!loading && (
-          <div className="space-y-3">
-            {schema.length === 0 && (
-              <p className="text-xs text-gray-500 italic">No additional inputs required.</p>
-            )}
-            {schema.map((field) => (
-              <div key={field.key}>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-0.5">*</span>}
-                </label>
-                {field.description && (
-                  <p className="text-[10px] text-gray-400 mb-1">{field.description}</p>
-                )}
-                <input
-                  type={field.type === 'number' ? 'number' : 'text'}
-                  value={values[field.key] ?? ''}
-                  onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
-                  placeholder={field.placeholder ?? field.label}
-                  disabled={busy}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {error && (
-          <div className="mt-3 rounded-lg bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            disabled={busy}
-            className="rounded-lg px-4 py-2 text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={busy || loading}
-            className="rounded-lg px-4 py-2 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {busy ? 'Running…' : action.label}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Main page ─────────────────────────────────────────────────────────────────
-
-function ResourcesPageInner() {
-  const router       = useRouter();
-  const searchParams = useSearchParams();
-  const typeParam    = searchParams.get('type') ?? '';
-
-  // ── Org state ──────────────────────────────────────────────────────────────
-  const [orgs,        setOrgs]        = useState<Organization[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
-
-  // ── View config ────────────────────────────────────────────────────────────
-  const [viewConfigs, setViewConfigs] = useState<Record<string, PackResourceDefinition>>({});
-  const [activeType,  setActiveType]  = useState<string>(typeParam);
-
-  // ── Resource list ──────────────────────────────────────────────────────────
-  const [resources,  setResources]  = useState<Resource[]>([]);
-  const [loading,    setLoading]    = useState(false);
-  const [search,     setSearch]     = useState('');
-  const [stateFilter, setStateFilter] = useState('');
-
-  // ── Action state ───────────────────────────────────────────────────────────
-  const [actionBusy,    setActionBusy]    = useState<string | null>(null);
-  const [confirmTarget, setConfirmTarget] = useState<{
-    resource: Resource; action: ResourceInlineAction;
-  } | null>(null);
-  const [nodeActionTarget, setNodeActionTarget] = useState<{
-    resource: Resource; action: ResourceInlineAction;
-  } | null>(null);
-  const [actionError,   setActionError]   = useState<string | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-
-  // ── Error ──────────────────────────────────────────────────────────────────
-  const [error, setError] = useState<string | null>(null);
-
-  // ── 1. Load orgs ──────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    apiClient.get<Organization[]>('/organizations').then((res) => {
-      const list = res.data ?? [];
-      setOrgs(list);
-      if (list.length > 0) setSelectedOrg(list[0]);
-    });
-  }, []);
-
-  // ── 2. Load pack resource view configs ────────────────────────────────────
-
-  useEffect(() => {
-    if (!selectedOrg) return;
-    apiClient
-      .get<Record<string, PackResourceDefinition>>(
-        `/packs/resource-views?organizationId=${selectedOrg.id}`,
-      )
-      .then((res) => {
-        const configs = res.data ?? {};
-        setViewConfigs(configs);
-        // Set active type from URL param or first available type
-        const types = Object.keys(configs);
-        if (typeParam && configs[typeParam]) {
-          setActiveType(typeParam);
-        } else if (types.length > 0 && !activeType) {
-          setActiveType(types[0]);
-        }
-      })
-      .catch(() => setError('Failed to load resource type configurations'));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedOrg]);
-
-  // ── 3. Load resources when type or org changes ────────────────────────────
-
-  const loadResources = useCallback(() => {
-    if (!selectedOrg || !activeType) return;
-    setLoading(true);
-    setError(null);
-    apiClient
-      .get<Resource[]>(
-        `/resources?organizationId=${selectedOrg.id}&type=${activeType}` +
-        (stateFilter ? `&state=${stateFilter}` : ''),
-      )
-      .then((res) => setResources(res.data ?? []))
-      .catch(() => setError('Failed to load resources'))
-      .finally(() => setLoading(false));
-  }, [selectedOrg, activeType, stateFilter]);
-
-  useEffect(() => { loadResources(); }, [loadResources]);
-
-  // ── Tab change: update URL + state ────────────────────────────────────────
-
-  const handleTypeChange = (type: string) => {
-    setActiveType(type);
-    setStateFilter('');
-    setSearch('');
-    router.push(`/resources?type=${type}`);
-  };
-
-  // ── Inline action handler ─────────────────────────────────────────────────
-
-  const handleAction = (resource: Resource, action: ResourceInlineAction) => {
-    if (action.node !== 'state.change') {
-      // Non-state.change: open WorkflowActionModal for input collection
-      setNodeActionTarget({ resource, action });
-      return;
-    }
-    if (action.requiresConfirm) {
-      setConfirmTarget({ resource, action });
-    } else {
-      executeAction(resource, action);
-    }
-  };
-
-  const executeAction = async (resource: Resource, action: ResourceInlineAction) => {
-    if (!selectedOrg) return;
-    setActionBusy(resource.id);
-    setActionError(null);
-    setActionSuccess(null);
-    try {
-      if (action.node === 'state.change') {
-        // Map label → target state for state.change transitions
-        const STATE_MAP: Record<string, string> = {
-          'Approve':             'active',
-          'Reject':              'cancelled',
-          'Mark Complete':       'completed',
-          'Submit for Approval': 'pending_approval',
-          'Cancel':              'cancelled',
-          'Activate':            'active',
-        };
-        const toState = STATE_MAP[action.label] ?? action.label.toLowerCase().replace(/\s+/g, '_');
-        await apiClient.post(
-          `/resources/${resource.id}/transition?organizationId=${selectedOrg.id}`,
-          { toState },
-        );
-        setActionSuccess(`${resource.name} → ${toState.replace(/_/g, ' ')}`);
-      }
-      loadResources();
-    } catch (e: unknown) {
-      setActionError(e instanceof Error ? e.message : 'Action failed');
-    } finally {
-      setActionBusy(null);
-      setConfirmTarget(null);
-    }
-  };
-
-  // ── Filter resources client-side ──────────────────────────────────────────
-
-  const filtered = resources.filter((r) => {
-    if (!search) return true;
-    return r.name.toLowerCase().includes(search.toLowerCase());
-  });
-
-  // ── Derived ───────────────────────────────────────────────────────────────
-
-  const typeList      = Object.values(viewConfigs);
-  const activeConfig  = viewConfigs[activeType];
-  const uniqueStates  = [...new Set(resources.map((r) => r.state))].sort();
-
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ── Page header ── */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 sm:px-6">
-        <div className="max-w-5xl mx-auto flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Resources</h1>
-            <p className="mt-0.5 text-sm text-gray-500">
-              {activeConfig
-                ? `${activeConfig.displayNamePlural ?? activeConfig.displayName} managed by ${activeConfig.packId}`
-                : 'All resource types across installed packs'}
-            </p>
-          </div>
-
-          {/* Org selector */}
-          {orgs.length > 1 && (
-            <select
-              value={selectedOrg?.id ?? ''}
-              onChange={(e) => {
-                const org = orgs.find((o) => o.id === e.target.value);
-                if (org) setSelectedOrg(org);
-              }}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {orgs.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}</option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
-
-      {/* ── Type tabs (horizontal scroll on mobile) ── */}
-      {typeList.length > 0 && (
-        <div className="bg-white border-b border-gray-200 overflow-x-auto">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-end gap-0">
-            {typeList.map((def) => {
-              const isActive = def.type === activeType;
-              return (
-                <button
-                  key={def.type}
-                  onClick={() => handleTypeChange(def.type)}
-                  className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                    isActive
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-200'
-                  }`}
-                >
-                  {def.icon && <span>{def.icon}</span>}
-                  {def.displayNamePlural ?? def.displayName}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5">
-
-        {/* ── Filters row ── */}
-        <div className="mb-5 flex flex-col sm:flex-row gap-3">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder={`Search ${activeConfig?.displayNamePlural ?? 'resources'}…`}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {/* State filter */}
-          {uniqueStates.length > 1 && (
-            <select
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All states</option>
-              {uniqueStates.map((s) => (
-                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          )}
-
-          {/* Refresh */}
-          <button
-            onClick={loadResources}
-            disabled={loading}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <span className={loading ? 'animate-spin inline-block' : ''}>⟳</span>
-          </button>
-        </div>
-
-        {/* ── Toasts ── */}
-        {actionSuccess && (
-          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700 flex items-center justify-between">
-            ✅ {actionSuccess}
-            <button onClick={() => setActionSuccess(null)} className="text-green-400 hover:text-green-600 ml-4">✕</button>
-          </div>
-        )}
-        {actionError && (
-          <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
-            {actionError}
-            <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-600 ml-4">✕</button>
-          </div>
-        )}
-        {error && (
-          <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
-            {error}
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-4">✕</button>
-          </div>
-        )}
-
-        {/* ── Loading ── */}
-        {loading && (
-          <div className="text-center py-16 text-sm text-gray-400">
-            Loading {activeConfig?.displayNamePlural ?? 'resources'}…
-          </div>
-        )}
-
-        {/* ── Empty ── */}
-        {!loading && filtered.length === 0 && !error && (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-3">{activeConfig?.icon ?? '🗂️'}</div>
-            <p className="text-sm text-gray-500">
-              No {activeConfig?.displayNamePlural ?? 'resources'} found
-              {(search || stateFilter) ? ' matching your filters' : ''}.
-            </p>
-            {(search || stateFilter) && (
-              <button
-                onClick={() => { setSearch(''); setStateFilter(''); }}
-                className="mt-3 text-sm text-blue-600 hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* ── Resource grid ── */}
-        {!loading && filtered.length > 0 && (
+        {/* ── Result panel (shown after success) ── */}
+        {result !== null ? (
           <>
-            <p className="text-xs text-gray-400 mb-4">
-              <span className="font-semibold text-gray-600">{filtered.length}</span> of{' '}
-              <span className="font-semibold text-gray-600">{resources.length}</span>{' '}
-              {activeConfig?.displayNamePlural ?? 'resources'}
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map((resource) => (
-                <ResourceCard
-                  key={resource.id}
-                  resource={resource}
-                  viewConfig={activeConfig}
-                  orgId={selectedOrg?.id ?? ''}
-                  onAction={handleAction}
-                  actionBusy={actionBusy}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ── Empty state: no type selected ── */}
-        {!loading && typeList.length === 0 && !error && (
-          <div className="text-center py-20">
-            <div className="text-4xl mb-3">📦</div>
-            <p className="text-sm text-gray-500">No packs with resource types are currently active.</p>
-            <a href="/packs" className="mt-3 inline-block text-sm text-blue-600 hover:underline">
-              Go to Packs →
-            </a>
-          </div>
-        )}
-      </div>
-
-      {/* ── Confirm modal (state.change with requiresConfirm) ── */}
-      {confirmTarget && (
-        <ConfirmModal
-          action={confirmTarget.action}
-          resource={confirmTarget.resource}
-          onConfirm={() => executeAction(confirmTarget.resource, confirmTarget.action)}
-          onCancel={() => setConfirmTarget(null)}
-          busy={actionBusy === confirmTarget.resource.id}
-        />
-      )}
-
-      {/* ── Workflow action modal (non-state.change pack nodes) ── */}
-      {nodeActionTarget && (
-        <WorkflowActionModal
-          action={nodeActionTarget.action}
-          resource={nodeActionTarget.resource}
-          packId={activeConfig?.packId ?? ''}
-          orgId={selectedOrg?.id ?? ''}
-          onSuccess={(msg) => {
-            setNodeActionTarget(null);
-            setActionSuccess(msg);
-            loadResources();
-          }}
-          onCancel={() => setNodeActionTarget(null)}
-        />
-      )}
-    </div>
-  );
-}
-
-// Wrap in Suspense for useSearchParams requirement in Next.js 14
-export default function ResourcesPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-64 text-sm text-gray-400">
-        Loading…
-      </div>
-    }>
-      <ResourcesPageInner />
-    </Suspense>
-  );
-}
+            {(() => {
+              // Use aiExtracted if present (fuel receipt extraction), else show generic outputs
+              type AiEx = { amount?: number|null; liters?: number|null; fuelType?: string; stationName?: string|null; receiptDate?: string|null; vehicleReg?: string|null; confidence?: number; warning?: string; approvedByHuman?: boolean };
+              const ai = (result.aiExtracted ?? result) as AiEx;
+              const rows: { label: string; value: string; dim?: boolean }[] = [
+                { label: 'Amount',      value: ai.amount      != null ? `MYR ${ai.amount.toFixed(2)}` : '—' },
+                { label: 'Fuel (L)',    value: ai.liters       != null ? `${ai.liters} L`              : '—' },
+                { label: 'Fuel Type',  value: ai.fuelType     ? ai.fuelType                           : '—' },
+                { label: 'Station',    value: ai.stationName  ?? '—' },
+                { label: 'Date',       value: ai.receiptDate  ?? '—' },
+                { label: 'Vehicle',    value: ai.vehicleReg   ?? '—' },
+                { label: 'Confidence', value: ai.confidence   != null ? `${(ai.confidence * 100).toFixed(0)}%` : '—' },
+              ];
+              return (
+                <div className="space-y-3 mb-4">
+                  <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3">
+                    <p className="text-sm font-semibold text-green-800 mb-3">✅ Data extracted</p>
+                    <div className="divide-y divide-green-100">
+                      {rows.map(r => (
+                        <div key={r.label} className="flex justify-between py-1.5 text-xs">
+                          <span className="text-gray-500">{r.label}</span>
+                          <span className={`font-medium ${r.value === '—' ? 'text-gray-300' : 'text-gray-900'}`}>{r.value}</span>
+                        </div>
+                     

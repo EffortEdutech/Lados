@@ -16,9 +16,4 @@ export type {
   PackValidationResult,
   // Resource view config types (Phase 9 Correction)
   PackResourceDefinition,
-  ResourceViewConfig,
-  ResourceListViewConfig,
-  ResourceInlineAction,
-} from './types';
-
-export { validatePackManifest, assertPackManifest } from './validate';
+  ResourceV

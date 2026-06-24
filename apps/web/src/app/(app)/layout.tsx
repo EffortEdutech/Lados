@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import AiCommandBar from '@/components/AiCommandBar';
 
 // Platform-level navigation only.
 // Solutions (Contractor Edition, LEOS, JKR) are NOT represented here.
@@ -84,9 +85,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
-    </div>
-  );
-}
+      <main className="flex-1 overflow-auto

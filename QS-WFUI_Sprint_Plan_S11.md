@@ -1,363 +1,269 @@
-# QS-WFUI — Sprint Plan: Sprint 11
-**Version:** 1.0  
-**Date:** 2026-06-17  
-**Covers:** Sprint 11 — Project Pipeline  
-**Prerequisite:** Sprint 10 complete (workflow templates, human approval, audit log)
+# QS-WFUI — Sprint Plan: Phase 10 + Phase 11
+**Version:** 2.0 (revised from original Project Pipeline plan)
+**Date:** 2026-06-24
+**Covers:** Phase 10 — AI Runtime Upgrade · Phase 11 — AI Workflow Design Studio
+**Status:** ✅ COMPLETE
 
----
-
-## Overview
-
-Sprint 11 introduces the **Project Pipeline** — a higher-level canvas where each node is a
-whole workflow, connected by directed edges that represent data flow. This is the feature
-that transforms QS-OS from a workflow productivity tool into a business process platform.
-
-**Design principle: pipeline is behind the existing experience, not in front of it.**  
-The workflow list remains the default landing page for every project. The pipeline is an
-opt-in tab. Users who never click it are unaffected. Users who want to connect workflows
-into a full procurement lifecycle use it as a power feature.
-
-**Sprint 11 Goal:**  
-A QS firm can map their full project procurement pipeline — BOQ→RFQ feeds into
-Quotation workflows, which branch by trade via a Switch node — view it as a visual
-graph, and pass data between workflows through shared project artifacts.
+> **Note:** The original Sprint 11 plan described a "Project Pipeline" canvas feature. That scope was deferred. Phases 10 and 11 were instead devoted to completing the AI Runtime layer and building the AI Workflow Design Studio — a higher-priority capability that enables owners to design, refine, and trigger workflows through natural language.
 
 ---
 
 ## Sprint Map
 
 ```
-Sprint 1  — Monorepo Skeleton                   ✓
-Sprint 2  — Auth + Canvas + Workflow JSON        ✓
-Sprint 3  — Node SDK + Pack Registry             ✓
-Sprint 4  — Execution Engine                     ✓ (merged into S6)
-Sprint 5  — Node Palette + Property Panel        ✓
-Sprint 6  — Execution Engine + Run Log           ✓
-Sprint 7  — File Upload + Real Nodes             ✓
-Sprint 8  — Library Panel                        ✓
-Sprint 9  — AI Classify + RFQ Generation         ✓
-Sprint 10 — Templates + Approval + Audit         ✓
-Sprint 11 — Project Pipeline                     ← YOU ARE HERE
-Sprint 12 — (TBD — post-pipeline polish)
+Phase 0   — Identity & Namespace Migration         ✅ COMPLETE
+Phase 1   — Workflow Engine Stabilisation           ✅ COMPLETE
+Phase 2   — Node Isolation (Nodes into Packs)       ✅ COMPLETE
+Phase 3   — Resource Engine                         ✅ COMPLETE
+Phase 4   — Event Bus                               ✅ COMPLETE
+Phase 5   — State Engine                            ✅ COMPLETE
+Phase 6   — Security Engine Hardening               ✅ COMPLETE
+Phase 7   — Foundation Pack                         ✅ COMPLETE
+Phase 8   — Pack Installer & Registry               ✅ COMPLETE
+Phase 9   — Contractor Edition Pack Build           ✅ COMPLETE
+Phase 10  — AI Runtime Upgrade                      ✅ COMPLETE  ← this document
+Phase 11  — AI Workflow Design Studio               ✅ COMPLETE  ← this document
+Phase 12  — Async Execution Queue                   (next)
+Phase 13  — LEOS / JKR Layer Preparation            (deferred)
 ```
 
 ---
 
-## Architecture
+## Phase 10 — AI Runtime Upgrade
 
-### The Full Hierarchy
+### Goal
 
-```
-Organisation
-  └─ Project
-       ├─ Workflows tab  (default — unchanged from Sprint 10)
-       └─ Pipeline tab   (new — opt-in)
-            └─ Pipeline Canvas
-                 ├─ Workflow Node  (represents an existing workflow)
-                 ├─ Switch Node    (manual runtime branching)
-                 └─ Edges          (directed, represent data flow intention)
-```
+Upgrade the thin `AiService` wrapper into a full LCE-aware AI Runtime with context assembly, tool calling, output ledger, and multi-modal vision support.
 
-### Inter-Workflow Data: Project Artifacts
+### Delivered
 
-Workflows do not call each other directly. Instead they share data through a
-`project_artifacts` store — a key-value table scoped to a project.
+#### S10-001 — AI Output Ledger (Migration 0035)
 
-```
-Workflow A (BOQ→RFQ)
-  └─ [project.save_artifact]  key="rfq_package"  value={...RFQ outputs}
-       ↓
-project_artifacts table  (projectId + key + value JSONB)
-       ↓
-Workflow B (Quotation→Supplier Rec)
-  └─ [project.read_artifact]  key="rfq_package"  → reads the saved data
+Table `lados_ai_outputs` added to Supabase:
+
+```sql
+id, org_id, user_id, session_id, intent, response,
+tokens_used, model, created_at
 ```
 
-This keeps workflows **fully decoupled**. A workflow doesn't know or care which
-upstream workflow produced its inputs — it just reads from a named artifact key.
+Stores every AI interaction for auditability. Advisory flag is implicit — AI output never directly commits financial or legal facts without a human approval node.
 
-### Pipeline Switch Node (MVP: Manual)
+#### S10-002 — AiContextBuilderService
 
-At runtime, when a user triggers a workflow that feeds a Switch node in the pipeline,
-the UI presents the available outgoing paths and asks the user to pick one. No
-automatic/conditional routing in Sprint 11 — that is Sprint 12+.
+`apps/api/src/ai/ai-context-builder.service.ts`
+
+Assembles structured LCE context before every AI call:
+- Current user, role, organisation
+- Recent resources (jobs, trips, invoices)
+- Recent events from the Event Bus
+- Available tools registered in the AI Tool Registry
+- Workflow run state (if called from inside a workflow node)
+
+#### S10-003 — AI Tool Calling Layer
+
+`runAssist()` in `AiService` runs a tool-calling loop (up to 5 iterations):
+
+| Tool | What it does |
+|---|---|
+| `search_resources` | Queries `lados_resources` by type and filter |
+| `get_events` | Reads event history from `lados_events` |
+| `get_workflow_status` | Returns the current state of an execution run |
+
+Every tool result is injected back into the prompt context. AI answers are grounded in live LCE data, not training memory.
+
+#### S10-004 — Owner Assistant Chat (M5)
+
+`POST /ai/assist` — JWT-guarded, owner/admin only.
+
+Multi-turn chat endpoint. Each response stored in `lados_ai_outputs`. Dashboard widget at `/dashboard` with session-based history. AI can answer: trip counts, uninvoiced jobs, fuel cost summaries, resource state queries.
+
+#### S10-005 — AiService.runVision()
+
+GPT-4o multimodal call: accepts a base64 image + prompt, returns structured JSON. Used by the fuel receipt extraction node.
+
+#### S10-006 — contractor.extract_fuel_data Node
+
+`packs/contractor-pack/src/nodes/extract-fuel-data.ts`
+
+AI-powered fuel receipt scanner:
+1. Receives a Supabase Storage URL for the uploaded receipt image
+2. Calls `AiService.runVision()` with an extraction prompt
+3. Returns structured fields: `{ vendor, date, amount, litres, vehicle_id, ... }`
+4. Output is marked advisory — downstream nodes handle DB writes
+
+Seeded with a fuel receipt workflow template.
+
+#### S10-007 — Multi-Turn Workflow Trigger
+
+`POST /ai/workflow-trigger` — stateless multi-turn endpoint.
+
+Full session object is returned to the client and re-sent on each turn (no server-side session state). Phases:
 
 ```
-BOQ→RFQ  ──→  [Switch: Trade Router]
-                  ├─ "Civil Works"        → Quotation (Civil)
-                  ├─ "M&E Works"          → Quotation (MEP)
-                  └─ "Structural Works"   → Quotation (Structural)
+ask_project → ask_workflow → fill_inputs (one field per turn)
+           → skip_review (AI auto-detects existing resources)
+           → ready
 ```
 
-The Switch node on the pipeline canvas is purely a routing visual — it does not execute
-inside a workflow. It lives only on the pipeline canvas.
+When client sends `execute: true` with a `ready` session, the API calls `ExecutionService.triggerRun()`.
+
+**Skip Nodes:** AI auto-detects when a resource already exists (e.g. a Job was already created today) and proposes skipping that node. User can un-skip any node before confirming.
+
+#### S10-008 — AiCommandBar UI (Multi-Turn)
+
+`apps/web/src/components/AiCommandBar.tsx`
+
+Floating 🤖 button. Full phase state machine: `idle → input → working → question → plan → executing → done/error`.
+
+Two tabs:
+- **⚡ Trigger Workflow** — multi-turn conversational trigger
+- **✨ Design Workflow** — opens AI Workflow Designer
 
 ---
 
-## Database Changes
+## Phase 11 — AI Workflow Design Studio
 
-### Migration: `0011_sprint11_pipeline.sql`
+### Goal
 
-**Table: `project_pipelines`**
-```sql
-id            uuid PRIMARY KEY DEFAULT gen_random_uuid()
-project_id    uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE
-layout        jsonb NOT NULL DEFAULT '{}'   -- React Flow nodes + edges
-created_at    timestamptz DEFAULT now()
-updated_at    timestamptz DEFAULT now()
-UNIQUE(project_id)   -- one pipeline per project
-```
+Enable owners to design new workflows from scratch using natural language, with AI as a librarian + sorter (not a decider), full visibility of available nodes, and a conversational co-pilot for refining the design.
 
-**Table: `project_artifacts`**
-```sql
-id                  uuid PRIMARY KEY DEFAULT gen_random_uuid()
-project_id          uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE
-source_workflow_id  uuid REFERENCES workflows(id) ON DELETE SET NULL
-execution_run_id    uuid REFERENCES execution_runs(id) ON DELETE SET NULL
-artifact_key        text NOT NULL            -- e.g. "rfq_package", "quotation_draft"
-value               jsonb NOT NULL DEFAULT '{}'
-created_at          timestamptz DEFAULT now()
-updated_at          timestamptz DEFAULT now()
-UNIQUE(project_id, artifact_key)             -- upsert by project + key
-```
+### Design Philosophy
 
-**Indexes:**
-```sql
-CREATE INDEX idx_project_artifacts_project ON project_artifacts(project_id);
-CREATE INDEX idx_project_artifacts_key ON project_artifacts(project_id, artifact_key);
-```
+> AI surfaces the pieces. The human is the designer.
 
-### Pipeline Layout JSON Shape (stored in `project_pipelines.layout`)
+The AI does not publish workflows. It drafts a starting sequence, surfaces all relevant nodes from installed packs, and assists with refinement through chat. The human reviews, edits, and saves as draft. Publish is always a manual human action.
 
-```jsonc
+### Pack Contract (Non-Negotiable)
+
+All AI suggestions are constrained to `registered_nodes WHERE is_enabled = true AND pack_id IN (enabled packs)`. Any node type the AI hallucinates is stripped server-side before the response reaches the client. This is enforced in both `WorkflowSuggestService` and `WorkflowEditService`.
+
+### Delivered
+
+#### S11-001 — WorkflowSuggestService
+
+`apps/api/src/ai/workflow-suggest.service.ts`
+
+Given a natural language description, returns:
+
+```typescript
 {
-  "nodes": [
-    {
-      "id": "wf-<workflowId>",
-      "type": "workflowNode",
-      "position": { "x": 100, "y": 200 },
-      "data": {
-        "workflowId": "<uuid>",
-        "name": "BOQ to RFQ",
-        "status": "draft"        // synced from workflows table
-      }
-    },
-    {
-      "id": "switch-<uuid>",
-      "type": "switchNode",
-      "position": { "x": 400, "y": 200 },
-      "data": {
-        "label": "Trade Router",
-        "paths": ["Civil Works", "M&E Works", "Structural Works"]
-      }
-    }
-  ],
-  "edges": [
-    {
-      "id": "e-wf-abc-switch-1",
-      "source": "wf-<workflowId>",
-      "target": "switch-<uuid>",
-      "animated": true
-    },
-    {
-      "id": "e-switch-1-wf-def",
-      "source": "switch-<uuid>",
-      "target": "wf-<workflowId2>",
-      "data": { "path": "Civil Works" },
-      "label": "Civil Works"
-    }
-  ]
+  name:           string;       // AI-suggested workflow name
+  description:    string;       // one-sentence summary
+  suggestedNodes: DesignNode[]; // AI-ordered sequence (4-6 nodes)
+  availableNodes: DesignNode[]; // full palette — all relevant nodes from packs
+  connections:    WorkflowConnection[]; // sequential connections for the sequence
 }
 ```
 
----
+AI prompt uses a two-list JSON schema: `suggestedSequence` (the starting plan) + `alsoRelevant` (optional nodes user might add). Server merges, deduplicates, enforces pack contract, rebuilds positions and connections.
 
-## API Changes
+#### S11-002 — WorkflowEditService
 
-### PipelineModule — `apps/api/src/pipeline/`
+`apps/api/src/ai/workflow-edit.service.ts`
 
-```
-GET  /projects/:projectId/pipeline        — get pipeline layout (or empty layout)
-PUT  /projects/:projectId/pipeline        — save/upsert pipeline layout
-```
+Handles each chat message in the Design Studio co-pilot session. Returns one of four actions:
 
-Both endpoints require JWT. Response envelope: `{ success, data, error }`.
+| Action | Effect |
+|---|---|
+| `update_sequence` | Returns a complete revised node list; client replaces sequence |
+| `highlight_nodes` | Returns type strings to highlight in the palette for 3 seconds |
+| `suggest_pack` | Returns a pack slug + explanation for unavailable capabilities |
+| `answer` | Plain text response, no sequence change |
 
-### ArtifactModule — `apps/api/src/artifact/`
+Pack contract enforced on `updatedNodes` and `highlights` before returning to client.
 
-```
-GET  /projects/:projectId/artifacts              — list all artifacts for project
-GET  /projects/:projectId/artifacts/:key         — get single artifact by key
-POST /projects/:projectId/artifacts              — upsert artifact (called by node internally)
-```
+#### S11-003 — POST /ai/workflow-suggest + /ai/workflow-edit
 
-`POST` requires JWT. `GET` endpoints require JWT.
+`apps/api/src/ai/ai.controller.ts`
 
----
-
-## New Nodes
-
-These are added to the node registry and available in the workflow canvas palette under
-a new **"Pipeline"** category.
-
-### `project.save_artifact`
-
-**Config fields:**
-- `artifact_key` (string, required) — the name to save under, e.g. `rfq_package`
-- `include_keys` (string[], optional) — which input keys to save; defaults to all inputs
-
-**Behaviour:** Takes its node inputs, writes them to `project_artifacts` as a JSONB value
-under the given key (upsert). Returns `{ saved: true, artifact_key, saved_at }`.
-
-### `project.read_artifact`
-
-**Config fields:**
-- `artifact_key` (string, required) — the key to read
-
-**Behaviour:** Reads from `project_artifacts` for the current `projectId` + key.
-Returns the stored value merged into outputs so downstream nodes can use it directly.
-Fails with `ARTIFACT_NOT_FOUND` if key doesn't exist yet.
-
----
-
-## Frontend Changes
-
-### 1. Project Page — Add Pipeline Tab
-
-**File:** `apps/web/src/app/(app)/projects/[projectId]/page.tsx`
-
-Add a tab bar below the project header:
+Both endpoints: JWT-guarded, owner/admin only, membership verified against `organization_members`.
 
 ```
-[ Workflows ]  [ Pipeline ]
+POST /ai/workflow-suggest  { orgId, description }
+  → { suggestion: WorkflowSuggestion }
+
+POST /ai/workflow-edit     { orgId, message, currentNodes[], allAvailableNodes[] }
+  → { action, updatedNodes?, highlights?, message, suggestPack? }
 ```
 
-Default tab: `workflows` (existing content unchanged).  
-`Pipeline` tab renders `<PipelineCanvas projectId={projectId} />`.
+#### S11-004 — AiWorkflowDesigner — Design Studio UI
 
-### 2. PipelineCanvas Component
+`apps/web/src/components/AiWorkflowDesigner.tsx`
 
-**File:** `apps/web/src/components/pipeline/PipelineCanvas.tsx`
-
-- Uses React Flow (same library as workflow canvas)
-- On mount: `GET /projects/:id/pipeline` to load layout; if empty, auto-populate
-  with all existing workflows as un-connected nodes
-- Custom node types:
-  - `workflowNode` — card showing workflow name, status badge, "Open →" link
-  - `switchNode` — diamond card with editable path labels
-- Toolbar: **+ Add Switch** button, **Save** button (PUT layout to API)
-- Auto-saves on edge connect/disconnect (debounced 1s)
-- Read-only view of workflow status (draft / running / completed) pulled from DB
-
-### 3. WorkflowNode (pipeline canvas node)
-
-**File:** `apps/web/src/components/pipeline/WorkflowNode.tsx`
+Self-contained modal. Fetches its own org and projects on mount (no dependency on parent state). Full phase flow:
 
 ```
-┌─────────────────────────────┐
-│  ⬡  BOQ to RFQ              │
-│     status: draft           │
-│     Last run: never         │
-│                    Open →   │
-└─────────────────────────────┘
+loading → input → [create_project] → [project_pick] → generating → design → saving → done
 ```
 
-Clicking "Open →" navigates to the workflow canvas.  
-Shows a live status badge (draft / running / completed) polled every 10s.
+**create_project phase:** When no projects exist, the designer guides the user to create one inline via `POST /organizations/:orgId/projects`. Project code is auto-generated from the name initials (`PKO-419` style). Continues immediately to workflow generation on success.
 
-### 4. SwitchNode (pipeline canvas node)
-
-**File:** `apps/web/src/components/pipeline/SwitchNode.tsx`
+**design phase — three panels:**
 
 ```
-       ┌──────────────┐
-       │  ◆ Switch    │
-       │  Trade Router│
-       │  ──────────  │
-       │  Civil Works │──→
-       │  M&E Works   │──→
-       │  Structural  │──→
-       └──────────────┘
+┌─────────────────────────────────────────┐
+│  📁 Project Name   [Workflow Name ____] │  ← editable header
+├─────────────────────────────────────────┤
+│  WORKFLOW SEQUENCE          4 steps     │
+│  ▲▼ ➕ Receive Order          #1  ✕    │  ← reorder, remove, click to rename
+│  ▲▼ ⏸ Manager Approval       #2  ✕    │
+│  ▲▼ 🚛 Dispatch Driver        #3  ✕    │
+│  ▲▼ 🧾 Generate Invoice       #4  ✕    │
+├─────────────────────────────────────────┤
+│  AVAILABLE NODES  6 available · click   │
+│  [✅ Complete Trip] [📬 Notify] [💾...] │  ← palette chips, highlighted on find
+├─────────────────────────────────────────┤
+│  AI CO-PILOT                chat to edit│
+│  ┌ AI: I've drafted a 4-step workflow…  │
+│  └ You: add approval before invoice     │
+│  ┌ AI: ✓ Sequence updated — added…     │
+│  [Add approval] [Find fuel] [Redesign]  │  ← quick chips
+│  [type here…                    Send]   │
+└─────────────────────────────────────────┘
+         [ 💾 Save Draft ]  (header button, always visible)
 ```
 
-Editable label and path list (click to rename, + to add path, × to remove).  
-Each path becomes a labelled outgoing handle in React Flow.
+**Palette behaviour:** Shows all relevant nodes NOT currently in the sequence. Click any chip → appends to sequence. Sequence and palette stay in sync automatically. AI `highlight_nodes` action causes matching chips to pulse violet for 3 seconds.
 
----
+**Chat co-pilot examples:**
+- `"add approval before invoice"` → AI inserts `foundation.request_approval` before the invoice node
+- `"find fuel nodes"` → AI highlights `contractor.extract_fuel_data` in palette
+- `"what pack has SMS notification?"` → AI responds with pack suggestion, no sequence change
+- `"redesign as a simpler 3-step flow"` → AI returns a revised sequence
 
-## Task Breakdown
-
-### S11-001 — DB Migration
-Write and apply `supabase/migrations/0011_sprint11_pipeline.sql`.  
-Creates `project_pipelines` and `project_artifacts` tables with indexes.
-
-### S11-002 — PipelineModule (NestJS)
-`apps/api/src/pipeline/`  
-- `pipeline.module.ts`
-- `pipeline.service.ts` — `get(projectId)`, `upsert(projectId, layout)`
-- `pipeline.controller.ts` — GET + PUT endpoints, JWT guarded
-
-### S11-003 — ArtifactModule (NestJS)
-`apps/api/src/artifact/`  
-- `artifact.module.ts`
-- `artifact.service.ts` — `list(projectId)`, `get(projectId, key)`, `upsert(projectId, key, value, meta)`
-- `artifact.controller.ts` — GET list, GET one, POST upsert, JWT guarded
-
-### S11-004 — Register New Nodes
-`apps/api/src/node/` — add to registered_nodes seed/migration:  
-- `project.save_artifact` — category: Pipeline, icon: upload-cloud
-- `project.read_artifact` — category: Pipeline, icon: download-cloud
-
-`apps/api/src/execution/real-nodes/`:  
-- `project-save-artifact.ts` — calls ArtifactService (or direct Supabase admin)
-- `project-read-artifact.ts` — reads from project_artifacts
-- `index.ts` — register both in realNodes map
-
-### S11-005 — Pipeline Canvas UI
-`apps/web/src/components/pipeline/`:
-- `PipelineCanvas.tsx` — main canvas, React Flow, load/save layout
-- `WorkflowNode.tsx` — workflow card node type
-- `SwitchNode.tsx` — switch diamond node type
-
-`apps/web/src/app/(app)/projects/[projectId]/page.tsx`:
-- Add `activeTab` state (`'workflows' | 'pipeline'`)
-- Render tab bar
-- Conditionally render pipeline canvas or workflow list
-
-### S11-006 — Build Verification + E2E Test
-
-Verify:
-1. `pnpm typecheck` passes across all packages
-2. API starts clean, both new module routes respond
-3. Pipeline tab visible on project page, doesn't break workflow tab
-4. Can draw an edge between two workflow nodes and save
-5. `project.save_artifact` node saves data in a workflow run
-6. `project.read_artifact` node reads it back in the same or subsequent run
-7. Switch node renders with labelled outgoing paths
+**Save flow:**
+1. `POST /projects/:projectId/workflows` → creates workflow record (status: draft)
+2. `PUT /projects/:projectId/workflows/:id/definition` → saves full definition JSON
+3. Redirects to `/projects/:id/workflows/:wfId` canvas editor on "Open in Canvas Editor →"
 
 ---
 
 ## Definition of Done
 
-- [ ] Migration 0011 applied to Supabase
-- [ ] `GET/PUT /projects/:id/pipeline` working
-- [ ] `GET/POST /projects/:id/artifacts` working
-- [ ] `project.save_artifact` and `project.read_artifact` in node palette and executable
-- [ ] Pipeline tab on project page, default tab still Workflows
-- [ ] Pipeline canvas loads existing workflows as nodes automatically
-- [ ] Can wire, save and reload a pipeline layout
-- [ ] Switch node renders with editable paths
-- [ ] All TypeScript passes, no new `any` without comment
-- [ ] Committed: `feat: Sprint 11 — project pipeline canvas + artifacts`
+- [x] `lados_ai_outputs` ledger table live
+- [x] `AiContextBuilderService` assembles LCE context for every AI call
+- [x] Tool calling loop: `search_resources`, `get_events`, `get_workflow_status`
+- [x] Owner Assistant chat at `/dashboard` — grounded, audited, advisory
+- [x] `AiService.runVision()` — multimodal fuel receipt extraction
+- [x] `contractor.extract_fuel_data` node in contractor-pack
+- [x] Multi-turn `POST /ai/workflow-trigger` — stateless session, skip detection
+- [x] `AiCommandBar` — ⚡ Trigger + ✨ Design tabs
+- [x] `WorkflowSuggestService` — two-list AI prompt (suggestedSequence + alsoRelevant)
+- [x] `WorkflowEditService` — 4-action co-pilot (update/highlight/suggest/answer)
+- [x] `POST /ai/workflow-suggest` + `POST /ai/workflow-edit` endpoints
+- [x] `AiWorkflowDesigner` — Design Studio with sequence + palette + AI chat
+- [x] Project creation inline (no projects → guided create-project step)
+- [x] Pack contract enforced server-side on all AI suggestions
+- [x] AI never publishes — all output saved as draft, human reviews and publishes
 
 ---
 
-## What Sprint 11 Does NOT Include
+## What Phase 11 Does NOT Include
 
-These are deliberately deferred to keep scope tight:
+These are deliberately deferred:
 
-- **Automatic/conditional switch routing** (value-based conditions) — Sprint 12
-- **Pipeline-level run trigger** (click Run on the pipeline to execute all workflows in order) — Sprint 12
-- **Artifact versioning** (history of past artifact values) — Sprint 12
-- **Cross-project artifact sharing** — post-MVP
-- **Pipeline templates** (pre-wired pipeline layouts) — post-MVP
+- **Project Pipeline canvas** (visual graph of connected workflows) — deferred indefinitely
+- **AI-generated workflow configs** (node property values, not just type selection) — future
+- **Drag-and-drop palette** (click-to-add implemented; drag is future) — Phase 12+
+- **Conditional branching suggestions** (AI suggesting Switch nodes with conditions) — future
+- **Workflow template sharing from the designer** (save as template) — future

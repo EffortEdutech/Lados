@@ -27,6 +27,7 @@ export type {
   NodeLogEntry,
   ExecutionResult,
   RunnerOptions,
+  SkipNodeSpec,
   MockNodeExecutor,
 } from './types';
 

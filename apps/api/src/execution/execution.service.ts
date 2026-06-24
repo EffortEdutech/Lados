@@ -157,6 +157,7 @@ export class ExecutionService implements OnModuleInit {
       workflowId,
       projectId:      workflow.project_id as string,
       organizationId: project.organization_id as string,
+      skipNodes:      dto.skipNodes ?? [],
       userId,
       definition,
       inputs:         dto.inputs ?? {},
@@ -585,7 +586,4 @@ export class ExecutionService implements OnModuleInit {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[ExecutionService] executeNodeAction(${nodeType}) threw: ${msg}`);
-      return { status: 'failure', outputs: {}, error: { code: 'NODE_EXCEPTION', message: msg } };
-    }
-  }
-}
+      return { status: 'failure', outputs: {}, error: { code: 'NODE

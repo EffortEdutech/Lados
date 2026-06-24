@@ -14,6 +14,7 @@ import type {
   NodeLogEntry,
   NodeRunStatus,
   RunStatus,
+  SkipNodeSpec,
 } from './types';
 import { planWorkflow } from './graph-planner';
 import { getMockExecutor } from './mock-registry';
@@ -36,7 +37,9 @@ export class WorkflowRunner {
   }
 
   async run(): Promise<ExecutionResult> {
-    const { definition, executionId, workflowId, projectId, organizationId, userId, inputs = {}, variables = {} } = this.options;
+    const { definition, executionId, workflowId, projectId, organizationId, userId, inputs = {}, variables = {}, skipNodes = [] } = this.options;
+    // Build a fast lookup: nodeId → SkipNodeSpec
+    const skipMap = new Map<string, SkipNodeSpec>(skipNodes.map((s) => [s.nodeId, s]));
     const startedAt = new Date().toISOString();
     const logs: NodeLogEntry[] = [];
 
@@ -108,7 +111,29 @@ export class WorkflowRunner {
           outputs:  nodeOutputs[step.nodeId],
           messages: ['[RESUME] Restored from checkpoint'],
         });
-        lastOutputs = nodeOutputs[step.nodeId];
+        lastOutputs = nodeOutputs[step.nodeId] ?? {};
+        continue;
+      }
+
+      // ── Skip nodes requested by AI trigger (Phase 11) ────────────────────
+      // e.g. "create_customer" skipped because TSBSB already exists.
+      // The caller provides skip outputs so downstream nodes still get the data.
+      const skipSpec = skipMap.get(step.nodeId);
+      if (skipSpec) {
+        const skipOutputs = skipSpec.outputs ?? {};
+        nodeOutputs[step.nodeId] = skipOutputs;
+        lastOutputs = skipOutputs;
+        logs.push({
+          nodeId:   step.nodeId,
+          nodeType: step.nodeType,
+          nodeName: step.nodeLabel,
+          status:   'skipped',
+          outputs:  skipOutputs,
+          messages: [
+            `[SKIP] ${skipSpec.reason ?? 'Node skipped by AI workflow trigger'}`,
+            `[SKIP] Injected outputs: ${JSON.stringify(skipOutputs)}`,
+          ],
+        });
         continue;
       }
 
@@ -242,35 +267,4 @@ export class WorkflowRunner {
     };
   }
 
-  // ── Private helpers ───────────────────────────────────────────────────────
-
-  /**
-   * Merge outputs from all dependency nodes to form this node's inputs.
-   * If a node has no dependencies, it receives the workflow-level inputs.
-   */
-  private _resolveInputs(
-    _nodeId: string,
-    dependsOn: string[],
-    nodeOutputs: Record<string, Record<string, unknown>>,
-    workflowInputs: Record<string, unknown>,
-  ): Record<string, unknown> {
-    if (dependsOn.length === 0) return workflowInputs;
-
-    const merged: Record<string, unknown> = {};
-    for (const depId of dependsOn) {
-      const depOutputs = nodeOutputs[depId] ?? {};
-      Object.assign(merged, depOutputs);
-    }
-    // Also include top-level workflow inputs (e.g. file_id passed from UI)
-    Object.assign(merged, workflowInputs);
-    return merged;
-  }
-}
-
-/**
- * Convenience function — create a runner and execute immediately.
- */
-export async function runWorkflow(options: RunnerOptions): Promise<ExecutionResult> {
-  const runner = new WorkflowRunner(options);
-  return runner.run();
-}
+  // ── Private helpers ─────────────────────────�

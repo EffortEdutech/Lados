@@ -39,6 +39,7 @@ import type {
   IMaintenanceClearService,
   IPayrollCreateService,
   IPayrollApprovalService,
+  IFuelExtractResourceService,
 } from '@lados/contractor-pack';
 
 type FullContractorAdapter =
@@ -50,7 +51,8 @@ type FullContractorAdapter =
   IMaintenanceCreateService &
   IMaintenanceClearService &
   IPayrollCreateService &
-  IPayrollApprovalService;
+  IPayrollApprovalService &
+  IFuelExtractResourceService;
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
@@ -138,23 +140,4 @@ export function buildRealNodeResolver(
       resourceService,
     }),
     // Contractor Pack — domain nodes for Contractor Edition
-    contractorResolve({
-      resourceService: contractorAdapter,
-    }),
-    // Cast needed: core-pack's IResourceService has a narrower ResourceType compiled before
-    // contractor types were added. The runtime shape is compatible — only the TS union differs.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    coreResolve({ notificationService, resourceService: resourceService as any, eventBusService, stateEngineService, artifactService: artifactAdapter }),
-    documentResolve({ fileService, libraryService, documentService }),
-    qsResolve({ aiService }),
-    procurementResolve({ libraryService }),
-  ];
-
-  return (nodeType: string) => {
-    for (const resolver of resolvers) {
-      const fn = resolver(nodeType);
-      if (fn) return fn;
-    }
-    return null;
-  };
-}
+    // aiService passed for contractor.e

@@ -283,8 +283,3 @@ export default function PackDetailPage({ params }: PageProps) {
               </span>
             ))}
           </div>
-        </div>
-      )}
-    </div>
-  );
-}

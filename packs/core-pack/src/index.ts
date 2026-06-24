@@ -116,32 +116,4 @@ export function resolveNode(
     'project.read_artifact': (ctx) => realReadArtifact(ctx),
 
     // ── Resource Engine ───────────────────────────────────────────────────
-    'resource.create':       (ctx) => resourceService
-      ? realResourceCreate(ctx, resourceService)
-      : Promise.resolve(noService('NO_SERVICE', 'ResourceService not injected')),
-    'resource.read':         (ctx) => resourceService
-      ? realResourceRead(ctx, resourceService)
-      : Promise.resolve(noService('NO_SERVICE', 'ResourceService not injected')),
-    'resource.update':       (ctx) => resourceService
-      ? realResourceUpdate(ctx, resourceService)
-      : Promise.resolve(noService('NO_SERVICE', 'ResourceService not injected')),
-    'resource.transition':   (ctx) => resourceService
-      ? realResourceTransition(ctx, resourceService)
-      : Promise.resolve(noService('NO_SERVICE', 'ResourceService not injected')),
-    'resource.list':         (ctx) => resourceService
-      ? realResourceList(ctx, resourceService)
-      : Promise.resolve(noService('NO_SERVICE', 'ResourceService not injected')),
-
-    // ── Event Bus ─────────────────────────────────────────────────────────
-    'event.publish':         (ctx) => eventBusService
-      ? realEventPublish(ctx, eventBusService)
-      : Promise.resolve(noService('NO_SERVICE', 'EventBusService not injected')),
-
-    // ── State Engine ──────────────────────────────────────────────────────
-    'state.change':          (ctx) => stateEngineService
-      ? realStateChange(ctx, stateEngineService)
-      : Promise.resolve(noService('NO_SERVICE', 'StateEngineService not injected')),
-  };
-
-  return (nodeType: string) => nodes[nodeType] ?? null;
-}
+    'resource.create'

@@ -1,31 +1,33 @@
 -- =============================================================================
 -- Contractor Edition Test Seed
--- Phase 9 — M1–M4
+-- Phase 9 — M1–M4  /  Phase 10 — AI Runtime
 --
 -- Creates a ready-to-test Contractor Edition environment:
 --   • 4 auth users   (owner, admin, driver1, driver2)
 --   • 1 contractor organisation (Syarikat Bina Jaya Sdn Bhd)
 --   • 4 org members with correct roles
 --   • contractor-pack activated (is_enabled = true)
---   • Sample resources: customers, vehicles, equipment, workers, site, job, trip
+--   • Sample resources: customers, vehicles, equipment, workers, site,
+--                       job, 2 trips, 2 fuel receipts, 1 expense
 --
 -- Prerequisites:
---   Migrations 0001–0034 must be applied before running this seed.
+--   Migrations 0001–0035 must be applied before running this seed.
 --
--- Safe to re-run: all inserts use ON CONFLICT DO NOTHING.
+-- IDEMPOTENT: safe to re-run. Section 0 deletes all test data first,
+--   then re-inserts clean. No ON CONFLICT hacks needed for auth tables.
 --
 -- Run in Supabase SQL Editor (postgres / service_role context).
 -- =============================================================================
 
--- ── Fixed UUIDs ───────────────────────────────────────────────────────────────
+-- ── Fixed UUIDs (deterministic across every run) ──────────────────────────────
 -- Users
--- contractor-owner@lados.dev  → dddddddd-0001-0000-0000-000000000001
--- contractor-admin@lados.dev  → dddddddd-0001-0000-0000-000000000002
--- contractor-driver1@lados.dev→ dddddddd-0001-0000-0000-000000000003
--- contractor-driver2@lados.dev→ dddddddd-0001-0000-0000-000000000004
+-- contractor-owner@lados.dev   → dddddddd-0001-0000-0000-000000000001
+-- contractor-admin@lados.dev   → dddddddd-0001-0000-0000-000000000002
+-- contractor-driver1@lados.dev → dddddddd-0001-0000-0000-000000000003
+-- contractor-driver2@lados.dev → dddddddd-0001-0000-0000-000000000004
 --
--- Org
--- Syarikat Bina Jaya          → eeeeeeee-0001-0000-0000-000000000001
+-- Org: Syarikat Bina Jaya      → eeeeeeee-0001-0000-0000-000000000001
+-- Resources:                     aaaaaaaa-0002-0000-0000-000000000001 … 000000000014
 
 DO $$
 DECLARE
@@ -35,31 +37,76 @@ DECLARE
   v_driver2_id uuid := 'dddddddd-0001-0000-0000-000000000004';
   v_org_id     uuid := 'eeeeeeee-0001-0000-0000-000000000001';
 
-  -- Resource UUIDs
+  -- Resource UUIDs (M1–M4)
   v_customer1_id    uuid := 'aaaaaaaa-0002-0000-0000-000000000001';
   v_customer2_id    uuid := 'aaaaaaaa-0002-0000-0000-000000000002';
   v_vehicle1_id     uuid := 'aaaaaaaa-0002-0000-0000-000000000003';
   v_vehicle2_id     uuid := 'aaaaaaaa-0002-0000-0000-000000000004';
   v_equipment_id    uuid := 'aaaaaaaa-0002-0000-0000-000000000005';
-  v_worker1_id      uuid := 'aaaaaaaa-0002-0000-0000-000000000006';
-  v_worker2_id      uuid := 'aaaaaaaa-0002-0000-0000-000000000007';
+  v_driver1_res_id  uuid := 'aaaaaaaa-0002-0000-0000-000000000006';
+  v_driver2_res_id  uuid := 'aaaaaaaa-0002-0000-0000-000000000007';
   v_site_id         uuid := 'aaaaaaaa-0002-0000-0000-000000000008';
   v_job_id          uuid := 'aaaaaaaa-0002-0000-0000-000000000009';
   v_trip_id         uuid := 'aaaaaaaa-0002-0000-0000-000000000010';
+  -- Phase 10 additions
+  v_trip2_id         uuid := 'aaaaaaaa-0002-0000-0000-000000000011';
+  v_fuel_receipt1_id uuid := 'aaaaaaaa-0002-0000-0000-000000000012';
+  v_fuel_receipt2_id uuid := 'aaaaaaaa-0002-0000-0000-000000000013';
+  v_expense1_id      uuid := 'aaaaaaaa-0002-0000-0000-000000000014';
 
 BEGIN
+
+-- =============================================================================
+-- 0. CLEANUP — delete existing test data in dependency order
+--
+--    Why: ON CONFLICT DO NOTHING on auth.users catches conflicts on whichever
+--    unique constraint fires first (id OR email). If a previous run created
+--    users with our fixed UUIDs, a re-run would skip the inserts — but then
+--    auth.identities inserts would still try to reference those UUIDs, which
+--    might no longer exist (e.g. if the user table was partially reset).
+--    Deleting first guarantees a clean slate regardless of prior state.
+-- =============================================================================
+
+  -- Resources (lados_resource_events cascades automatically via ON DELETE CASCADE FK)
+  DELETE FROM lados_resources
+  WHERE org_id = v_org_id;
+
+  -- Org members
+  DELETE FROM organization_members
+  WHERE organization_id = v_org_id;
+
+  -- Organisation
+  DELETE FROM organizations
+  WHERE id = v_org_id;
+
+  -- Auth users by email — catches any UUID the user was created with.
+  -- Cascades to auth.identities automatically.
+  DELETE FROM auth.users
+  WHERE email IN (
+    'contractor-owner@lados.dev',
+    'contractor-admin@lados.dev',
+    'contractor-driver1@lados.dev',
+    'contractor-driver2@lados.dev'
+  );
+
+  RAISE NOTICE 'Section 0: cleanup complete — inserting fresh data...';
 
 -- =============================================================================
 -- 1. AUTH USERS
 --    Creates users directly in auth.users (requires postgres / service_role).
 --    Password for all test accounts: ContractorTest1!
 --    Accounts are pre-confirmed (email_confirmed_at = now()).
+--
+--    No ON CONFLICT needed — we deleted these rows in Section 0.
 -- =============================================================================
 
+  -- email_change and email_change_token_new MUST be '' not NULL.
+  -- Supabase GoTrue panics (500 on login) when these are NULL.
   INSERT INTO auth.users (
     id, instance_id, aud, role,
     email, encrypted_password,
     email_confirmed_at, confirmation_token, recovery_token,
+    email_change, email_change_token_new,
     raw_app_meta_data, raw_user_meta_data,
     created_at, updated_at, is_super_admin
   )
@@ -72,6 +119,7 @@ BEGIN
       'contractor-owner@lados.dev',
       crypt('ContractorTest1!', gen_salt('bf')),
       now(), '', '',
+      '', '',
       '{"provider":"email","providers":["email"]}',
       '{"full_name":"Ahmad Rizal (Owner)"}',
       now(), now(), false
@@ -84,6 +132,7 @@ BEGIN
       'contractor-admin@lados.dev',
       crypt('ContractorTest1!', gen_salt('bf')),
       now(), '', '',
+      '', '',
       '{"provider":"email","providers":["email"]}',
       '{"full_name":"Siti Nora (Admin)"}',
       now(), now(), false
@@ -96,6 +145,7 @@ BEGIN
       'contractor-driver1@lados.dev',
       crypt('ContractorTest1!', gen_salt('bf')),
       now(), '', '',
+      '', '',
       '{"provider":"email","providers":["email"]}',
       '{"full_name":"Razi Hamdan (Driver)"}',
       now(), now(), false
@@ -108,42 +158,45 @@ BEGIN
       'contractor-driver2@lados.dev',
       crypt('ContractorTest1!', gen_salt('bf')),
       now(), '', '',
+      '', '',
       '{"provider":"email","providers":["email"]}',
       '{"full_name":"Farid Azman (Driver)"}',
       now(), now(), false
-    )
-  ON CONFLICT (id) DO NOTHING;
+    );
+  -- ↑ No ON CONFLICT — users were deleted in Section 0. Plain INSERT is safe.
 
-  -- Ensure auth.identities rows exist (required for email/password login in Supabase)
+  -- auth.identities — required for email/password login in Supabase
+  -- (Section 0 deleted these via auth.users cascade, so plain INSERT is safe)
+  -- IMPORTANT: identity `id` must be distinct from `user_id` (Supabase GoTrue requirement).
+  --            Using gen_random_uuid() here; using user_id for both caused 500 on login.
   INSERT INTO auth.identities (
     id, user_id, provider_id, provider, identity_data, created_at, updated_at, last_sign_in_at
   )
   VALUES
     (
-      v_owner_id,   v_owner_id,
+      gen_random_uuid(), v_owner_id,
       'contractor-owner@lados.dev', 'email',
-      jsonb_build_object('sub', v_owner_id::text, 'email', 'contractor-owner@lados.dev'),
+      jsonb_build_object('sub', v_owner_id::text, 'email', 'contractor-owner@lados.dev', 'email_verified', true),
       now(), now(), now()
     ),
     (
-      v_admin_id,   v_admin_id,
+      gen_random_uuid(), v_admin_id,
       'contractor-admin@lados.dev', 'email',
-      jsonb_build_object('sub', v_admin_id::text, 'email', 'contractor-admin@lados.dev'),
+      jsonb_build_object('sub', v_admin_id::text, 'email', 'contractor-admin@lados.dev', 'email_verified', true),
       now(), now(), now()
     ),
     (
-      v_driver1_id, v_driver1_id,
+      gen_random_uuid(), v_driver1_id,
       'contractor-driver1@lados.dev', 'email',
-      jsonb_build_object('sub', v_driver1_id::text, 'email', 'contractor-driver1@lados.dev'),
+      jsonb_build_object('sub', v_driver1_id::text, 'email', 'contractor-driver1@lados.dev', 'email_verified', true),
       now(), now(), now()
     ),
     (
-      v_driver2_id, v_driver2_id,
+      gen_random_uuid(), v_driver2_id,
       'contractor-driver2@lados.dev', 'email',
-      jsonb_build_object('sub', v_driver2_id::text, 'email', 'contractor-driver2@lados.dev'),
+      jsonb_build_object('sub', v_driver2_id::text, 'email', 'contractor-driver2@lados.dev', 'email_verified', true),
       now(), now(), now()
-    )
-  ON CONFLICT (provider, provider_id) DO NOTHING;
+    );
 
 -- =============================================================================
 -- 2. ORGANISATION
@@ -155,8 +208,7 @@ BEGIN
     'Syarikat Bina Jaya Sdn Bhd',
     'bina-jaya',
     NULL
-  )
-  ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+  );
 
 -- =============================================================================
 -- 3. ORG MEMBERS
@@ -167,28 +219,26 @@ BEGIN
     (v_org_id, v_owner_id,   'owner'),
     (v_org_id, v_admin_id,   'admin'),
     (v_org_id, v_driver1_id, 'driver'),
-    (v_org_id, v_driver2_id, 'driver')
-  ON CONFLICT (organization_id, user_id) DO NOTHING;
+    (v_org_id, v_driver2_id, 'driver');
 
 -- =============================================================================
 -- 4. ACTIVATE CONTRACTOR-PACK
---    PackInstallerService.syncAll() runs on API startup and upserts this row.
---    This UPDATE ensures it is enabled even before the first API restart.
+--    PackInstallerService.syncAll() runs on API startup and upserts these rows.
+--    This UPDATE ensures they are enabled even before the first API restart.
 -- =============================================================================
 
   UPDATE packs
   SET is_enabled = true, status = 'active'
   WHERE id = 'lados.contractor-pack';
 
-  -- Also ensure foundation-pack is active (contractor-pack depends on it)
+  -- foundation-pack must also be active (contractor-pack depends on it)
   UPDATE packs
   SET is_enabled = true, status = 'active'
   WHERE id = 'lados.foundation-pack';
 
 -- =============================================================================
--- 5. SEED RESOURCES
---    Demonstrates the full Contractor Edition data model:
---    customers → vehicles / equipment / workers → site → job → trip
+-- 5. SEED RESOURCES — M1 Core Operations
+--    customers → vehicles / equipment / drivers → site → job → trip
 -- =============================================================================
 
   -- ── Customers ──────────────────────────────────────────────────────────────
@@ -205,8 +255,7 @@ BEGIN
       'customer', 'Projek Bersatu Holdings', 'active',
       '{"contactPerson":"Pn. Lina","phone":"013-9876543","email":"lina@pb-holdings.com","address":"Unit 12, Menara Projek, KL","creditLimit":80000}',
       v_owner_id
-    )
-  ON CONFLICT (id) DO NOTHING;
+    );
 
   -- ── Vehicles ───────────────────────────────────────────────────────────────
   INSERT INTO lados_resources (id, org_id, type, name, state, data, created_by)
@@ -222,118 +271,58 @@ BEGIN
       'vehicle', 'Dump Truck BJA-5678', 'available',
       '{"plateNumber":"BJA 5678","vehicleType":"dump_truck","make":"Mitsubishi","model":"Fighter","year":2019,"capacity":"14 tan","lastServiceDate":"2025-11-15"}',
       v_owner_id
-    )
-  ON CONFLICT (id) DO NOTHING;
+    );
 
   -- ── Equipment ──────────────────────────────────────────────────────────────
   INSERT INTO lados_resources (id, org_id, type, name, state, data, created_by)
-  VALUES
-    (
-      v_equipment_id, v_org_id,
-      'equipment', 'Excavator CAT-320', 'available',
-      '{"serialNumber":"CAT320-2021-007","make":"Caterpillar","model":"320","year":2021,"hourlyRate":350,"lastServiceHours":1200}',
-      v_owner_id
-    )
-  ON CONFLICT (id) DO NOTHING;
+  VALUES (
+    v_equipment_id, v_org_id,
+    'equipment', 'Excavator CAT-320', 'available',
+    '{"serialNumber":"CAT320-2021-007","make":"Caterpillar","model":"320","year":2021,"hourlyRate":350,"lastServiceHours":1200}',
+    v_owner_id
+  );
 
-  -- ── Workers (drivers as worker resources) ─────────────────────────────────
+  -- ── Drivers ────────────────────────────────────────────────────────────────
   INSERT INTO lados_resources (id, org_id, type, name, state, data, created_by)
   VALUES
     (
-      v_worker1_id, v_org_id,
-      'worker', 'Razi Hamdan', 'available',
-      '{"icNumber":"850312-10-1234","phone":"011-1234567","licenseClass":"E","dailyRate":120,"linkedUserId":"dddddddd-0001-0000-0000-000000000003"}',
+      v_driver1_res_id, v_org_id,
+      'driver', 'Razi Hamdan', 'available',
+      '{"phone":"011-1234567","licenseNumber":"D12345678","licenseClass":"E","dailyRate":120,"linkedUserId":"dddddddd-0001-0000-0000-000000000003"}',
       v_owner_id
     ),
     (
-      v_worker2_id, v_org_id,
-      'worker', 'Farid Azman', 'available',
-      '{"icNumber":"880601-14-5678","phone":"011-9876543","licenseClass":"E","dailyRate":120,"linkedUserId":"dddddddd-0001-0000-0000-000000000004"}',
+      v_driver2_res_id, v_org_id,
+      'driver', 'Farid Azman', 'available',
+      '{"phone":"011-9876543","licenseNumber":"D87654321","licenseClass":"E","dailyRate":120,"linkedUserId":"dddddddd-0001-0000-0000-000000000004"}',
       v_owner_id
-    )
-  ON CONFLICT (id) DO NOTHING;
+    );
 
-  -- ── Site ──────────────────────────────────────────────────────────────────
+  -- ── Site ───────────────────────────────────────────────────────────────────
   INSERT INTO lados_resources (id, org_id, type, name, state, data, created_by)
-  VALUES
-    (
-      v_site_id, v_org_id,
-      'site', 'Tapak Projek Sri Permai', 'active',
-      '{"address":"Lot 22, Persiaran Industri, Rawang, Selangor","gpsLat":3.3195,"gpsLng":101.5753,"siteContact":"En. Rashid 013-1112233"}',
-      v_owner_id
-    )
-  ON CONFLICT (id) DO NOTHING;
-
-  -- ── Job ───────────────────────────────────────────────────────────────────
-  INSERT INTO lados_resources (id, org_id, type, name, state, data, created_by)
-  VALUES
-    (
-      v_job_id, v_org_id,
-      'job', 'JOB-2026-001 — Earthworks Sri Permai', 'active',
-      jsonb_build_object(
-        'customerId',    v_customer1_id,
-        'siteId',        v_site_id,
-        'description',   'Earthworks and soil compaction for residential development Phase 1',
-        'startDate',     '2026-06-23',
-        'endDate',       '2026-08-31',
-        'quotedAmount',  45000,
-        'currency',      'MYR',
-        'poNumber',      'PMJ-PO-2026-044'
-      ),
-      v_owner_id
-    )
-  ON CONFLICT (id) DO NOTHING;
-
-  -- ── Trip (child of Job) ───────────────────────────────────────────────────
-  INSERT INTO lados_resources (id, org_id, type, name, state, data, parent_id, created_by)
-  VALUES
-    (
-      v_trip_id, v_org_id,
-      'trip', 'TRIP-2026-001-001', 'dispatched',
-      jsonb_build_object(
-        'jobId',         v_job_id,
-        'vehicleId',     v_vehicle1_id,
-        'driverId',      v_worker1_id,
-        'loadType',      'earth',
-        'loadQuantity',  10,
-        'loadUnit',      'tan',
-        'origin',        'Tapak Sri Permai',
-        'destination',   'Pusat Pelupusan Rawang',
-        'dispatchedAt',  now()
-      ),
-      v_job_id,
-      v_driver1_id
-    )
-  ON CONFLICT (id) DO NOTHING;
-
--- =============================================================================
--- 6. AUDIT LOG
--- =============================================================================
-
-  INSERT INTO audit_log (
-    organization_id, actor_id, event_type,
-    entity_type, entity_id, summary
-  )
   VALUES (
-    v_org_id, v_owner_id,
-    'seed.contractor_edition',
-    'organization', v_org_id,
-    'Contractor Edition seed applied — Syarikat Bina Jaya, 4 users, contractor-pack activated, sample resources created.'
-  )
-  ON CONFLICT DO NOTHING;
+    v_site_id, v_org_id,
+    'site', 'Tapak Projek Sri Permai', 'active',
+    '{"address":"Lot 22, Persiaran Industri, Rawang, Selangor","gpsLat":3.3195,"gpsLng":101.5753,"siteContact":"En. Rashid 013-1112233"}',
+    v_owner_id
+  );
 
-  RAISE NOTICE '=======================================================';
-  RAISE NOTICE 'Contractor Edition seed complete.';
-  RAISE NOTICE '  Org:   Syarikat Bina Jaya Sdn Bhd (%)', v_org_id;
-  RAISE NOTICE '  Login: contractor-owner@lados.dev  /  ContractorTest1!';
-  RAISE NOTICE '         contractor-admin@lados.dev  /  ContractorTest1!';
-  RAISE NOTICE '         contractor-driver1@lados.dev / ContractorTest1!';
-  RAISE NOTICE '         contractor-driver2@lados.dev / ContractorTest1!';
-  RAISE NOTICE '  Pack:  lados.contractor-pack → activated';
-  RAISE NOTICE '  Resources: 2 customers, 2 vehicles, 1 equipment,';
-  RAISE NOTICE '             2 workers, 1 site, 1 job, 1 trip (dispatched)';
-  RAISE NOTICE '=======================================================';
-  RAISE NOTICE 'After running: restart the API to trigger PackInstaller.syncAll()';
-  RAISE NOTICE 'Then click Sync on /packs to confirm contractor-pack is active.';
+  -- ── Job ────────────────────────────────────────────────────────────────────
+  INSERT INTO lados_resources (id, org_id, type, name, state, data, created_by)
+  VALUES (
+    v_job_id, v_org_id,
+    'job', 'JOB-2026-001 — Earthworks Sri Permai', 'active',
+    jsonb_build_object(
+      'customerId',   v_customer1_id,
+      'siteId',       v_site_id,
+      'description',  'Earthworks and soil compaction for residential development Phase 1',
+      'startDate',    '2026-06-23',
+      'endDate',      '2026-08-31',
+      'quotedAmount', 45000,
+      'currency',     'MYR',
+      'poNumber',     'PMJ-PO-2026-044'
+    ),
+    v_owner_id
+  );
 
-END $$;
+  -- ── Trip 1 — pending ──────────────

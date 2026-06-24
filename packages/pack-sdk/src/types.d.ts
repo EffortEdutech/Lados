@@ -31,44 +31,4 @@ export interface PackResourceDefinition {
     views?: ResourceViewConfig;
 }
 
-// ── Pack manifest ─────────────────────────────────────────────────────────────
-
-export interface PackManifest {
-    id: string;
-    version: string;
-    displayName: string;
-    description?: string;
-    author?: string;
-    sdkVersion?: string;
-    dependencies?: string[];
-    nodes: string[];
-    resources?: PackResourceDefinition[];
-    workflowTemplates?: string[];
-    permissions?: PackPermission[];
-    icon?: string;
-    color?: string;
-}
-
-export type PackPermissionScope = 'read:files' | 'write:files' | 'read:database' | 'write:database' | 'call:ai' | 'call:external-api' | 'read:secrets' | 'send:email' | 'send:notification';
-
-export interface PackPermission {
-    scope: PackPermissionScope;
-    reason: string;
-}
-
-export interface PackNodeRegistration {
-    manifest: NodeManifest;
-    packId: string;
-    enabledByDefault?: boolean;
-}
-
-export interface PackValidationIssue {
-    field: string;
-    message: string;
-}
-
-export interface PackValidationResult {
-    valid: boolean;
-    issues: PackValidationIssue[];
-}
-//# sourceMappingURL=types.d.ts.map
+// ── Pack manifest ───────────────────────────────────�

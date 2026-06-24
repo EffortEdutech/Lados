@@ -20,9 +20,19 @@ This is not optional. It is enforced at every AI call site and must never be rel
 
 ## 2. Current State
 
-`AiService` is a thin OpenAI Chat Completions wrapper with JSON mode support. When no API key is configured, it returns a keyword-based fallback so the system degrades gracefully rather than crashing.
+**Phase 10 and Phase 11 are complete (2026-06-24).** The AI Runtime is fully operational.
 
-AI nodes call `AiService` directly. There is no context builder, tool calling layer, output ledger, or AI audit log yet. These are Phase 10 targets.
+| Capability | Status |
+|---|---|
+| `AiService` — OpenAI Chat Completions wrapper | ✅ Live |
+| `AiContextBuilderService` — LCE-aware context assembly | ✅ Live |
+| Tool calling loop (`search_resources`, `get_events`, `get_workflow_status`) | ✅ Live |
+| `lados_ai_outputs` output ledger | ✅ Live |
+| Owner Assistant chat — grounded, multi-turn, audited | ✅ Live |
+| `AiService.runVision()` — GPT-4o multimodal | ✅ Live |
+| `contractor.extract_fuel_data` — AI receipt scanner | ✅ Live |
+| Multi-turn workflow trigger (`POST /ai/workflow-trigger`) | ✅ Live |
+| AI Workflow Design Studio (`POST /ai/workflow-suggest`, `POST /ai/workflow-edit`) | ✅ Live |
 
 ---
 
@@ -210,12 +220,13 @@ The output ledger is separate from `audit_log` and `lados_events`. It is the AI-
 
 ## 9. Current AI Nodes
 
-| Node | AI used for |
-|---|---|
-| `qs.classify_trade` | BOQ trade classification — AI suggests, human confirms |
-| `procurement.generate_rfq` | RFQ document generation from BOQ data |
-| `document.read_excel` | Table extraction from uploaded Excel files |
-| `qs.clean_boq` | BOQ normalisation and deduplication |
+| Node | Pack | AI used for |
+|---|---|---|
+| `qs.classify_trade` | qs-pack | BOQ trade classification — AI suggests, human confirms |
+| `procurement.generate_rfq` | procurement-pack | RFQ document generation from BOQ data |
+| `document.read_excel` | document-pack | Table extraction from uploaded Excel files |
+| `qs.clean_boq` | qs-pack | BOQ normalisation and deduplication |
+| `contractor.extract_fuel_data` | contractor-pack | Fuel receipt image → structured fields (vendor, date, amount, litres, vehicle) |
 
 All AI nodes mark outputs as extracted/advisory. None commit a result directly to a financial record — a human review node is always required downstream.
 
@@ -246,15 +257,115 @@ These rules are enforced at every AI call site and must never be relaxed — not
 
 ---
 
-## 11. AI Runtime Upgrade Sequence (Phase 10)
+## 11. Multi-Turn Workflow Trigger (Phase 10)
 
-1. Implement `AIContext` builder service
-2. Implement `PromptTemplateRegistry` with initial templates: `owner_assistant`, `boq_classifier`, `rfq_generator`, `document_extractor`
-3. Implement tool calling layer with `search_resources`, `get_events`, `get_workflow_status`
-4. Implement `AIOutputLedger` service and storage table
-5. Implement AI audit log (separate from `lados_events`)
-6. Wire owner assistant chat panel to context builder and tool calling layer
-7. Update all existing AI nodes to use the runtime instead of calling `AiService` directly
+`POST /ai/workflow-trigger` enables natural language workflow execution through a guided multi-turn conversation. The session is stateless on the server — the full session object is returned to the client and re-sent on each turn.
+
+**Turn sequence:**
+
+```
+Turn 1: { command: "I received an order for 5 tan pasir kasar" }
+  → phase: asking, question: { type: 'project', options: [...] }
+
+Turn 2: { command, session, answer: "<projectId>" }
+  → phase: asking, question: { type: 'workflow', options: [...] }
+
+Turn 3: { command, session, answer: "<workflowId>" }
+  → phase: asking, question: { type: 'text', field: 'customer_name' }
+
+Turn N: { command, session, execute: true }
+  → phase: done, runId: "<uuid>"
+```
+
+**Skip detection:** AI detects when a required resource (e.g. a Job) already exists today and proposes skipping that creation node. The user reviews the skip plan and can un-skip any node before confirming execution.
+
+**AiCommandBar:** Floating 🤖 button in the platform shell. Supports both trigger mode (⚡) and design mode (✨) via tab toggle.
+
+---
+
+## 12. AI Workflow Design Studio (Phase 11)
+
+The Design Studio lets owners create new workflows from scratch using natural language, with full visibility of available nodes from installed packs.
+
+### Philosophy
+
+> AI is a librarian + sorter. The human is the designer.
+
+AI never decides the final workflow — it drafts a starting sequence and surfaces relevant nodes. The human reviews, edits, and saves as draft. Publish is always a manual human action.
+
+### Pack Contract (Enforced at Every Layer)
+
+```
+registered_nodes WHERE is_enabled = true
+  AND pack_id IN (SELECT id FROM packs WHERE is_enabled = true)
+```
+
+AI suggestions reference only this set. Any hallucinated type string is stripped server-side in `WorkflowSuggestService` and `WorkflowEditService` before reaching the client. The client never renders an unvalidated node type.
+
+### API
+
+```
+POST /ai/workflow-suggest
+  Body:    { orgId, description }
+  Returns: { suggestion: { name, description, suggestedNodes[], availableNodes[], connections[] } }
+
+POST /ai/workflow-edit
+  Body:    { orgId, message, currentNodes[], allAvailableNodes[] }
+  Returns: { action, updatedNodes?, highlights?, message, suggestPack? }
+```
+
+### WorkflowSuggestService
+
+AI prompt requests two lists:
+- `suggestedSequence` — 4-6 ordered nodes forming a complete business cycle (trigger → intermediates → final outcome)
+- `alsoRelevant` — other applicable nodes from the catalogue the user might want to add
+
+Server merges both into `suggestedNodes` (the starting sequence) and `availableNodes` (the full palette), deduplicates by type, enforces pack contract, and rebuilds sequential connections.
+
+### WorkflowEditService
+
+Handles each chat message during a design session. Four action types:
+
+| Action | Server behaviour | Client effect |
+|---|---|---|
+| `update_sequence` | Returns full revised node list | Sequence replaced live |
+| `highlight_nodes` | Returns type strings (pack-validated) | Matching palette chips pulse violet for 3s |
+| `suggest_pack` | Returns pack slug + explanation | Chat message with 📦 badge |
+| `answer` | Returns text only | Chat message, no sequence change |
+
+### Design Studio UI (`AiWorkflowDesigner`)
+
+Three-panel modal (`apps/web/src/components/AiWorkflowDesigner.tsx`):
+
+```
+┌─────────────────────────────────────────┐
+│  📁 Project   [Workflow Name ________]  │
+├─────────────────────────────────────────┤
+│  WORKFLOW SEQUENCE              4 steps │
+│  ▲▼ ➕ Receive Order    #1  ✕          │
+│  ▲▼ ⏸ Approve Order    #2  ✕          │
+│  ▲▼ 🚛 Dispatch Driver  #3  ✕          │
+│  ▲▼ 🧾 Generate Invoice #4  ✕          │
+├─────────────────────────────────────────┤
+│  AVAILABLE NODES   6 available · click  │
+│  [✅ Complete Trip] [📬 Notify] [💾 …] │
+├─────────────────────────────────────────┤
+│  AI CO-PILOT                            │
+│  ┌ AI: Drafted a 4-step workflow…      │
+│  └ You: add approval before invoice    │
+│  ┌ AI: ✓ Sequence updated              │
+│  [Add approval step] [Find fuel nodes] │
+│  [__type here________________] [Send]  │
+└─────────────────────────────────────────┘
+            [ 💾 Save Draft ]
+```
+
+**Inline project creation:** If the organisation has no projects, the designer shows a `create_project` phase — user confirms/edits a pre-filled project name (derived from the workflow description), designer calls `POST /organizations/:orgId/projects`, then continues to generation seamlessly.
+
+**Save flow:**
+1. `POST /projects/:id/workflows` — creates draft workflow record
+2. `PUT /projects/:id/workflows/:wfId/definition` — saves full definition JSON
+3. Redirects to canvas editor on "Open in Canvas Editor →"
 
 ---
 

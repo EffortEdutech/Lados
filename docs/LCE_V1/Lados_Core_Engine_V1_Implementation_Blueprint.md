@@ -1286,40 +1286,44 @@ The initial build violated §3.10 (Platform UI Is Generic). The following correc
 
 ### Phase 10: AI Runtime Upgrade
 
-**Status:** AiService is a thin wrapper. No context builder, no tool calling, no ledger.
+**Status:** ✅ COMPLETE (2026-06-24)
 
-**Goal:** Make AI an engine capability with full LCE context awareness.
+**Delivered:**
+- `lados_ai_outputs` ledger table — every AI response stored with org, user, session, tokens
+- `AiContextBuilderService` — assembles resource, event, workflow, and permission context before every AI call
+- Tool calling loop in `runAssist()`: `search_resources`, `get_events`, `get_workflow_status` (up to 5 iterations)
+- Owner Assistant chat widget at `/dashboard` — grounded in live LCE data, advisory-only
+- `AiService.runVision()` — GPT-4o multimodal image analysis for fuel receipt extraction
+- `contractor.extract_fuel_data` node — AI-powered receipt scanner in contractor-pack
+- `POST /ai/workflow-trigger` — stateless multi-turn endpoint: project selection → workflow selection → input gap-fill → skip detection → execution
+- `AiCommandBar` — floating 🤖 button with ⚡ Trigger and ✨ Design tabs
 
-**Tasks:**
+**Guardrails enforced:**
+- AI cannot approve, certify, or release payment
+- All AI output stored in `lados_ai_outputs` before returning to client
+- Pack boundary: AI nodes can only use node types from installed, enabled packs
+- Human must explicitly send `execute: true` — no auto-execute path
 
-- Implement AI context builder: assembles resource, workflow, event history, permissions, and available tools into structured context
-- Implement prompt template registry
-- Implement AI tool calling layer: AI can call `search_resources`, `get_events`, `get_workflow_status`
-- Implement AI output ledger: every AI response stored with its source context and resource references
-- Implement AI audit log
-- Wire owner assistant to the context builder and tool calling layer
+### Phase 11: AI Workflow Design Studio
 
-**Acceptance:**
-- AI answers are grounded in resource and event data, not conversation memory alone
-- AI cannot bypass human approvals or permissions
-- AI outputs are stored with source references
+**Status:** ✅ COMPLETE (2026-06-24)
 
-### Phase 11: Internal Registry Maturity
+> Note: The original Phase 11 plan described "Internal Registry Maturity." That scope is deferred to Phase 14. Phase 11 was reprioritised to deliver the AI Design Studio — a higher-value feature that enables owners to create new workflows from scratch without needing the canvas.
 
-**Status:** Tables and basic UI exist. No install/upgrade flow.
+**Delivered:**
+- `WorkflowSuggestService` — AI analyses description, returns `suggestedNodes` (4-6 ordered sequence) + `availableNodes` (full palette from relevant packs). Pack contract enforced: hallucinated types stripped server-side.
+- `WorkflowEditService` — co-pilot for the design session. Four action types: `update_sequence` | `highlight_nodes` | `suggest_pack` | `answer`. Pack contract enforced on all returned node types.
+- `POST /ai/workflow-suggest` + `POST /ai/workflow-edit` — JWT-guarded, owner/admin only
+- `AiWorkflowDesigner` — self-contained Design Studio modal with three panels:
+  - **Sequence panel** — AI-proposed steps, user reorders / removes / renames inline
+  - **Palette panel** — all relevant nodes from packs, click to add, AI highlights on find
+  - **AI Chat panel** — conversational editing, quick-suggestion chips, action badges
+- Inline project creation — if no projects exist, designer guides user to create one before generating
+- All workflows saved as **draft** — AI never publishes; human opens canvas and publishes when ready
 
-**Goal:** Make the registry operator-usable.
+**Design philosophy:** AI is a librarian + sorter, not a designer. It surfaces the pieces from installed packs; the human arranges and owns the final workflow.
 
-**Tasks:**
-
-- Implement available pack catalog (packs that can be installed)
-- Implement update status indicator (installed version vs. available version)
-- Implement dependency graph view
-- Implement compatibility warnings for engine version mismatches
-
-**Acceptance:**
-- Operators can browse, install, upgrade, and disable packs
-- Installed pack versions are traceable
+### Phase 12: Async Execution Queue
 
 ### Phase 12: Async Execution Queue
 
@@ -1515,68 +1519,4 @@ docs/
   Contractor_Edition/
     01_Overview.md
     02_Resources.md
-    03_Workflows.md
-    04_Packs.md
-    05_Driver_Flow.md
-    06_Owner_Flow.md
-  LEOS/
-    01_Deferred_Blueprint.md
-```
-
-Existing document mapping:
-
-| Existing document | New home |
-| --- | --- |
-| Lados_Core_Engine_V1_Implementation_Blueprint.md | docs/LCE_V1/02_Architecture.md |
-| Workflow specifications | docs/LCE_V1/03_Workflow_Engine.md |
-| Node SDK | docs/LCE_V1/04_Node_System.md |
-| @lados/pack-sdk types | docs/LCE_V1/05_Pack_System.md |
-| Resource Engine design | docs/LCE_V1/06_Resource_Engine.md |
-| Event Bus design | docs/LCE_V1/07_Event_Bus.md |
-| State Engine design | docs/LCE_V1/08_State_Engine.md |
-| Supabase migrations | docs/LCE_V1/15_API_Reference.md |
-
----
-
-## 12. Immediate Next Actions
-
-In priority order:
-
-1. Execute Phase 0: rename `@qsos/` → `@lados/`, update UI identity to Lados
-2. Execute Phase 1: replace auto-approve with real pause/resume in `core.human_approval`; add job queue for async execution
-3. Execute Phase 2: move real node implementations from `api/src/execution/real-nodes/` into their respective packs
-4. Begin Phase 3: design and build `lados_resources` table and `ResourceEngine` service
-5. Model Contractor Edition resource types against the Resource Engine schema before writing any pack code
-
----
-
-## 13. Final Position
-
-```
-LCE is the engine.
-Packs are the domain vocabulary.
-Solutions are pack compositions.
-Contractor Edition proves the engine.
-LEOS / JKR proves it scales.
-```
-
-The implementation sequence is:
-
-```
-Phase 0  — Identity: @lados/, Lados branding
-Phase 1  — Workflow Engine: real approvals, async execution, immutable versions
-Phase 2  — Node Isolation: nodes move into packs
-Phase 3  — Resource Engine: first-class business objects
-Phase 4  — Event Bus: typed, immutable, subscribable
-Phase 5  — State Engine: configurable lifecycle enforcement
-Phase 6  — Security Engine: declarative permission policies
-Phase 7  — Foundation Pack: universal capabilities packaged
-Phase 8  — Pack Installer: runtime install, upgrade, enable, disable
-Phase 9  — Contractor Edition: first real solution
-Phase 10 — AI Runtime: context-aware, tool-calling, auditable
-Phase 11 — Registry: operator-grade pack management
-Phase 12 — Async Execution Queue: production-grade runner
-Phase 13 — LEOS / JKR Blueprint: documented, not built
-```
-
-This order means the engine is solid before the solution is built, and the solution validates the engine before enterprise-scale complexity is introduced.
+   

@@ -77,39 +77,4 @@ export class ExecutionController {
    * POST /resources/:id/execute-action?organizationId=<orgId>
    * Body: { node: "contractor.dispatch_trip", inputs: { jobId, vehicleId, driverId } }
    */
-  @Post('resources/:id/execute-action')
-  async executeResourceAction(
-    @Param('id') resourceId: string,
-    @Body() body: { node: string; inputs?: Record<string, unknown> },
-    @Query('organizationId') orgId: string,
-    @Request() req: { user: { id: string } },
-  ) {
-    if (!body?.node) throw new BadRequestException('node is required');
-    if (!orgId)      throw new BadRequestException('organizationId query param is required');
-
-    const result = await this.executionService.executeNodeAction(
-      body.node,
-      orgId,
-      resourceId,
-      body.inputs ?? {},
-      req.user.id,
-    );
-
-    return { success: result.status !== 'failure', data: result };
-  }
-
-  /**
-   * Latest qs.read_boq output for a project.
-   * Returns the most recent completed node output so the BOQ table page
-   * can render it without knowing which workflow or run it came from.
-   * Sprint 16 (S16-005).
-   */
-  @Get('projects/:projectId/boq-latest')
-  async getLatestBoq(
-    @Param('projectId') projectId: string,
-    @Request() req: { user: { id: string } },
-  ) {
-    const data = await this.executionService.getLatestBoq(projectId, req.user.id);
-    return { success: true, data };
-  }
-}
+  @Post('resources/:i

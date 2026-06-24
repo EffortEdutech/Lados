@@ -1,15 +1,11 @@
 /**
- * AiModule
+ * AiModule — Phase 10 (AI Runtime)
  *
- * Provides AiService globally so any module can inject it.
- * Sprint 9 (S9-002)
- */
-import { Global, Module } from '@nestjs/common';
-import { AiService } from './ai.service';
-
-@Global()
-@Module({
-  providers: [AiService],
-  exports:   [AiService],
-})
-export class AiModule {}
+ * Provides AiService globally (Phase 9 unchanged).
+ * Phase 10 adds:
+ *   - AiContextBuilderService (context assembly)
+ *   - AiController            (POST /ai/assist)
+ *
+ * SupabaseModule is @Global so no need to import it here.
+ *
+ * Sprint 9 (S9-0

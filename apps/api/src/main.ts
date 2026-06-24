@@ -6,6 +6,11 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Increase body size limit to 10 MB to allow base64-encoded receipt images
+  // sent inline from the WorkflowActionModal file picker.
+  app.use(require('express').json({ limit: '10mb' }));
+  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
+
   // Global API prefix
   app.setGlobalPrefix('api/v1');
 
@@ -27,14 +32,4 @@ async function bootstrap() {
   // CORS — tighten in production
   app.enableCors({
     origin: process.env['APP_URL'] ?? 'http://localhost:3000',
-    credentials: true,
-  });
-
-  const port = parseInt(process.env['PORT'] ?? '4000', 10);
-  await app.listen(port);
-
-  console.warn(`Lados API running on http://localhost:${port}/api/v1`);
-  console.warn(`Health: http://localhost:${port}/api/v1/health`);
-}
-
-bootstrap();
+ 
