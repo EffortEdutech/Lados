@@ -15,7 +15,7 @@
  */
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 }  from '@nestjs/event-emitter';
-import { Worker, Job }    from 'bullmq';
+import { Worker, Job, ConnectionOptions } from 'bullmq';
 import { SupabaseService } from '../common/supabase/supabase.service';
 import { FileService }    from '../file/file.service';
 import { LibraryService } from '../library/library.service';
@@ -69,9 +69,9 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleInit() {
-    const connection = this.queueService.getConnection();
-    if (!connection) {
-      this.logger.warn('No Redis connection — worker not started (in-process fallback active)');
+    const connectionOptions: ConnectionOptions | undefined = this.queueService.getConnectionOptions();
+    if (!connectionOptions) {
+      this.logger.warn('No Redis config — worker not started (in-process fallback active)');
       return;
     }
 
@@ -79,8 +79,8 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       EXECUTION_QUEUE_NAME,
       async (job) => this.process(job),
       {
-        connection,
-        concurrency: 5, // up to 5 simultaneous workflow runs
+        connection:  connectionOptions,
+        concurrency: 5,
       },
     );
 
