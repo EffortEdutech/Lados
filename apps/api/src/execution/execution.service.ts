@@ -586,4 +586,7 @@ export class ExecutionService implements OnModuleInit {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[ExecutionService] executeNodeAction(${nodeType}) threw: ${msg}`);
-      return { status: 'failure', outputs: {}, error: { code: 'NODE
+      return { status: 'failure', outputs: {}, error: { code: 'NODE_EXCEPTION', message: msg } };
+    }
+  }
+}

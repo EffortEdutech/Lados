@@ -85,4 +85,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto
+      <main className="flex-1 overflow-auto">
+        {children}
+      </main>
+
+      {/* Global AI command bar — floating 🤖 button, accessible from all pages */}
+      <AiCommandBar />
+    </div>
+  );
+}

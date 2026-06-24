@@ -122,3 +122,87 @@ export interface FuelReceiptData {
   aiExtracted?: {
     amount?:      number;
     liters?:      number;
+    stationName?: string;
+    receiptDate?: string;
+    confidence?:  number;
+    extractedAt?: string;
+  };
+}
+
+export interface MaintenanceRecordData {
+  assetId:          string;   // vehicle or equipment resource ID
+  assetType:        'vehicle' | 'equipment';
+  description:      string;
+  scheduledDate?:   string;
+  workshop?:        string;
+  completionNotes?: string;
+  cost?:            number;   // MYR
+  completedAt?:     string;
+}
+
+// M2 — Finance
+
+export interface InvoiceData {
+  jobId:        string;    // job resource ID
+  customerId?:  string;    // customer resource ID
+  lineItems?:   InvoiceLineItem[];
+  subtotal?:    number;
+  tax?:         number;
+  total?:       number;
+  currency?:    string;    // default 'MYR'
+  notes?:       string;
+  dueDate?:     string;    // ISO 8601
+}
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity:    number;
+  unitPrice:   number;
+  unit?:       string;     // 'trip' | 'hour' | 'km' | 'unit'
+  total:       number;
+  sourceId?:   string;     // trip or equipment resource ID this line came from
+}
+
+export interface PaymentData {
+  invoiceId:   string;    // invoice resource ID
+  amount:      number;    // MYR
+  method?:     'bank_transfer' | 'cash' | 'cheque' | 'online';
+  reference?:  string;   // bank / cheque reference
+  receivedAt?: string;   // ISO 8601
+  notes?:      string;
+}
+
+export interface ExpenseData {
+  category?:    string;   // e.g. 'fuel', 'maintenance', 'materials', 'labour'
+  description?: string;
+  amount:       number;   // MYR
+  receiptUrl?:  string;
+  date?:        string;   // ISO 8601
+  jobId?:       string;   // optional — link expense to a job
+  notes?:       string;
+  approvedBy?:  string;   // user ID (set on approval)
+  approvedAt?:  string;   // ISO 8601
+}
+
+// M4 — HR / Payroll
+
+export interface PayrollRunEmployee {
+  employeeId:  string;
+  name:        string;
+  dailyRate:   number;   // MYR per day
+  daysWorked:  number;
+  grossPay:    number;   // computed: dailyRate × daysWorked
+  deductions?: number;
+  netPay?:     number;
+}
+
+export interface PayrollRunData {
+  periodStart:   string;              // ISO 8601 date
+  periodEnd:     string;              // ISO 8601 date
+  employees:     PayrollRunEmployee[];
+  totalGross:    number;
+  totalNet?:     number;
+  notes?:        string;
+  approvedBy?:   string;              // user ID (set on approval)
+  approvedAt?:   string;              // ISO 8601
+}

@@ -216,4 +216,62 @@ Rules:
     });
 
     // ── Parse: extract JSON even if AI wraps it in markdown ──────────────────
-    let jso
+    let jsonStr = raw.trim();
+    // Strip ```json ... ``` or ``` ... ```
+    const fenced = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenced) jsonStr = fenced[1].trim();
+    // Fallback: extract first {...} block
+    if (!jsonStr.startsWith('{')) {
+      const braceMatch = jsonStr.match(/\{[\s\S]*\}/);
+      if (!braceMatch) throw new Error('AI returned no JSON object');
+      jsonStr = braceMatch[0];
+    }
+
+    let parsed: {
+      name:              string;
+      description:       string;
+      suggestedSequence: Array<{ tempId: string; type: string; label: string }>;
+      alsoRelevant?:     Array<{ type: string; label: string }>;
+    };
+
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (err) {
+      this.logger.error('AI response JSON parse failed', jsonStr.slice(0, 200));
+      throw new Error('AI returned invalid JSON — please try again with a clearer description');
+    }
+
+    const toNode = (n: { type: string; label: string }, i: number): SuggestedNode => ({
+      id:       `node-${crypto.randomUUID()}`,
+      type:     n.type,
+      label:    n.label ?? n.type,
+      position: { x: 250, y: 60 + i * 160 },
+    });
+
+    const suggestedNodes: SuggestedNode[] =
+      (parsed.suggestedSequence ?? []).map((n, i) => toNode(n, i));
+
+    const availableNodes: SuggestedNode[] =
+      (parsed.alsoRelevant ?? []).map((n, i) => toNode(n, i));
+
+    return {
+      name:           (parsed.name        ?? 'AI Workflow').slice(0, 60),
+      description:    (parsed.description ?? '').slice(0, 300),
+      suggestedNodes,
+      availableNodes,
+      connections:    this.buildConnections(suggestedNodes),
+    };
+  }
+
+  // ── Private: sequential connection builder ────────────────────────────────
+
+  private buildConnections(nodes: SuggestedNode[]): WorkflowConnection[] {
+    return nodes.slice(0, -1).map((node, i) => ({
+      id:           `conn-${i}`,
+      sourceNodeId: node.id,
+      sourcePortId: 'out',
+      targetNodeId: nodes[i + 1].id,
+      targetPortId: 'in',
+    }));
+  }
+}

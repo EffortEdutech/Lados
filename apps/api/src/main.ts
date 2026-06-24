@@ -32,4 +32,14 @@ async function bootstrap() {
   // CORS — tighten in production
   app.enableCors({
     origin: process.env['APP_URL'] ?? 'http://localhost:3000',
- 
+    credentials: true,
+  });
+
+  const port = parseInt(process.env['PORT'] ?? '4000', 10);
+  await app.listen(port);
+
+  console.warn(`Lados API running on http://localhost:${port}/api/v1`);
+  console.warn(`Health: http://localhost:${port}/api/v1/health`);
+}
+
+bootstrap();

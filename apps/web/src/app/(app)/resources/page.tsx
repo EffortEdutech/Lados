@@ -621,4 +621,751 @@ function WorkflowActionModal({
                           <span className="text-gray-500">{r.label}</span>
                           <span className={`font-medium ${r.value === '—' ? 'text-gray-300' : 'text-gray-900'}`}>{r.value}</span>
                         </div>
-                     
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[11px] text-amber-700">
+                    ⚠️ These values are <strong>advisory only</strong>. Amounts are not posted to finance until an owner/admin approves this receipt.
+                  </div>
+                  {ai.warning && ai.warning.toLowerCase().includes('low confidence') && (
+                    <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-[11px] text-red-700">
+                      🔴 {ai.warning}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+            <button
+              onClick={() => onSuccess(`${action.label} completed for ${resource.name}`)}
+              className="w-full rounded-lg bg-gray-900 text-white py-2 text-sm font-medium hover:bg-gray-700"
+            >
+              Done — view updated receipt card
+            </button>
+          </>
+        ) : (
+          <>
+            {/* ── Form ── */}
+            {loading ? (
+              <p className="text-sm text-gray-400 text-center py-8">Loading form…</p>
+            ) : (
+              <div className="space-y-4">
+                {schema.length === 0 && (
+                  <p className="text-xs text-gray-500 italic">No additional inputs required.</p>
+                )}
+                {schema.map((field) => (
+                  <div key={field.key}>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {field.label}
+                      {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                    </label>
+                    {field.description && (
+                      <p className="text-[10px] text-gray-400 mb-1">{field.description}</p>
+                    )}
+                    {renderField(field)}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-3 rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+                ❌ {error}
+              </div>
+            )}
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={onCancel}
+                disabled={busy}
+                className="rounded-lg px-4 py-2 text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={busy || loading}
+                className="rounded-lg px-4 py-2 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {busy ? 'Running…' : action.label}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Driver banner ─────────────────────────────────────────────────────────────
+
+function DriverBanner({
+  driverName,
+  tripCount,
+  loading,
+}: {
+  driverName: string;
+  tripCount:  number;
+  loading:    boolean;
+}) {
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: 'long', day: 'numeric', month: 'long',
+  });
+  return (
+    <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-3 sm:px-6">
+      <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🚛</span>
+          <div>
+            <p className="text-sm font-semibold text-yellow-900">
+              Selamat datang, {driverName || 'Driver'}
+            </p>
+            <p className="text-xs text-yellow-700">{today}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold text-yellow-700">
+            {loading ? '—' : tripCount}
+          </p>
+          <p className="text-[11px] text-yellow-600 font-medium">
+            {tripCount === 1 ? 'trip assigned' : 'trips assigned'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Trip step indicator (driver mode) ─────────────────────────────────────────
+
+const TRIP_STEPS: Record<string, { label: string; step: number; total: number }> = {
+  dispatched:  { label: 'Dispatched — tap to Start',          step: 1, total: 3 },
+  in_progress: { label: 'In Progress — tap to Complete',      step: 2, total: 3 },
+  completed:   { label: 'Completed',                          step: 3, total: 3 },
+  cancelled:   { label: 'Cancelled',                          step: 0, total: 3 },
+};
+
+function TripStepBadge({ state }: { state: string }) {
+  const info = TRIP_STEPS[state];
+  if (!info || info.step === 0) return null;
+  return (
+    <div className="mt-2 pl-7 flex items-center gap-1">
+      {Array.from({ length: info.total }).map((_, i) => (
+        <div
+          key={i}
+          className={`h-1.5 flex-1 rounded-full ${
+            i < info.step ? 'bg-yellow-400' : 'bg-gray-200'
+          }`}
+        />
+      ))}
+      <span className="ml-2 text-[10px] text-gray-500 whitespace-nowrap">{info.label}</span>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+
+function ResourcesPageInner() {
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const typeParam    = searchParams.get('type') ?? '';
+
+  // ── Org state ──────────────────────────────────────────────────────────────
+  const [orgs,        setOrgs]        = useState<Organization[]>([]);
+  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+
+  // ── Driver mode state (M7) ─────────────────────────────────────────────────
+  const [isDriverMode,      setIsDriverMode]      = useState(false);
+  const [myDriverResId,     setMyDriverResId]     = useState<string | null>(null);
+  const [myDriverName,      setMyDriverName]      = useState<string>('');
+  const [driverInitialised, setDriverInitialised] = useState(false);
+
+  // ── View config ────────────────────────────────────────────────────────────
+  const [viewConfigs, setViewConfigs] = useState<Record<string, PackResourceDefinition>>({});
+  const [activeType,  setActiveType]  = useState<string>(typeParam);
+
+  // ── Resource list ──────────────────────────────────────────────────────────
+  const [resources,   setResources]   = useState<Resource[]>([]);
+  const [loading,     setLoading]     = useState(false);
+  const [search,      setSearch]      = useState('');
+  const [stateFilter, setStateFilter] = useState('');
+  const [viewMode,    setViewMode]    = useState<'tile' | 'table'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('lados_resource_view') as 'tile' | 'table') ?? 'tile';
+    }
+    return 'tile';
+  });
+
+  // ── Action state ───────────────────────────────────────────────────────────
+  const [actionBusy,       setActionBusy]       = useState<string | null>(null);
+  const [confirmTarget,    setConfirmTarget]    = useState<{
+    resource: Resource; action: ResourceInlineAction;
+  } | null>(null);
+  const [nodeActionTarget, setNodeActionTarget] = useState<{
+    resource: Resource; action: ResourceInlineAction;
+  } | null>(null);
+  const [actionError,   setActionError]   = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // ── Error ──────────────────────────────────────────────────────────────────
+  const [error, setError] = useState<string | null>(null);
+
+  // ── 1. Load orgs ──────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    apiClient.get<Organization[]>('/organizations').then((res) => {
+      const list = res.data ?? [];
+      setOrgs(list);
+      if (list.length > 0) setSelectedOrg(list[0]);
+    });
+  }, []);
+
+  // ── 2. Detect driver mode and find own driver resource ────────────────────
+
+  useEffect(() => {
+    if (!selectedOrg) return;
+
+    const role = selectedOrg.membership?.role ?? '';
+    if (role !== 'driver') {
+      setIsDriverMode(false);
+      setDriverInitialised(true);
+      return;
+    }
+
+    setIsDriverMode(true);
+
+    // Get logged-in user, then find their driver resource by linkedUserId
+    async function initDriver() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const res = await apiClient.get<Resource[]>(
+          `/resources?organizationId=${selectedOrg!.id}&type=driver`,
+        );
+        const drivers = res.data ?? [];
+        const mine = drivers.find(
+          (d) => String(d.data?.linkedUserId ?? '') === user.id,
+        );
+
+        if (mine) {
+          setMyDriverResId(mine.id);
+          setMyDriverName(mine.name);
+        }
+
+        // Force trip tab for drivers
+        setActiveType('trip');
+        router.replace('/resources?type=trip');
+      } finally {
+        setDriverInitialised(true);
+      }
+    }
+
+    initDriver();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedOrg]);
+
+  // ── 3. Load pack resource view configs ────────────────────────────────────
+
+  useEffect(() => {
+    if (!selectedOrg) return;
+    apiClient
+      .get<Record<string, PackResourceDefinition>>(
+        `/packs/resource-views?organizationId=${selectedOrg.id}`,
+      )
+      .then((res) => {
+        const configs = res.data ?? {};
+        setViewConfigs(configs);
+        // Set active type from URL param or first available type
+        // (driver mode will override this in its own effect)
+        const types = Object.keys(configs);
+        if (!isDriverMode) {
+          if (typeParam && configs[typeParam]) {
+            setActiveType(typeParam);
+          } else if (types.length > 0 && !activeType) {
+            setActiveType(types[0]);
+          }
+        }
+      })
+      .catch(() => setError('Failed to load resource type configurations'));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedOrg]);
+
+  // ── 4. Load resources when type or org changes ────────────────────────────
+
+  const loadResources = useCallback(() => {
+    if (!selectedOrg || !activeType) return;
+    // In driver mode, wait until driver resource is found before loading trips
+    if (isDriverMode && !driverInitialised) return;
+
+    setLoading(true);
+    setError(null);
+    apiClient
+      .get<Resource[]>(
+        `/resources?organizationId=${selectedOrg.id}&type=${activeType}` +
+        (stateFilter ? `&state=${stateFilter}` : ''),
+      )
+      .then((res) => setResources(res.data ?? []))
+      .catch(() => setError('Failed to load resources'))
+      .finally(() => setLoading(false));
+  }, [selectedOrg, activeType, stateFilter, isDriverMode, driverInitialised]);
+
+  useEffect(() => { loadResources(); }, [loadResources]);
+
+  // ── Tab change: update URL + state ────────────────────────────────────────
+
+  const handleTypeChange = (type: string) => {
+    setActiveType(type);
+    setStateFilter('');
+    setSearch('');
+    router.push(`/resources?type=${type}`);
+  };
+
+  // ── Inline action handler ─────────────────────────────────────────────────
+
+  const handleAction = (resource: Resource, action: ResourceInlineAction) => {
+    if (action.node !== 'state.change') {
+      setNodeActionTarget({ resource, action });
+      return;
+    }
+    if (action.requiresConfirm) {
+      setConfirmTarget({ resource, action });
+    } else {
+      executeAction(resource, action);
+    }
+  };
+
+  const executeAction = async (resource: Resource, action: ResourceInlineAction) => {
+    if (!selectedOrg) return;
+    setActionBusy(resource.id);
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      if (action.node === 'state.change') {
+        const STATE_MAP: Record<string, string> = {
+          'Approve':             'active',
+          'Reject':              'cancelled',
+          'Mark Complete':       'completed',
+          'Submit for Approval': 'pending_approval',
+          'Cancel':              'cancelled',
+          'Activate':            'active',
+          'Start Trip':          'in_progress',
+          'Complete Trip':       'completed',
+        };
+        const toState = STATE_MAP[action.label] ?? action.label.toLowerCase().replace(/\s+/g, '_');
+        await apiClient.post(
+          `/resources/${resource.id}/transition?organizationId=${selectedOrg.id}`,
+          { toState },
+        );
+        setActionSuccess(`${resource.name} → ${toState.replace(/_/g, ' ')}`);
+      }
+      loadResources();
+    } catch (e: unknown) {
+      setActionError(e instanceof Error ? e.message : 'Action failed');
+    } finally {
+      setActionBusy(null);
+      setConfirmTarget(null);
+    }
+  };
+
+  // ── Filter resources client-side ──────────────────────────────────────────
+
+  const filtered = resources.filter((r) => {
+    // Driver mode: only show trips assigned to this driver
+    if (isDriverMode && myDriverResId) {
+      if (String(r.data?.driverId ?? '') !== myDriverResId) return false;
+    }
+    if (!search) return true;
+    return r.name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  // ── Derived ───────────────────────────────────────────────────────────────
+
+  // In driver mode, only show the 'trip' tab
+  const typeList     = isDriverMode
+    ? Object.values(viewConfigs).filter((d) => d.type === 'trip')
+    : Object.values(viewConfigs);
+  const activeConfig  = viewConfigs[activeType];
+  const uniqueStates  = [...new Set(resources.map((r) => r.state))].sort();
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+
+      {/* ── Driver banner (M7) ── */}
+      {isDriverMode && (
+        <DriverBanner
+          driverName={myDriverName}
+          tripCount={filtered.length}
+          loading={loading}
+        />
+      )}
+
+      {/* ── Page header ── */}
+      <div className="bg-white border-b border-gray-200 px-4 py-4 sm:px-6">
+        <div className="max-w-5xl mx-auto flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">
+              {isDriverMode ? 'My Trips' : 'Resources'}
+            </h1>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {isDriverMode
+                ? 'Your assigned trips for today'
+                : activeConfig
+                  ? `${activeConfig.displayNamePlural ?? activeConfig.displayName} managed by ${activeConfig.packId}`
+                  : 'All resource types across installed packs'}
+            </p>
+          </div>
+
+          {/* Org selector (hide in driver mode — drivers have one org) */}
+          {!isDriverMode && orgs.length > 1 && (
+            <select
+              value={selectedOrg?.id ?? ''}
+              onChange={(e) => {
+                const org = orgs.find((o) => o.id === e.target.value);
+                if (org) setSelectedOrg(org);
+              }}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      {/* ── Type tabs (horizontal scroll on mobile) ── */}
+      {typeList.length > 0 && (
+        <div className="bg-white border-b border-gray-200 overflow-x-auto">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-end gap-0">
+            {typeList.map((def) => {
+              const isActive = def.type === activeType;
+              return (
+                <button
+                  key={def.type}
+                  onClick={() => handleTypeChange(def.type)}
+                  className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                    isActive
+                      ? isDriverMode
+                        ? 'border-yellow-500 text-yellow-700'
+                        : 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-200'
+                  }`}
+                >
+                  {def.icon && <span>{def.icon}</span>}
+                  {isDriverMode ? 'My Trips' : (def.displayNamePlural ?? def.displayName)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5">
+
+        {/* ── Filters row ── */}
+        <div className="mb-5 flex flex-col sm:flex-row gap-3">
+          {/* Search */}
+          <input
+            type="text"
+            placeholder={isDriverMode ? 'Search my trips…' : `Search ${activeConfig?.displayNamePlural ?? 'resources'}…`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          {/* State filter (always show in driver mode for easy filtering) */}
+          {uniqueStates.length > 1 && (
+            <select
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All states</option>
+              {uniqueStates.map((s) => (
+                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Refresh */}
+          <button
+            onClick={loadResources}
+            disabled={loading}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <span className={loading ? 'animate-spin inline-block' : ''}>⟳</span>
+          </button>
+
+          {/* View toggle — hide in driver mode (table not suited for mobile trip workflow) */}
+          {!isDriverMode && (
+            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+              <button
+                title="Tile view"
+                onClick={() => { setViewMode('tile'); localStorage.setItem('lados_resource_view', 'tile'); }}
+                className={`px-2.5 py-2 text-sm transition-colors ${viewMode === 'tile' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+              >
+                ⊞
+              </button>
+              <button
+                title="Table view"
+                onClick={() => { setViewMode('table'); localStorage.setItem('lados_resource_view', 'table'); }}
+                className={`px-2.5 py-2 text-sm transition-colors border-l border-gray-200 ${viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+              >
+                ☰
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Toasts ── */}
+        {actionSuccess && (
+          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700 flex items-center justify-between">
+            ✅ {actionSuccess}
+            <button onClick={() => setActionSuccess(null)} className="text-green-400 hover:text-green-600 ml-4">✕</button>
+          </div>
+        )}
+        {actionError && (
+          <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+            {actionError}
+            <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-600 ml-4">✕</button>
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700 flex items-center justify-between">
+            {error}
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-4">✕</button>
+          </div>
+        )}
+
+        {/* ── Driver mode: no resource found warning ── */}
+        {isDriverMode && driverInitialised && !myDriverResId && !loading && (
+          <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+            ⚠️ Your driver profile was not found in this organisation. Contact your admin.
+          </div>
+        )}
+
+        {/* ── Loading ── */}
+        {loading && (
+          <div className="text-center py-16 text-sm text-gray-400">
+            Loading {isDriverMode ? 'your trips' : (activeConfig?.displayNamePlural ?? 'resources')}…
+          </div>
+        )}
+
+        {/* ── Empty ── */}
+        {!loading && filtered.length === 0 && !error && (
+          <div className="text-center py-16">
+            <div className="text-4xl mb-3">{isDriverMode ? '🚛' : (activeConfig?.icon ?? '🗂️')}</div>
+            <p className="text-sm text-gray-500">
+              {isDriverMode
+                ? 'No trips assigned to you yet.'
+                : `No ${activeConfig?.displayNamePlural ?? 'resources'} found${(search || stateFilter) ? ' matching your filters' : ''}.`}
+            </p>
+            {(search || stateFilter) && (
+              <button
+                onClick={() => { setSearch(''); setStateFilter(''); }}
+                className="mt-3 text-sm text-blue-600 hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Resource grid / table ── */}
+        {!loading && filtered.length > 0 && (
+          <>
+            <p className="text-xs text-gray-400 mb-4">
+              <span className="font-semibold text-gray-600">{filtered.length}</span>
+              {!isDriverMode && (
+                <>
+                  {' '}of{' '}
+                  <span className="font-semibold text-gray-600">{resources.length}</span>
+                  {' '}{activeConfig?.displayNamePlural ?? 'resources'}
+                </>
+              )}
+              {isDriverMode && ' trip(s) assigned to you'}
+            </p>
+
+            {/* ── Tile view ── */}
+            {(viewMode === 'tile' || isDriverMode) && (
+              <div className={`grid gap-4 ${
+                isDriverMode
+                  ? 'grid-cols-1 sm:grid-cols-2'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+              }`}>
+                {filtered.map((resource) => (
+                  <div key={resource.id}>
+                    <ResourceCard
+                      resource={resource}
+                      viewConfig={activeConfig}
+                      orgId={selectedOrg?.id ?? ''}
+                      onAction={handleAction}
+                      actionBusy={actionBusy}
+                      driverMode={isDriverMode}
+                    />
+                    {isDriverMode && <TripStepBadge state={resource.state} />}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Table view ── */}
+            {viewMode === 'table' && !isDriverMode && (
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Type</th>
+                      <th className="px-4 py-3">State</th>
+                      <th className="px-4 py-3">AI Data</th>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {filtered.map((resource) => {
+                      const ai = resource.type === 'fuel_receipt' && resource.data?.aiExtracted
+                        ? (resource.data.aiExtracted as { amount?: number | null; liters?: number | null; confidence?: number | null })
+                        : null;
+
+                      const visibleActions = (activeConfig?.views?.inlineActions ?? []).filter(
+                        (a: ResourceInlineAction) => a.visibleInStates.includes(resource.state) || a.visibleInStates.includes('*'),
+                      );
+
+                      const dateStr = resource.created_at
+                        ? new Date(resource.created_at).toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' })
+                        : '—';
+
+                      return (
+                        <tr key={resource.id} className="hover:bg-gray-50/60 transition-colors">
+                          {/* Name */}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{activeConfig?.icon ?? '🗂️'}</span>
+                              <span className="font-medium text-gray-800 leading-tight">{resource.name}</span>
+                            </div>
+                          </td>
+
+                          {/* Type */}
+                          <td className="px-4 py-3">
+                            <span className="text-gray-500 capitalize">{resource.type.replace(/_/g, ' ')}</span>
+                          </td>
+
+                          {/* State */}
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                              resource.state === 'active'   || resource.state === 'completed' ? 'bg-green-100 text-green-700' :
+                              resource.state === 'rejected' || resource.state === 'cancelled' ? 'bg-red-100 text-red-700' :
+                              resource.state === 'pending_review' || resource.state === 'pending_approval' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {resource.state.replace(/_/g, ' ')}
+                            </span>
+                          </td>
+
+                          {/* AI Data */}
+                          <td className="px-4 py-3">
+                            {ai ? (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] text-purple-600 bg-purple-50 rounded px-1.5 py-0.5 font-medium">🤖 AI</span>
+                                {ai.amount  != null && <span className="text-xs text-gray-700">MYR {(ai.amount as number).toFixed(2)}</span>}
+                                {ai.liters  != null && <span className="text-xs text-gray-500">{ai.liters}L</span>}
+                                {ai.confidence != null && (
+                                  <span className="text-[10px] text-gray-400">{((ai.confidence as number) * 100).toFixed(0)}%</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-gray-300">—</span>
+                            )}
+                          </td>
+
+                          {/* Date */}
+                          <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{dateStr}</td>
+
+                          {/* Actions */}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              {visibleActions.length === 0 && (
+                                <span className="text-xs text-gray-300">—</span>
+                              )}
+                              {visibleActions.map((action: ResourceInlineAction) => (
+                                <button
+                                  key={action.label}
+                                  onClick={() => handleAction(resource, action)}
+                                  disabled={actionBusy === resource.id}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  {action.icon && <span>{action.icon}</span>}
+                                  {action.label}
+                                </button>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── Empty state: no type selected ── */}
+        {!loading && typeList.length === 0 && !error && (
+          <div className="text-center py-20">
+            <div className="text-4xl mb-3">📦</div>
+            <p className="text-sm text-gray-500">No packs with resource types are currently active.</p>
+            <a href="/packs" className="mt-3 inline-block text-sm text-blue-600 hover:underline">
+              Go to Packs →
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* ── Confirm modal (state.change with requiresConfirm) ── */}
+      {confirmTarget && (
+        <ConfirmModal
+          action={confirmTarget.action}
+          resource={confirmTarget.resource}
+          onConfirm={() => executeAction(confirmTarget.resource, confirmTarget.action)}
+          onCancel={() => setConfirmTarget(null)}
+          busy={actionBusy === confirmTarget.resource.id}
+        />
+      )}
+
+      {/* ── Workflow action modal (non-state.change pack nodes) ── */}
+      {nodeActionTarget && (
+        <WorkflowActionModal
+          action={nodeActionTarget.action}
+          resource={nodeActionTarget.resource}
+          packId={activeConfig?.packId ?? ''}
+          orgId={selectedOrg?.id ?? ''}
+          onSuccess={(msg) => {
+            setNodeActionTarget(null);
+            setActionSuccess(msg);
+            loadResources();
+          }}
+          onCancel={() => setNodeActionTarget(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Wrap in Suspense for useSearchParams requirement in Next.js 14
+export default function ResourcesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64 text-sm text-gray-400">
+        Loading…
+      </div>
+    }>
+      <ResourcesPageInner />
+    </Suspense>
+  );
+}

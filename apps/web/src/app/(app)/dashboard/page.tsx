@@ -161,4 +161,411 @@ function ContractorDashboard({ orgId }: { orgId: string }) {
         <h3 className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Active Jobs</h3>
         {loading && <p className="text-xs text-gray-400 py-4 text-center">Loading…</p>}
         {!loading && (kpis?.recentJobs ?? []).length === 0 && (
-          <p className
+          <p className="text-xs text-gray-400 py-4 text-center">No active jobs. Create one via Resources.</p>
+        )}
+        {!loading && (kpis?.recentJobs ?? []).length > 0 && (
+          <div className="divide-y divide-gray-50">
+            {(kpis?.recentJobs ?? []).map((job) => (
+              <div key={job.id} className="flex items-center justify-between py-2.5">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{job.name}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {job.data?.poNumber ? `PO: ${job.data.poNumber}` : `Started ${new Date(job.created_at).toLocaleDateString()}`}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0 flex items-center gap-2">
+                  <StateBadge state={job.state} />
+                  <Link href="/resources?type=trip" className="text-[10px] text-blue-500 hover:text-blue-700">Trips →</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="mt-3 pt-3 border-t border-gray-50">
+          <Link href="/resources?type=job" className="text-xs text-blue-600 hover:text-blue-700">Manage all jobs →</Link>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[
+          { href: '/resources?type=job',     icon: '🏗️', label: 'Jobs'     },
+          { href: '/resources?type=trip',    icon: '🚛', label: 'Trips'    },
+          { href: '/resources?type=vehicle', icon: '🚗', label: 'Vehicles' },
+          { href: '/resources?type=driver',  icon: '👤', label: 'Drivers'  },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+          >
+            <span>{item.icon}</span>
+            <span className="font-medium">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── M5 — Owner Assistant ───────────────────────────────────────────────────────
+
+interface AssistResponse {
+  response:   string;
+  sessionId:  string;
+  ledgerId:   string;
+  tokensUsed: number;
+}
+
+interface ChatMessage {
+  role:    'user' | 'assistant';
+  content: string;
+}
+
+const STARTER_PROMPTS = [
+  'What jobs are active right now?',
+  'How many trips are in progress today?',
+  'Any invoices pending approval?',
+  'Show me recent activity across the organisation.',
+];
+
+function OwnerAssistant({ orgId }: { orgId: string }) {
+  const [open,     setOpen]     = useState(false);
+  const [input,    setInput]    = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState<string | null>(null);
+  const [enabled,  setEnabled]  = useState<boolean | null>(null);  // null = checking
+
+  // Stable session ID per page mount
+  const sessionId = useRef<string>(crypto.randomUUID());
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Check if AI is configured on first open
+  useEffect(() => {
+    if (!open || enabled !== null) return;
+    apiClient.get<{ configured: boolean }>('/ai/status')
+      .then((r) => setEnabled(r.data?.configured ?? false))
+      .catch(() => setEnabled(false));
+  }, [open, enabled]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  const send = useCallback(async (text: string) => {
+    if (!text.trim() || loading) return;
+    setInput('');
+    setError(null);
+
+    const userMsg: ChatMessage = { role: 'user', content: text.trim() };
+    setMessages((prev) => [...prev, userMsg]);
+    setLoading(true);
+
+    try {
+      const res = await apiClient.post<AssistResponse>('/ai/assist', {
+        orgId,
+        message:   text.trim(),
+        sessionId: sessionId.current,
+        // pass last 6 turns as history (3 exchanges)
+        history: [...messages, userMsg].slice(-6),
+      });
+
+      const assistantText = res.data?.response ?? '(no response)';
+      setMessages((prev) => [...prev, { role: 'assistant', content: assistantText }]);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Request failed';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, messages, orgId]);
+
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      void send(input);
+    }
+  };
+
+  return (
+    <>
+      {/* Floating trigger button */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="fixed bottom-6 right-6 z-50 h-13 w-13 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center text-xl"
+        title="Owner Assistant"
+        style={{ width: 52, height: 52 }}
+      >
+        {open ? '✕' : '🤖'}
+      </button>
+
+      {/* Chat panel */}
+      {open && (
+        <div className="fixed bottom-20 right-6 z-50 w-[360px] max-h-[520px] flex flex-col rounded-2xl shadow-2xl border border-gray-200 bg-white overflow-hidden">
+          {/* Header */}
+          <div className="px-4 py-3 bg-blue-600 text-white flex items-center justify-between flex-shrink-0">
+            <div>
+              <p className="text-sm font-semibold">Owner Assistant</p>
+              <p className="text-[10px] text-blue-200">Advisory only · read-only access</p>
+            </div>
+            <button onClick={() => setOpen(false)} className="text-blue-200 hover:text-white text-lg leading-none">✕</button>
+          </div>
+
+          {/* AI not configured banner */}
+          {enabled === false && (
+            <div className="flex-1 flex items-center justify-center p-6 text-center">
+              <div>
+                <p className="text-2xl mb-2">🔑</p>
+                <p className="text-sm font-medium text-gray-700">AI not configured</p>
+                <p className="text-xs text-gray-400 mt-1">Set <code className="bg-gray-100 px-1 rounded">OPENAI_API_KEY</code> in the API environment to enable the assistant.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Messages */}
+          {enabled !== false && (
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+              {messages.length === 0 && !loading && (
+                <div className="space-y-2">
+                  <p className="text-[11px] text-gray-400 text-center py-2">Ask me anything about your operations.</p>
+                  {STARTER_PROMPTS.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => void send(p)}
+                      className="w-full text-left text-xs px-3 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-200 text-gray-600 transition-colors"
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap ${
+                      msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-sm'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-3 py-2">
+                    <span className="inline-flex gap-1 items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {error && (
+                <p className="text-[11px] text-red-500 text-center px-2">{error}</p>
+              )}
+
+              <div ref={bottomRef} />
+            </div>
+          )}
+
+          {/* Input */}
+          {enabled !== false && (
+            <div className="border-t border-gray-100 p-2 flex gap-2 flex-shrink-0">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Ask about jobs, trips, drivers…"
+                rows={1}
+                disabled={loading}
+                className="flex-1 resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-blue-400 disabled:opacity-50"
+                style={{ maxHeight: 80 }}
+              />
+              <button
+                onClick={() => void send(input)}
+                disabled={!input.trim() || loading}
+                className="rounded-lg bg-blue-600 px-3 py-2 text-white text-xs font-medium hover:bg-blue-700 disabled:opacity-40 transition-colors flex-shrink-0"
+              >
+                Send
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Main dashboard ─────────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  const [orgs,            setOrgs]            = useState<Organization[]>([]);
+  const [projects,        setProjects]        = useState<Project[]>([]);
+  const [recentWorkflows, setRecentWorkflows] = useState<Workflow[]>([]);
+  const [loading,         setLoading]         = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const orgRes  = await apiClient.get<Organization[]>('/organizations');
+        const orgList = orgRes.data ?? [];
+        setOrgs(orgList);
+
+        if (orgList.length === 0) return;
+
+        const org      = orgList[0];
+        const projRes  = await apiClient.get<Project[]>(`/organizations/${org.id}/projects`);
+        const projList = projRes.data ?? [];
+        setProjects(projList);
+
+        if (projList.length > 0) {
+          const wfRes = await apiClient.get<Workflow[]>(`/projects/${projList[0].id}/workflows`);
+          setRecentWorkflows((wfRes.data ?? []).slice(0, 5));
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const org  = orgs[0];
+  const role = org?.membership?.role ?? '';
+  const isOwnerAdmin      = OWNER_ROLES.includes(role);
+  const isContractorRole  = isOwnerAdmin || role === 'driver';
+
+  return (
+    <div className="p-6 sm:p-8">
+      <div className="max-w-5xl mx-auto">
+
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          {org && (
+            <p className="mt-1 text-sm text-gray-500">
+              {org.name} · <span className="capitalize font-medium text-gray-700">{role}</span>
+            </p>
+          )}
+        </div>
+
+        {/* ── Contractor Overview (owner / admin) ── */}
+        {!loading && isOwnerAdmin && org && (
+          <ContractorDashboard orgId={org.id} />
+        )}
+
+        {/* ── Driver quick link ── */}
+        {!loading && role === 'driver' && (
+          <div className="mb-8 rounded-xl border border-yellow-200 bg-yellow-50 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-yellow-900">🚛 Driver Portal</p>
+                <p className="text-xs text-yellow-700 mt-0.5">View your assigned trips and update their status.</p>
+              </div>
+              <Link
+                href="/resources?type=trip"
+                className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-semibold text-white hover:bg-yellow-600 transition-colors"
+              >
+                My Trips →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ── Platform section (non-contractor roles) ── */}
+        {!isContractorRole && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <p className="text-sm font-medium text-gray-500">Projects</p>
+                <p className="mt-2 text-3xl font-bold text-blue-600">
+                  {loading ? '—' : projects.length}
+                </p>
+                <Link href="/projects" className="mt-2 text-xs text-blue-500 hover:text-blue-600 block">View all →</Link>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <p className="text-sm font-medium text-gray-500">Workflows</p>
+                <p className="mt-2 text-3xl font-bold text-purple-600">
+                  {loading ? '—' : recentWorkflows.length}
+                </p>
+                <p className="mt-2 text-xs text-gray-400">In active project</p>
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <p className="text-sm font-medium text-gray-500">Node Library</p>
+                <p className="mt-2 text-3xl font-bold text-green-600">12</p>
+                <p className="mt-2 text-xs text-gray-400">MVP nodes across 5 packs</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-sm font-semibold text-gray-700 mb-4">Quick Actions</h2>
+                <div className="space-y-2">
+                  <Link
+                    href="/projects"
+                    className="flex items-center gap-3 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <span>📁</span> New Project
+                  </Link>
+                  {projects.length > 0 && (
+                    <Link
+                      href={`/projects/${projects[0].id}`}
+                      className="flex items-center gap-3 px-4 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <span>⚡</span> New Workflow in {projects[0].name}
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-sm font-semibold text-gray-700 mb-4">Recent Workflows</h2>
+                {loading && <p className="text-xs text-gray-400">Loading…</p>}
+                {!loading && recentWorkflows.length === 0 && (
+                  <p className="text-xs text-gray-400">No workflows yet. Create a project first.</p>
+                )}
+                <div className="space-y-2">
+                  {recentWorkflows.map((wf) => (
+                    <Link
+                      key={wf.id}
+                      href={`/projects/${wf.project_id}/workflows/${wf.id}`}
+                      className="flex items-center justify-between py-1.5 hover:text-blue-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 truncate">{wf.name}</span>
+                      <span className="text-xs text-gray-400 ml-2 flex-shrink-0">
+                        {new Date(wf.updated_at).toLocaleDateString()}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Stack status */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+          <p className="text-sm font-medium text-green-800">✅ Sprint 1–10 complete — AI Runtime live</p>
+          <p className="mt-1 text-xs text-green-600">
+            API: http://localhost:4000/api/v1 · Web: http://localhost:3000 · AI assistant available to owner/admin
+          </p>
+        </div>
+
+      </div>
+
+      {/* M5 — Owner Assistant (floating, owner/admin only) */}
+      {!loading && isOwnerAdmin && org && (
+        <OwnerAssistant orgId={org.id} />
+      )}
+    </div>
+  );
+}

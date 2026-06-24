@@ -362,4 +362,13 @@ export class ResourceService {
         resource_id: params.resourceId,
         event_type:  params.eventType,
         from_state:  params.fromState ?? null,
-        to_state:    params.toState  
+        to_state:    params.toState   ?? null,
+        actor_id:    params.actorId   ?? null,
+        metadata:    params.metadata,
+      });
+
+    if (error) {
+      this.logger.warn(`Failed to record resource event: ${error.message}`);
+    }
+  }
+}

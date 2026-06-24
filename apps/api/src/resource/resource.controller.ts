@@ -126,4 +126,15 @@ export class ResourceController {
     return { success: true, data };
   }
 
-  // ── Event history ──────────────────────────────────────────────────────�
+  // ── Event history ─────────────────────────────────────────────────────────
+
+  @Get(':id/events')
+  async events(
+    @Param('id') id: string,
+    @Query('organizationId') orgId: string,
+    @Request() _req: AuthenticatedRequest,
+  ) {
+    const data = await this.resources.getEvents(id, this.requireOrg(orgId));
+    return { success: true, data };
+  }
+}

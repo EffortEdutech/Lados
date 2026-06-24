@@ -1519,4 +1519,68 @@ docs/
   Contractor_Edition/
     01_Overview.md
     02_Resources.md
-   
+    03_Workflows.md
+    04_Packs.md
+    05_Driver_Flow.md
+    06_Owner_Flow.md
+  LEOS/
+    01_Deferred_Blueprint.md
+```
+
+Existing document mapping:
+
+| Existing document | New home |
+| --- | --- |
+| Lados_Core_Engine_V1_Implementation_Blueprint.md | docs/LCE_V1/02_Architecture.md |
+| Workflow specifications | docs/LCE_V1/03_Workflow_Engine.md |
+| Node SDK | docs/LCE_V1/04_Node_System.md |
+| @lados/pack-sdk types | docs/LCE_V1/05_Pack_System.md |
+| Resource Engine design | docs/LCE_V1/06_Resource_Engine.md |
+| Event Bus design | docs/LCE_V1/07_Event_Bus.md |
+| State Engine design | docs/LCE_V1/08_State_Engine.md |
+| Supabase migrations | docs/LCE_V1/15_API_Reference.md |
+
+---
+
+## 12. Immediate Next Actions
+
+In priority order:
+
+1. Execute Phase 0: rename `@qsos/` → `@lados/`, update UI identity to Lados
+2. Execute Phase 1: replace auto-approve with real pause/resume in `core.human_approval`; add job queue for async execution
+3. Execute Phase 2: move real node implementations from `api/src/execution/real-nodes/` into their respective packs
+4. Begin Phase 3: design and build `lados_resources` table and `ResourceEngine` service
+5. Model Contractor Edition resource types against the Resource Engine schema before writing any pack code
+
+---
+
+## 13. Final Position
+
+```
+LCE is the engine.
+Packs are the domain vocabulary.
+Solutions are pack compositions.
+Contractor Edition proves the engine.
+LEOS / JKR proves it scales.
+```
+
+The implementation sequence is:
+
+```
+Phase 0  — Identity: @lados/, Lados branding
+Phase 1  — Workflow Engine: real approvals, async execution, immutable versions
+Phase 2  — Node Isolation: nodes move into packs
+Phase 3  — Resource Engine: first-class business objects
+Phase 4  — Event Bus: typed, immutable, subscribable
+Phase 5  — State Engine: configurable lifecycle enforcement
+Phase 6  — Security Engine: declarative permission policies
+Phase 7  — Foundation Pack: universal capabilities packaged
+Phase 8  — Pack Installer: runtime install, upgrade, enable, disable
+Phase 9  — Contractor Edition: first real solution
+Phase 10 — AI Runtime: context-aware, tool-calling, auditable
+Phase 11 — Registry: operator-grade pack management
+Phase 12 — Async Execution Queue: production-grade runner
+Phase 13 — LEOS / JKR Blueprint: documented, not built
+```
+
+This order means the engine is solid before the solution is built, and the solution validates the engine before enterprise-scale complexity is introduced.

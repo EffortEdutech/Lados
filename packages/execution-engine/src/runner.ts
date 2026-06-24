@@ -267,4 +267,35 @@ export class WorkflowRunner {
     };
   }
 
-  // ── Private helpers ─────────────────────────�
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  /**
+   * Merge outputs from all dependency nodes to form this node's inputs.
+   * If a node has no dependencies, it receives the workflow-level inputs.
+   */
+  private _resolveInputs(
+    _nodeId: string,
+    dependsOn: string[],
+    nodeOutputs: Record<string, Record<string, unknown>>,
+    workflowInputs: Record<string, unknown>,
+  ): Record<string, unknown> {
+    if (dependsOn.length === 0) return workflowInputs;
+
+    const merged: Record<string, unknown> = {};
+    for (const depId of dependsOn) {
+      const depOutputs = nodeOutputs[depId] ?? {};
+      Object.assign(merged, depOutputs);
+    }
+    // Also include top-level workflow inputs (e.g. file_id passed from UI)
+    Object.assign(merged, workflowInputs);
+    return merged;
+  }
+}
+
+/**
+ * Convenience function — create a runner and execute immediately.
+ */
+export async function runWorkflow(options: RunnerOptions): Promise<ExecutionResult> {
+  const runner = new WorkflowRunner(options);
+  return runner.run();
+}

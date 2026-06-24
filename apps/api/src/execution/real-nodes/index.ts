@@ -140,4 +140,25 @@ export function buildRealNodeResolver(
       resourceService,
     }),
     // Contractor Pack — domain nodes for Contractor Edition
-    // aiService passed for contractor.e
+    // aiService passed for contractor.extract_fuel_data (GPT-4o vision)
+    contractorResolve({
+      resourceService: contractorAdapter,
+      aiService,
+    }),
+    // Cast needed: core-pack's IResourceService has a narrower ResourceType compiled before
+    // contractor types were added. The runtime shape is compatible — only the TS union differs.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    coreResolve({ notificationService, resourceService: resourceService as any, eventBusService, stateEngineService, artifactService: artifactAdapter }),
+    documentResolve({ fileService, libraryService, documentService }),
+    qsResolve({ aiService }),
+    procurementResolve({ libraryService }),
+  ];
+
+  return (nodeType: string) => {
+    for (const resolver of resolvers) {
+      const fn = resolver(nodeType);
+      if (fn) return fn;
+    }
+    return null;
+  };
+}

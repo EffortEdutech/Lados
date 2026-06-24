@@ -243,3 +243,242 @@ export const manifest: PackManifest = {
     },
 
     {
+      type:              'operator',
+      displayName:       'Operator',
+      displayNamePlural: 'Operators',
+      icon:              '⛑️',
+      views: {
+        list: {
+          primaryField:   'name',
+          secondaryField: 'data.licenseClass',
+          badgeField:     'state',
+          mobileLayout:   'card',
+        },
+      },
+    },
+
+    // ── M2 — Finance ───────────────────────────────────────────────────────
+
+    {
+      type:              'invoice',
+      displayName:       'Invoice',
+      displayNamePlural: 'Invoices',
+      icon:              '🧾',
+      views: {
+        list: {
+          primaryField:   'name',
+          secondaryField: 'data.total',
+          badgeField:     'state',
+          mobileLayout:   'card',
+        },
+        inlineActions: [
+          { label: 'Submit for Approval', node: 'state.change',              visibleInStates: ['draft'],     icon: '📤' },
+          { label: 'Record Payment',      node: 'contractor.record_payment', visibleInStates: ['approved'],  icon: '💳', requiresConfirm: true },
+        ],
+      },
+    },
+
+    {
+      type:              'payment',
+      displayName:       'Payment',
+      displayNamePlural: 'Payments',
+      icon:              '💳',
+      views: {
+        list: {
+          primaryField:   'name',
+          secondaryField: 'data.amount',
+          badgeField:     'state',
+          mobileLayout:   'card',
+        },
+        inlineActions: [
+          { label: 'Reconcile', node: 'state.change', visibleInStates: ['recorded'], icon: '✅', requiresConfirm: true },
+        ],
+      },
+    },
+
+    {
+      type:              'expense',
+      displayName:       'Expense',
+      displayNamePlural: 'Expenses',
+      icon:              '💸',
+      views: {
+        list: {
+          primaryField:   'name',
+          secondaryField: 'data.amount',
+          badgeField:     'state',
+          mobileLayout:   'card',
+        },
+        inlineActions: [
+          { label: 'Submit',  node: 'state.change',               visibleInStates: ['draft'],            icon: '📤' },
+          { label: 'Approve', node: 'contractor.approve_expense',  visibleInStates: ['pending_approval'], icon: '✅', requiresConfirm: true },
+          { label: 'Reject',  node: 'state.change',               visibleInStates: ['pending_approval'], icon: '❌', requiresConfirm: true },
+        ],
+      },
+    },
+
+    // ── M3 — Maintenance ───────────────────────────────────────────────────
+
+    {
+      type:              'maintenance_record',
+      displayName:       'Maintenance Record',
+      displayNamePlural: 'Maintenance Records',
+      icon:              '🔧',
+      views: {
+        list: {
+          primaryField:   'name',
+          secondaryField: 'data.workshop',
+          badgeField:     'state',
+          mobileLayout:   'card',
+        },
+        inlineActions: [
+          { label: 'Start Service',    node: 'state.change',                visibleInStates: ['scheduled'],   icon: '▶️' },
+          { label: 'Complete Service', node: 'contractor.clear_maintenance', visibleInStates: ['in_progress'], icon: '✅', requiresConfirm: true },
+        ],
+      },
+    },
+
+    // ── M4 — HR / Payroll ─────────────────────────────────────────────────
+
+    {
+      type:              'payroll_run',
+      displayName:       'Payroll Run',
+      displayNamePlural: 'Payroll Runs',
+      icon:              '👥',
+      views: {
+        list: {
+          primaryField:   'name',
+          secondaryField: 'data.totalGross',
+          badgeField:     'state',
+          counterField:   'data.employees.length',
+          mobileLayout:   'card',
+        },
+        inlineActions: [
+          { label: 'Submit for Review', node: 'state.change',               visibleInStates: ['draft'],          icon: '📤' },
+          { label: 'Approve',           node: 'contractor.approve_payroll',  visibleInStates: ['pending_review'], icon: '✅', requiresConfirm: true },
+          { label: 'Mark as Paid',      node: 'state.change',               visibleInStates: ['approved'],       icon: '💰', requiresConfirm: true },
+        ],
+      },
+    },
+  ],
+
+  // ── Workflow templates ────────────────────────────────────────────────────
+  workflowTemplates: [
+    // M1
+    'workflow_templates/job-creation.json',
+    'workflow_templates/trip-dispatch.json',
+    'workflow_templates/invoice-generation.json',
+    // M2
+    'workflow_templates/finance.record-payment.json',
+    'workflow_templates/finance.approve-expense.json',
+    // M3
+    'workflow_templates/fleet.request-maintenance.json',
+    'workflow_templates/fleet.complete-maintenance.json',
+    // M4
+    'workflow_templates/payroll.prepare-run.json',
+    'workflow_templates/payroll.approve-and-pay.json',
+    // Phase 10 — AI
+    'workflow_templates/fuel.extract-and-approve.json',
+  ],
+};
+
+// ── Service bag ───────────────────────────────────────────────────────────────
+
+export interface ContractorPackServices {
+  resourceService?: import('./nodes/contractor-create-job').IResourceService
+                  & import('./nodes/contractor-complete-trip').IResourceUpdateService
+                  & import('./nodes/contractor-generate-invoice').IInvoiceResourceService
+                  & import('./nodes/contractor-record-payment').IPaymentResourceService
+                  & import('./nodes/contractor-approve-expense').IExpenseApprovalService
+                  & import('./nodes/contractor-create-maintenance-record').IMaintenanceCreateService
+                  & import('./nodes/contractor-clear-maintenance').IMaintenanceClearService
+                  & import('./nodes/contractor-prepare-payroll-run').IPayrollCreateService
+                  & import('./nodes/contractor-approve-payroll').IPayrollApprovalService
+                  & import('./nodes/contractor-extract-fuel-data').IFuelExtractResourceService;
+  /** AI service — optional; extract_fuel_data degrades gracefully when absent */
+  aiService?: import('./nodes/contractor-extract-fuel-data').IAiVisionService;
+}
+
+// ── Node resolver ─────────────────────────────────────────────────────────────
+
+type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
+
+const NO_SERVICE = (code: string, message: string): NodeExecuteResult => ({
+  status:  'failure',
+  outputs: {},
+  error:   { code, message },
+});
+
+export function resolveNode(
+  services: ContractorPackServices = {},
+): (nodeType: string) => NodeExecutor | null {
+  const { resourceService, aiService } = services;
+
+  const nodes: Record<string, NodeExecutor> = {
+
+    // M1 — Core Operations
+    'contractor.create_job': (ctx) =>
+      resourceService
+        ? realCreateJob(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.dispatch_trip': (ctx) =>
+      resourceService
+        ? realDispatchTrip(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.complete_trip': (ctx) =>
+      resourceService
+        ? realCompleteTrip(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.upload_fuel_receipt': (ctx) =>
+      resourceService
+        ? realUploadFuelReceipt(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.generate_invoice': (ctx) =>
+      resourceService
+        ? realGenerateInvoice(ctx, resourceService as import('./nodes/contractor-generate-invoice').IInvoiceResourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    // M2 — Finance
+    'contractor.record_payment': (ctx) =>
+      resourceService
+        ? realRecordPayment(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.approve_expense': (ctx) =>
+      resourceService
+        ? realApproveExpense(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    // M3 — Fleet Maintenance
+    'contractor.create_maintenance_record': (ctx) =>
+      resourceService
+        ? realCreateMaintenanceRecord(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.clear_maintenance': (ctx) =>
+      resourceService
+        ? realClearMaintenance(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    // M4 — HR / Payroll
+    'contractor.prepare_payroll_run': (ctx) =>
+      resourceService
+        ? realPreparePayrollRun(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    'contractor.approve_payroll': (ctx) =>
+      resourceService
+        ? realApprovePayroll(ctx, resourceService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ResourceService not injected')),
+
+    // Phase 10 — AI
+    // Degrades gracefully: runs without AI (writes stub advisory data) if aiService absent
+    'contractor.extract_fuel_data': (ctx) =>
+      realExtractFuelData(ctx, aiService, resourceService),
+  };
+
+  return (nodeType: string) => nodes[nodeType] ?? null;
+}

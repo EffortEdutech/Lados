@@ -325,4 +325,143 @@ BEGIN
     v_owner_id
   );
 
-  -- ── Trip 1 — pending ──────────────
+  -- ── Trip 1 — pending ───────────────────────────────────────────────────────
+  INSERT INTO lados_resources (id, org_id, type, name, state, data, parent_id, created_by)
+  VALUES (
+    v_trip_id, v_org_id,
+    'trip', 'TRIP-2026-001-001', 'pending',
+    jsonb_build_object(
+      'jobId',        v_job_id,
+      'vehicleId',    v_vehicle1_id,
+      'driverId',     v_driver1_res_id,
+      'loadType',     'earth',
+      'loadQuantity', 10,
+      'loadUnit',     'tan',
+      'origin',       'Tapak Sri Permai',
+      'destination',  'Pusat Pelupusan Rawang'
+    ),
+    v_job_id,
+    v_driver1_id
+  );
+
+-- =============================================================================
+-- 6. SEED RESOURCES — Phase 10 AI Test Data
+--    - Trip 2 (completed)         — gives AI assistant a completed trip to query
+--    - Fuel Receipt 1 (with image) — tests extract_fuel_data via GPT-4o-mini vision
+--    - Fuel Receipt 2 (no image)   — tests graceful error path (no fileUrl)
+--    - Expense (pending_approval)  — tests M2 approve_expense flow
+-- =============================================================================
+
+  -- ── Trip 2 — completed ────────────────────────────────────────────────────
+  INSERT INTO lados_resources (id, org_id, type, name, state, data, parent_id, created_by)
+  VALUES (
+    v_trip2_id, v_org_id,
+    'trip', 'TRIP-2026-001-002', 'completed',
+    jsonb_build_object(
+      'jobId',        v_job_id,
+      'vehicleId',    v_vehicle2_id,
+      'driverId',     v_driver2_res_id,
+      'loadType',     'earth',
+      'loadQuantity', 12,
+      'loadUnit',     'tan',
+      'origin',       'Tapak Sri Permai',
+      'destination',  'Pusat Pelupusan Rawang',
+      'completedAt',  '2026-06-21T15:30:00+08:00'
+    ),
+    v_job_id,
+    v_driver2_id
+  );
+
+  -- ── Fuel Receipt 1 — with public image URL (pending_review) ──────────────
+  --    fileUrl is a publicly accessible image — the extract_fuel_data node
+  --    will send this URL to GPT-4o-mini vision. Replace with a real petrol
+  --    receipt image URL for a more meaningful extraction test.
+  INSERT INTO lados_resources (id, org_id, type, name, state, data, parent_id, created_by)
+  VALUES (
+    v_fuel_receipt1_id, v_org_id,
+    'fuel_receipt', 'FUEL-2026-001 — Petronas Rawang', 'pending_review',
+    jsonb_build_object(
+      'tripId',      v_trip_id,
+      'vehicleId',   v_vehicle1_id,
+      'driverId',    v_driver1_res_id,
+      'fileUrl',     'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AJQAB/9k=',
+      'uploadedAt',  '2026-06-22T08:15:00+08:00',
+      'notes',       'Fuel receipt from Petronas Rawang. Awaiting AI extraction. (fileUrl is an embedded test JPEG — no external URL needed. In production this is a Supabase Storage URL from user upload.)',
+      'aiExtracted', null
+    ),
+    v_job_id,
+    v_driver1_id
+  );
+
+  -- ── Fuel Receipt 2 — no image (pending_review, tests error path) ─────────
+  INSERT INTO lados_resources (id, org_id, type, name, state, data, parent_id, created_by)
+  VALUES (
+    v_fuel_receipt2_id, v_org_id,
+    'fuel_receipt', 'FUEL-2026-002 — Shell Rawang (no image)', 'pending_review',
+    jsonb_build_object(
+      'tripId',      v_trip2_id,
+      'vehicleId',   v_vehicle2_id,
+      'driverId',    v_driver2_res_id,
+      'uploadedAt',  '2026-06-21T16:00:00+08:00',
+      'notes',       'fileUrl intentionally missing — tests error handling in extract_fuel_data.',
+      'aiExtracted', null
+    ),
+    v_job_id,
+    v_driver2_id
+  );
+
+  -- ── Expense 1 — toll (pending_approval) ──────────────────────────────────
+  INSERT INTO lados_resources (id, org_id, type, name, state, data, parent_id, created_by)
+  VALUES (
+    v_expense1_id, v_org_id,
+    'expense', 'EXP-2026-001 — Toll & Miscellaneous', 'pending_approval',
+    jsonb_build_object(
+      'tripId',      v_trip_id,
+      'category',    'toll',
+      'amount',      45.60,
+      'currency',    'MYR',
+      'description', 'PLUS highway toll (2 way) + parking at disposal site',
+      'receiptUrl',  null,
+      'submittedBy', v_driver1_res_id,
+      'submittedAt', '2026-06-22T09:00:00+08:00'
+    ),
+    v_job_id,
+    v_driver1_id
+  );
+
+-- =============================================================================
+-- 7. AUDIT LOG
+-- =============================================================================
+
+  INSERT INTO audit_log (
+    organization_id, actor_id, event_type,
+    entity_type, entity_id, summary
+  )
+  VALUES (
+    v_org_id, v_owner_id,
+    'seed.contractor_edition',
+    'organization', v_org_id,
+    'Contractor Edition seed applied — Syarikat Bina Jaya, 4 users, contractor-pack v0.4.0, Phase 10 AI test data.'
+  );
+
+  RAISE NOTICE '=======================================================';
+  RAISE NOTICE 'Contractor Edition seed complete.';
+  RAISE NOTICE '  Org:   Syarikat Bina Jaya Sdn Bhd (%)', v_org_id;
+  RAISE NOTICE '  Login: contractor-owner@lados.dev   /  ContractorTest1!';
+  RAISE NOTICE '         contractor-admin@lados.dev   /  ContractorTest1!';
+  RAISE NOTICE '         contractor-driver1@lados.dev /  ContractorTest1!';
+  RAISE NOTICE '         contractor-driver2@lados.dev /  ContractorTest1!';
+  RAISE NOTICE '  Pack:  lados.contractor-pack → activated (v0.4.0)';
+  RAISE NOTICE '  Resources:';
+  RAISE NOTICE '    2 customers, 2 vehicles, 1 excavator, 2 drivers, 1 site';
+  RAISE NOTICE '    1 job (active), 2 trips (1 pending / 1 completed)';
+  RAISE NOTICE '    2 fuel receipts (pending_review), 1 expense (pending_approval)';
+  RAISE NOTICE 'Phase 10 AI test paths:';
+  RAISE NOTICE '  FUEL-2026-001 has fileUrl → test extract_fuel_data (GPT-4o-mini vision)';
+  RAISE NOTICE '  FUEL-2026-002 no fileUrl  → test extract_fuel_data error path';
+  RAISE NOTICE '  EXP-2026-001 pending_approval → test approve_expense (M2)';
+  RAISE NOTICE '=======================================================';
+  RAISE NOTICE 'After running: restart the API → PackInstaller.syncAll()';
+  RAISE NOTICE 'Then open /packs and click Sync to confirm v0.4.0 is active.';
+
+END $$;
