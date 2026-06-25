@@ -96,6 +96,12 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       this.logger.error(`Job ${job?.id} failed (run ${job?.data?.runId}): ${err.message}`);
     });
 
+    // Must handle 'error' explicitly — BullMQ emits ECONNRESET / Redis reconnect
+    // errors here and Node will crash with unhandledRejection if this is absent.
+    this.worker.on('error', (err) => {
+      this.logger.warn(`ExecutionWorker connection error (will retry): ${err.message}`);
+    });
+
     this.logger.log('ExecutionWorker started — concurrency 5');
   }
 

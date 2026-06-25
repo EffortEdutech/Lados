@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@qsos/shared-types', '@qsos/workflow-json'],
+  transpilePackages: ['@lados/shared-types', '@lados/contractor-pack'],
 };
 
 export default nextConfig;

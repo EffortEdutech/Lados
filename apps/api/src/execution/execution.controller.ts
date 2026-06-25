@@ -17,9 +17,11 @@ import {
   Sse,
   UseGuards,
   Request,
+  Req,
   BadRequestException,
   MessageEvent,
 } from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable, fromEvent, merge, timer } from 'rxjs';
 import { map, takeUntil, filter } from 'rxjs/operators';
@@ -122,7 +124,14 @@ export class ExecutionController {
   @Sse('runs/:runId/stream')
   streamRun(
     @Param('runId') runId: string,
+    @Req() req: ExpressRequest,
   ): Observable<MessageEvent> {
+    // Suppress ECONNRESET — fired when the client navigates away or closes the
+    // tab while the SSE stream is still open. Node raises it on the TCP socket;
+    // re-throw anything else so real errors still surface.
+    req.socket?.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code !== 'ECONNRESET') throw err;
+    });
     // Terminal events that close the stream
     const terminalEvents = [RUN_EVENT.RUN_COMPLETE, RUN_EVENT.RUN_PAUSED, RUN_EVENT.RUN_FAILED];
 

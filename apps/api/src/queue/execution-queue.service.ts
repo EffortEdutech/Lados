@@ -55,6 +55,12 @@ export class ExecutionQueueService implements OnModuleInit, OnModuleDestroy {
       },
     });
 
+    // Without this handler, Redis ECONNRESET / TLS errors surface as unhandled
+    // process-level exceptions and flood the API log.
+    this.queue.on('error', (err) => {
+      this.logger.warn(`BullMQ queue connection error (will retry): ${err.message}`);
+    });
+
     this.logger.log(`BullMQ queue "${EXECUTION_QUEUE_NAME}" ready`);
   }
 

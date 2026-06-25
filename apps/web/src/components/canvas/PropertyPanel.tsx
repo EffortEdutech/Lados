@@ -330,7 +330,7 @@ export default function PropertyPanel({
                 ) : (
                   <ul className="space-y-0.5">
                     {(nodeDef.inputs ?? []).map((port) => (
-                      <li key={port.id} className="text-[10px] text-gray-600">
+                      <li key={port.id ?? port.label} className="text-[10px] text-gray-600">
                         <span className="font-medium text-gray-700">{port.label ?? port.id}</span>
                         <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
                       </li>
@@ -349,7 +349,7 @@ export default function PropertyPanel({
                 ) : (
                   <ul className="space-y-0.5">
                     {(nodeDef.outputs ?? []).map((port) => (
-                      <li key={port.id} className="text-[10px] text-gray-600">
+                      <li key={port.id ?? port.label} className="text-[10px] text-gray-600">
                         <span className="font-medium text-gray-700">{port.label ?? port.id}</span>
                         <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
                       </li>
