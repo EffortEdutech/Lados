@@ -386,6 +386,25 @@ Bypassed — node skipped, input[0] passed through to output[0]  (→ dashed app
 
 ---
 
+# AD-HOC — Icon/Emoji Display Fixes + Pack Naming Consistency
+> Completed between Sprint 13 and Sprint 14. Committed: bee6242
+
+- [x] Create `apps/web/src/lib/icon-map.ts` — `LUCIDE_TO_EMOJI`, `PACK_EMOJI`, `resolveIcon()`, `resolveIconOr()`
+- [x] `NodePalette.tsx` — pack section headers now show emoji via `PACK_EMOJI[packId] ?? resolveIcon(packIconName)`
+- [x] `NodePalette.tsx` — node cards show emoji icon or color dot (no more raw Lucide name text)
+- [x] `packs/[packId]/page.tsx` — fix `PACK_EMOJI is undefined` runtime crash; use shared `icon-map.ts`
+- [x] `packs/[packId]/page.tsx` — add `CATEGORY_LABEL` map (`ai` → `🤖 AI`, `qs` → `📐 QS` etc.)
+- [x] `packs/[packId]/page.tsx` — service chips show labeled emoji format (matches NodePalette)
+- [x] `marketplace/page.tsx` — coming-soon cards use `resolveIcon()` instead of raw Lucide name
+- [x] `pack-installer.service.ts` — `syncNodeManifests` now stores `icon` and `uses_services` from manifests (was hardcoded `null` / `[]`)
+- [x] `workflow.condition` renamed to `core.condition` across core-pack source + dist; backward-compat alias kept in executor
+- [x] `contractor-pack` `PACK_ID` changed from `'lados.contractor-pack'` → `'contractor-pack'` (consistent with all other packs); `MANIFEST_TO_DB_PACK_ID` updated accordingly
+- [x] Migration `0046_rename_workflow_condition_to_core_condition.sql` created — apply via Supabase Dashboard SQL editor
+
+---
+
+---
+
 # SPRINT 14 — Core Services Layer + Condition Node
 
 **Goal:** Formalize Core Services as a named registry. Unify Document handling into a DocumentService. Add the Condition Node (data-driven routing within workflows). Add Group bulk controls.
@@ -468,7 +487,7 @@ Seed all 8 V3 services with current status:
 
 ---
 
-### S14-006 — Condition Node (`workflow.condition`)
+### S14-006 — Condition Node (`core.condition`, formerly `workflow.condition`)
 
 **Reference:** `QS-OS_Switch_Mute_Bypass_Group_Design_Reference.md` §3.4, §5  
 **Files:** `apps/web/src/components/canvas/ConditionNode.tsx` (new), NestJS execution engine  
@@ -476,17 +495,16 @@ Seed all 8 V3 services with current status:
 
 > **Distinct from Pipeline SwitchNode** (violet ◆, user-driven, Sprint 12).  
 > Condition Node is teal ◇, data-driven, lives on the single-workflow canvas.
+> Node type renamed from `workflow.condition` → `core.condition` (ad-hoc sprint, bee6242).
 
 - [ ] New `ConditionNode` React Flow component — diamond shape, teal (`#0D9488`)
 - [ ] Two output handles: `true_path` (top-right, labelled "✓ True") and `false_path` (bottom-right, labelled "✗ False")
 - [ ] One input handle: `value` (left centre)
 - [ ] Condition expression configured in Skill Inspector — text field with examples
-- [ ] Register `workflow.condition` in `registered_nodes` + seed migration
-- [ ] Execution engine: evaluate expression against input value at runtime
-  - true → forward value to `true_path`, emit null on `false_path`
-  - false → forward value to `false_path`, emit null on `true_path`
+- [x] Register `core.condition` in `registered_nodes` — synced via `syncNodeManifests` on startup
+- [x] Execution engine: evaluate expression against input value at runtime (all operators: `>=`, `<=`, `==`, `!=`, `includes`, `!= null`)
 - [ ] Log condition evaluation to `execution_logs`: expression, input value, result (true/false)
-- [ ] Supported expression types: `>=`, `<=`, `==`, `!=`, `includes`, `!= null`
+- [x] Supported expression types: `>=`, `<=`, `==`, `!=`, `includes`, `!= null`
 
 ---
 
