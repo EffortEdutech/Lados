@@ -1,4 +1,12 @@
-# QS-WFUI — Sprint Plan: Sprint 1 + Sprint 2
+> **⚠️ HISTORICAL DOCUMENT — Phase 1 & 2 are complete.**
+> These sprints established the monorepo foundation. At the time of writing, the platform was called **QS-WFUI** and targeted Quantity Surveying workflows. It has since been renamed to **Lados** and expanded to a universal business workflow platform.
+> - Packages originally created as `@qsos/*` were renamed to `@lados/*` in Phase 1A.
+> - All sprint numbering has been superseded by Phase numbering (P01, P02, ...) in the master checklist.
+> - Preserved here for architectural reference and onboarding context.
+
+---
+
+# Lados — Sprint Plan: Sprint 1 + Sprint 2
 **Version:** 1.0  
 **Date:** 2026-06-15  
 **Covers:** Sprint 1 (Monorepo Skeleton) + Sprint 2 (Auth + Canvas + Workflow JSON)  
@@ -8,10 +16,10 @@
 
 ## Overview
 
-QS-WFUI is the Version 2 redesign of QS-OS. It formalises the architecture into a proper monorepo with a NestJS backend, Next.js frontend, and a true Pack/Node/Execution engine package system.
+Lados (formerly QS-WFUI) evolved from the QS-OS platform into a universal business workflow engine. The V4 architecture formalises this into a proper monorepo with a NestJS backend, Next.js frontend, and a true Pack/Node/Execution engine package system.
 
 **MVP Goal:**  
-A Quantity Surveyor uploads a BOQ, opens the BOQ-to-RFQ visual workflow, runs it, approves the output, and downloads the generated RFQ documents — with every step logged and auditable.
+The initial validation use case: a contractor uploads a BOQ, opens the BOQ-to-RFQ visual workflow, runs it, approves the output, and downloads the generated RFQ documents — with every step logged and auditable. Lados now targets universal business workflows across all industries.
 
 **These two sprints establish the foundation.** Nothing executable runs yet at the end of Sprint 1. By the end of Sprint 2, a user can log in, create an org + project, and build + save a workflow on the canvas.
 
@@ -79,11 +87,11 @@ Sprint 8 — Demo Workflow, QA, Polish
 | S1-001 | Initialize pnpm monorepo | | ⬜ Pending | Root package.json + pnpm-workspace.yaml |
 | S1-002 | Create apps/web (Next.js) | | ⬜ Pending | |
 | S1-003 | Create apps/api (NestJS) | | ⬜ Pending | |
-| S1-004 | Create @qsos/shared-types package | | ⬜ Pending | |
-| S1-005 | Create @qsos/workflow-json package (stub) | | ⬜ Pending | |
-| S1-006 | Create @qsos/node-sdk package (stub) | | ⬜ Pending | |
-| S1-007 | Create @qsos/pack-sdk package (stub) | | ⬜ Pending | |
-| S1-008 | Create @qsos/execution-engine package (stub) | | ⬜ Pending | |
+| S1-004 | Create @lados/shared-types package (originally @qsos/shared-types, renamed in Phase 1A) | | ⬜ Pending | |
+| S1-005 | Create @lados/workflow-json package stub | | ⬜ Pending | |
+| S1-006 | Create @lados/node-sdk package stub | | ⬜ Pending | |
+| S1-007 | Create @lados/pack-sdk package stub | | ⬜ Pending | |
+| S1-008 | Create @lados/execution-engine package stub | | ⬜ Pending | |
 | S1-009 | Create packs/ folder stubs | | ⬜ Pending | |
 | S1-010 | Configure root TypeScript | | ⬜ Pending | Shared tsconfig.base.json |
 | S1-011 | Configure ESLint + Prettier | | ⬜ Pending | |
@@ -103,16 +111,16 @@ Sprint 8 — Demo Workflow, QA, Polish
 ### What to build
 
 ```
-qs-wfui/                          ← root (this folder)
+lados/                          ← root (this folder)
 ├── apps/
 │   ├── web/                      ← Next.js frontend
 │   └── api/                      ← NestJS backend
 ├── packages/
-│   ├── shared-types/             ← @qsos/shared-types
-│   ├── workflow-json/            ← @qsos/workflow-json
-│   ├── node-sdk/                 ← @qsos/node-sdk
-│   ├── pack-sdk/                 ← @qsos/pack-sdk
-│   └── execution-engine/         ← @qsos/execution-engine
+│   ├── shared-types/             ← @lados/shared-types
+│   ├── workflow-json/            ← @lados/workflow-json
+│   ├── node-sdk/                 ← @lados/node-sdk
+│   ├── pack-sdk/                 ← @lados/pack-sdk
+│   └── execution-engine/         ← @lados/execution-engine
 ├── packs/
 │   ├── core-pack/
 │   ├── document-pack/
@@ -143,7 +151,7 @@ packages:
 **`package.json` (root)**
 ```json
 {
-  "name": "qs-wfui",
+  "name": "lados",
   "private": true,
   "scripts": {
     "dev": "pnpm --parallel -r dev",
@@ -204,7 +212,7 @@ apps/web/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx
-│   │   ├── page.tsx              ← placeholder: "QS-OS is loading..."
+│   │   ├── page.tsx              ← placeholder: "Lados Platform is loading..."
 │   │   ├── (auth)/
 │   │   │   └── login/
 │   │   │       └── page.tsx      ← empty placeholder
@@ -234,14 +242,14 @@ typescript
 tailwindcss
 @supabase/supabase-js
 @supabase/ssr
-@qsos/shared-types (workspace)
+@lados/shared-types (workspace)
 ```
 
 ### Acceptance criteria
 - [ ] `pnpm dev:web` starts on port 3000
 - [ ] Root page renders without error
 - [ ] Tailwind styles apply
-- [ ] `@qsos/shared-types` imports without error
+- [ ] `@lados/shared-types` imports without error
 
 ---
 
@@ -285,7 +293,7 @@ apps/api/
 class-validator
 class-transformer
 @supabase/supabase-js
-@qsos/shared-types (workspace)
+@lados/shared-types (workspace)
 ```
 
 ### Acceptance criteria
@@ -297,7 +305,7 @@ class-transformer
 
 ---
 
-## S1-004 — Create @qsos/shared-types
+## S1-004 — Create @lados/shared-types
 
 **Priority:** P0 · **Size:** S
 
@@ -355,7 +363,7 @@ export type PackType = 'official' | 'verified' | 'community' | 'private';
 
 ## S1-005 to S1-008 — Package Stubs
 
-Create stub packages for `@qsos/workflow-json`, `@qsos/node-sdk`, `@qsos/pack-sdk`, `@qsos/execution-engine`.
+Create stub packages for `@lados/workflow-json`, `@lados/node-sdk`, `@lados/pack-sdk`, `@lados/execution-engine`.
 
 Each stub needs:
 ```
@@ -474,13 +482,13 @@ PORT=4000
 Run this checklist after completing all S1 tasks:
 
 ```
-[ ] cd qs-wfui && pnpm install            → no errors
+[ ] cd lados && pnpm install            → no errors
 [ ] pnpm typecheck                         → no errors
 [ ] pnpm lint                              → no errors
 [ ] pnpm dev:web                           → localhost:3000 shows placeholder
 [ ] pnpm dev:api                           → localhost:4000 starts
 [ ] curl localhost:4000/api/v1/health      → { "success": true, "data": { "status": "ok" } }
-[ ] import from @qsos/shared-types         → compiles without error
+[ ] import from @lados/shared-types         → compiles without error
 [ ] All 9 packages build individually      → pnpm -r build passes
 ```
 
@@ -518,7 +526,7 @@ Run this checklist after completing all S1 tasks:
 
 | ID | Task | Owner | Status | Notes |
 |---|---|---|---|---|
-| S2-B01 | Workflow JSON TypeScript interfaces | | ⬜ Pending | @qsos/workflow-json |
+| S2-B01 | Workflow JSON TypeScript interfaces | | ⬜ Pending | @lados/workflow-json |
 | S2-B02 | Workflow JSON schema (JSON Schema) | | ⬜ Pending | |
 | S2-B03 | Workflow validator service | | ⬜ Pending | |
 | S2-B04 | Workflows + workflow_versions DB tables | | ⬜ Pending | |
@@ -847,7 +855,7 @@ Shows:
 
 ## S2-B01 — Workflow JSON TypeScript Interfaces
 
-**Priority:** P0 · **Size:** M · **Package:** `@qsos/workflow-json`
+**Priority:** P0 · **Size:** M · **Package:** `@lados/workflow-json`
 
 ```
 packages/workflow-json/src/
@@ -930,7 +938,7 @@ export interface WorkflowConnection {
 ```
 
 ### Acceptance criteria
-- [ ] All types exported from `@qsos/workflow-json`
+- [ ] All types exported from `@lados/workflow-json`
 - [ ] Minimal workflow JSON object type-checks against interface
 - [ ] Package builds
 
@@ -1413,19 +1421,19 @@ S2-A09 ──► S2-C01 (workflow list inside project)
 
 # Supabase Project Reference
 
-Existing Supabase project (from QS-OS V1 — same database, new schema group):
+Existing Supabase project (from Lados Platform V1 — same database, new schema group):
 - URL: `https://lqldimovuxdfhmcaxcdg.supabase.co`
 - New V2 tables should use a clean migration set (prefix `v2_` or use a separate Supabase project for V2 if preferred)
 
-**Recommendation:** Create a new Supabase project for QS-WFUI V2 to avoid schema conflicts with the live V1 QS-OS.
+**Recommendation:** Create a new Supabase project for Lados V2 to avoid schema conflicts with the live V1 Lados Platform.
 
 ---
 
 # Next Steps After Sprint 2
 
 Sprint 3 tasks:
-1. Create `@qsos/node-sdk` full interfaces
-2. Create `@qsos/pack-sdk` full interfaces
+1. Create `@lados/node-sdk` full interfaces
+2. Create `@lados/pack-sdk` full interfaces
 3. Seed pack registry table (5 official packs)
 4. Seed node registry table (12 MVP nodes)
 5. Connect node library panel to live API
@@ -1433,4 +1441,4 @@ Sprint 3 tasks:
 
 ---
 
-*Document end — QS-WFUI Sprint 1 + 2 Plan v1.0*
+*Document end — Lados Sprint 1 + 2 Plan v1.0*

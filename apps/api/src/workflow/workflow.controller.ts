@@ -13,6 +13,7 @@ import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { SaveDefinitionDto } from './dto/save-definition.dto';
 import { GenerateWorkflowDto } from './dto/generate-workflow.dto';
+import { RunGroupDto } from './dto/run-group.dto';
 
 /**
  * WorkflowController
@@ -87,6 +88,39 @@ export class WorkflowController {
     @CurrentUser() user: User,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.workflowService.exportWorkflow(id, user.id);
+    return { success: true, data, error: null };
+  }
+
+  /** Sprint 14B: detect editable input ports for a selective group run */
+  @Get(':id/groups/:groupId/entry-ports')
+  async getGroupEntryPorts(
+    @Param('id') id: string,
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.getGroupEntryPorts(id, groupId, user.id);
+    return { success: true, data, error: null };
+  }
+
+  /** Sprint 14B: list selective group execution logs */
+  @Get(':id/group-run-logs')
+  async listGroupRunLogs(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown[]>> {
+    const data = await this.workflowService.listGroupRunLogs(id, user.id);
+    return { success: true, data, error: null };
+  }
+
+  /** Sprint 14B: execute only the nodes inside a canvas skill group */
+  @Post(':id/run-group')
+  @HttpCode(200)
+  async runGroup(
+    @Param('id') id: string,
+    @Body() dto: RunGroupDto,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.workflowService.runGroup(id, dto, user.id);
     return { success: true, data, error: null };
   }
 

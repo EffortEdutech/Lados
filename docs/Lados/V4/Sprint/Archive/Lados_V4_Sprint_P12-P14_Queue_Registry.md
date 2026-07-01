@@ -1,4 +1,9 @@
-# QS-WFUI — Final Sprint Pack: Phases 12 → 14
+> **⚠️ HISTORICAL DOCUMENT — Phases 12, 13, and 14 are complete.**
+> Preserved for reference. Platform formerly called QS-WFUI, now Lados — a universal business workflow engine.
+
+---
+
+# Lados — Final Sprint Pack: Phases 12 → 14
 **Version:** 1.0
 **Date:** 2026-06-24
 **Covers:** Phase 12 — Async Execution Queue · Phase 13 — LEOS/JKR Blueprint · Phase 14 — Registry Maturity

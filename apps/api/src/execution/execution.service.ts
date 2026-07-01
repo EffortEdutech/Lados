@@ -34,7 +34,7 @@ import { ExecutionQueueService } from '../queue/execution-queue.service';
 import { PackRegistryService }   from '../pack/pack-registry.service';
 import { buildRealNodeResolver } from './real-nodes';
 import { runWorkflow } from '@lados/execution-engine';
-import type { SkipNodeSpec } from '@lados/execution-engine';
+import type { ExecutionResult, RunnerOptions, SkipNodeSpec } from '@lados/execution-engine';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
 import type { TriggerRunDto } from './dto/trigger-run.dto';
 
@@ -255,6 +255,21 @@ export class ExecutionService implements OnModuleInit {
     }
 
     return { runId, status: 'running' };
+  }
+
+  /**
+   * Sprint 14B: run an arbitrary validated definition inline.
+   *
+   * Used by canvas "Run Group" diagnostics, where designers execute a draft
+   * subgraph without publishing or creating a normal execution_runs record.
+   */
+  async runDefinitionInline(
+    options: Omit<RunnerOptions, 'nodeResolver'>,
+  ): Promise<ExecutionResult> {
+    return runWorkflow({
+      ...options,
+      nodeResolver: this.nodeResolver,
+    });
   }
 
   // ── Resume a paused run after human approval ────────────────────────────

@@ -3,7 +3,7 @@
  * Sprint 6 (S6-002)
  */
 
-import type { QSWorkflowDefinition } from '@lados/shared-types';
+import type { QSWorkflowDefinition, SkillMode } from '@lados/shared-types';
 import type { NodeContext, NodeExecuteResult, NodeLogger } from '@lados/node-sdk';
 
 // ── Re-export NodeContext so callers only import from execution-engine ────────
@@ -26,6 +26,7 @@ export interface ExecutionStep {
   nodeType: string;
   nodeLabel: string;
   config: Record<string, unknown>;
+  mode?: SkillMode;
   /** IDs of steps that must complete before this one */
   dependsOn: string[];
   /**

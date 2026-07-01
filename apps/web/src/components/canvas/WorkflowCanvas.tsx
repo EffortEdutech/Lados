@@ -16,12 +16,14 @@ import ReactFlow, {
   MiniMap,
   ReactFlowProvider,
   addEdge,
+  applyNodeChanges,
   useNodesState,
   useEdgesState,
   useReactFlow,
   type Connection,
   type Node,
   type Edge,
+  type NodeChange,
   type NodeTypes,
   type NodeProps,
   BackgroundVariant,
@@ -33,10 +35,22 @@ import type {
   WorkflowNodeInstance,
   WorkflowConnection,
   SkillMode,
+  WorkflowSkillGroup,
+  WorkflowFastGroupBypasser,
 } from '@lados/shared-types';
 import { apiClient } from '@/lib/api/client';
+import {
+  PORT_COLORS,
+  getPortLabel,
+  getPortType,
+  isPortCompatible,
+  type PortDataType,
+} from '@/lib/portTypes';
 import PropertyPanel from './PropertyPanel';
 import { ConditionNode } from './ConditionNode';
+import SkillGroupNode from './SkillGroupNode';
+import FastGroupBypasserNode from './FastGroupBypasserNode';
+import RunGroupModal from './RunGroupModal';
 
 // ── Custom SkillNode (V2) ─────────────────────────────────────────────────────
 //
@@ -65,6 +79,8 @@ function SkillNode({ data, selected }: NodeProps) {
   const icon      = data.icon     as string | undefined;
   const color     = data.color    as string | undefined;
   const category  = data.category as string | undefined;
+  const inputs    = (data.inputs  as NodePort[] | undefined) ?? [];
+  const outputs   = (data.outputs as NodePort[] | undefined) ?? [];
   const selectedRing = selected ? 'ring-2 ring-offset-1 ' : '';
 
   const containerCls =
@@ -82,17 +98,90 @@ function SkillNode({ data, selected }: NodeProps) {
   // Category badge colors
   const catKey = category?.split('.')[0] ?? '';
   const catCls = CATEGORY_COLORS[catKey] ?? 'bg-gray-100 text-gray-500';
+  const inputHandles = inputs.length > 0 ? inputs : [{ id: 'in', label: 'in', type: 'any' }];
+  const outputHandles = outputs.length > 0 ? outputs : [{ id: 'out', label: 'out', type: 'any' }];
+  const needsLegacyInputHandle = !inputHandles.some((port) => port.id === 'in');
+  const needsLegacyOutputHandle = !outputHandles.some((port) => port.id === 'out');
+  const visibleRowCount = Math.max(inputs.length, outputs.length);
+  const nodeMinHeight = visibleRowCount > 0 ? 66 + visibleRowCount * 22 : 58;
+
+  const handleTop = (index: number, visibleCount: number): string | number => {
+    if (visibleCount === 0) return '50%';
+    return (category ? 68 : 52) + index * 22;
+  };
+
+  const renderPortHandle = (port: NodePort, index: number, visibleCount: number, side: 'input' | 'output') => {
+    const portType = getPortType(port) ?? 'any';
+    const isInput = side === 'input';
+
+    return (
+      <div key={`${side}-${port.id}`}>
+        <Handle
+          id={port.id}
+          type={isInput ? 'target' : 'source'}
+          position={isInput ? Position.Left : Position.Right}
+          style={{
+            top: handleTop(index, visibleCount),
+            background: PORT_COLORS[portType],
+            border: '2px solid #fff',
+            width: 10,
+            height: 10,
+          }}
+        />
+      </div>
+    );
+  };
+
+  const renderLegacyCompatibilityHandle = (side: 'input' | 'output') => {
+    const isInput = side === 'input';
+
+    return (
+      <Handle
+        id={isInput ? 'in' : 'out'}
+        type={isInput ? 'target' : 'source'}
+        position={isInput ? Position.Left : Position.Right}
+        style={{
+          top: '50%',
+          width: 1,
+          height: 1,
+          opacity: 0,
+          pointerEvents: 'none',
+          border: 'none',
+          background: 'transparent',
+        }}
+      />
+    );
+  };
+
+  const renderPortRow = (port: NodePort, side: 'input' | 'output') => {
+    const portType = getPortType(port) ?? 'any';
+    const isInput = side === 'input';
+
+    return (
+      <div
+        key={`${side}-row-${port.id}`}
+        className={`flex h-[18px] min-w-0 items-center gap-1.5 text-[10px] font-normal leading-none text-gray-600 ${
+          isInput ? 'justify-start pl-1' : 'justify-end pr-1 text-right'
+        }`}
+        title={`${getPortLabel(port)} (${portType})`}
+      >
+        <span className="min-w-0 truncate">{getPortLabel(port)}</span>
+        <span className="flex-shrink-0 font-mono text-[8px] uppercase text-gray-400">
+          {portType}
+        </span>
+      </div>
+    );
+  };
 
   return (
     <div
-      className={`relative rounded px-3 py-2 text-xs font-medium min-w-[130px] shadow-sm transition-all ${containerCls}`}
-      style={accentStyle}
+      className={`group relative w-[260px] rounded px-3 py-2 text-xs font-medium shadow-sm transition-all ${containerCls}`}
+      style={{ ...accentStyle, minHeight: nodeMinHeight }}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: '#9ca3af', width: 8, height: 8 }}
-      />
+      {inputHandles.map((port, index) =>
+        renderPortHandle(port, index, inputs.length, 'input'),
+      )}
+      {needsLegacyInputHandle && renderLegacyCompatibilityHandle('input')}
 
       {/* Mode badge */}
       {mode !== 'active' && (
@@ -120,11 +209,21 @@ function SkillNode({ data, selected }: NodeProps) {
         </span>
       )}
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={{ background: '#9ca3af', width: 8, height: 8 }}
-      />
+      {visibleRowCount > 0 && (
+        <div className="mt-2 grid grid-cols-2 gap-x-3 border-t border-gray-100 pt-1.5">
+          <div className="space-y-1 overflow-hidden">
+            {inputs.map((port) => renderPortRow(port, 'input'))}
+          </div>
+          <div className="space-y-1 overflow-hidden">
+            {outputs.map((port) => renderPortRow(port, 'output'))}
+          </div>
+        </div>
+      )}
+
+      {outputHandles.map((port, index) =>
+        renderPortHandle(port, index, outputs.length, 'output'),
+      )}
+      {needsLegacyOutputHandle && renderLegacyCompatibilityHandle('output')}
     </div>
   );
 }
@@ -133,9 +232,147 @@ function SkillNode({ data, selected }: NodeProps) {
 const NODE_TYPES: NodeTypes = {
   skill:     SkillNode,
   condition: ConditionNode,
+  skillGroup: SkillGroupNode,
+  fastGroupBypasser: FastGroupBypasserNode,
 };
 
 // ── Helpers: convert QS-OS types ↔ React Flow types ──────────────────────────
+
+const GROUP_NODE_PREFIX = 'group:';
+const FAST_GROUP_BYPASSER_PREFIX = 'fastGroupBypasser:';
+const GROUP_COLORS = ['#2563eb', '#16a34a', '#ea580c', '#7c3aed', '#0891b2', '#be123c'];
+
+function groupNodeId(groupId: string): string {
+  return `${GROUP_NODE_PREFIX}${groupId}`;
+}
+
+function groupIdFromNodeId(nodeId: string): string {
+  return nodeId.replace(GROUP_NODE_PREFIX, '');
+}
+
+function isGroupNode(node: Node): boolean {
+  return node.type === 'skillGroup' || node.id.startsWith(GROUP_NODE_PREFIX);
+}
+
+function fastGroupBypasserNodeId(bypasserId: string): string {
+  return `${FAST_GROUP_BYPASSER_PREFIX}${bypasserId}`;
+}
+
+function fastGroupBypasserIdFromNodeId(nodeId: string): string {
+  return nodeId.replace(FAST_GROUP_BYPASSER_PREFIX, '');
+}
+
+function isFastGroupBypasserNode(node: Node): boolean {
+  return node.type === 'fastGroupBypasser' || node.id.startsWith(FAST_GROUP_BYPASSER_PREFIX);
+}
+
+function isCanvasUtilityNode(node: Node): boolean {
+  return isGroupNode(node) || isFastGroupBypasserNode(node);
+}
+
+function canvasNodesOnly(nodes: Node[]): Node[] {
+  return nodes.filter((node) => !isCanvasUtilityNode(node));
+}
+
+function normalizeGroups(groups?: WorkflowSkillGroup[]): WorkflowSkillGroup[] {
+  return (groups ?? []).map((group) => ({
+    ...group,
+    color: group.color || '#2563eb',
+    mode: group.mode ?? 'active',
+    collapsed: group.collapsed ?? false,
+    toggleRestriction: group.toggleRestriction ?? 'default',
+    nodeIds: group.nodeIds ?? [],
+    bounds: {
+      x: group.bounds?.x ?? 0,
+      y: group.bounds?.y ?? 0,
+      width: Math.max(group.bounds?.width ?? 280, 180),
+      height: Math.max(group.bounds?.height ?? 180, 80),
+    },
+  }));
+}
+
+function normalizeFastGroupBypassers(bypassers?: WorkflowFastGroupBypasser[]): WorkflowFastGroupBypasser[] {
+  return (bypassers ?? []).map((bypasser) => ({
+    ...bypasser,
+    name: bypasser.name ?? 'Group Mode Switcher',
+    collapsed: bypasser.collapsed ?? false,
+    position: {
+      x: bypasser.position?.x ?? 80,
+      y: bypasser.position?.y ?? 80,
+    },
+  }));
+}
+
+function createGroupNode(group: WorkflowSkillGroup, data: Record<string, unknown>): Node {
+  const collapsed = group.collapsed ?? false;
+
+  return {
+    id: groupNodeId(group.id),
+    type: 'skillGroup',
+    position: { x: group.bounds.x, y: group.bounds.y },
+    data,
+    draggable: true,
+    selectable: true,
+    zIndex: -1,
+    style: {
+      width: collapsed ? 220 : group.bounds.width,
+      height: collapsed ? 56 : group.bounds.height,
+    },
+  };
+}
+
+function createFastGroupBypasserNode(
+  bypasser: WorkflowFastGroupBypasser,
+  data: Record<string, unknown>,
+): Node {
+  return {
+    id: fastGroupBypasserNodeId(bypasser.id),
+    type: 'fastGroupBypasser',
+    position: bypasser.position,
+    data,
+    draggable: true,
+    selectable: true,
+    dragHandle: '.fgb-drag-handle',
+    zIndex: 2,
+  };
+}
+
+function groupBoundsFromNode(node: Node, fallback: WorkflowSkillGroup): WorkflowSkillGroup['bounds'] {
+  const width = Number((node.style as { width?: number | string } | undefined)?.width ?? node.width ?? fallback.bounds.width);
+  const height = Number((node.style as { height?: number | string } | undefined)?.height ?? node.height ?? fallback.bounds.height);
+
+  return {
+    x: node.position.x,
+    y: node.position.y,
+    width: Number.isFinite(width) ? Math.max(width, 180) : fallback.bounds.width,
+    height: Number.isFinite(height) ? Math.max(height, 80) : fallback.bounds.height,
+  };
+}
+
+function sameGroupBounds(
+  a: WorkflowSkillGroup['bounds'] | undefined,
+  b: WorkflowSkillGroup['bounds'] | undefined,
+): boolean {
+  return Boolean(
+    a &&
+      b &&
+      a.x === b.x &&
+      a.y === b.y &&
+      a.width === b.width &&
+      a.height === b.height,
+  );
+}
+
+function samePosition(
+  a: WorkflowFastGroupBypasser['position'] | undefined,
+  b: WorkflowFastGroupBypasser['position'] | undefined,
+): boolean {
+  return Boolean(a && b && a.x === b.x && a.y === b.y);
+}
+
+function sameStringArray(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
 
 function rfNodeType(nodeType: string): string {
   return nodeType === 'workflow.condition' ? 'condition' : 'skill';
@@ -171,7 +408,7 @@ function toRFEdges(connections: WorkflowConnection[]): Edge[] {
 }
 
 function fromRFNodes(rfNodes: Node[]): WorkflowNodeInstance[] {
-  return rfNodes.map((n) => ({
+  return canvasNodesOnly(rfNodes).map((n) => ({
     id:       n.id as WorkflowNodeInstance['id'],
     type:     (n.data as { nodeType: string }).nodeType as WorkflowNodeInstance['type'],
     label:    (n.data as { label: string }).label,
@@ -195,8 +432,10 @@ function fromRFEdges(rfEdges: Edge[]): WorkflowConnection[] {
 
 interface NodePort {
   id: string;
-  label: string;
-  type: string;
+  label?: string;
+  name?: string;
+  type?: string;
+  dataType?: string;
   required?: boolean;
 }
 
@@ -218,7 +457,7 @@ function computeValidation(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  const seen    = new Map<string, true>();   // source→target dedup
+  const seen    = new Map<string, true>();
 
   for (const edge of edges) {
     const src = nodeMap.get(edge.source);
@@ -240,11 +479,13 @@ function computeValidation(
     }
 
     // Duplicate connection
-    const pairKey = `${edge.source}→${edge.target}`;
+    const sourceHandle = edge.sourceHandle ?? 'out';
+    const targetHandle = edge.targetHandle ?? 'in';
+    const pairKey = `${edge.source}:${sourceHandle}->${edge.target}:${targetHandle}`;
     if (seen.has(pairKey)) {
       errors.push({
         edgeId:   edge.id,
-        message:  `Duplicate: "${src.data.label as string}" → "${tgt.data.label as string}"`,
+        message:  `Duplicate: "${src.data.label as string}" -> "${tgt.data.label as string}"`,
         severity: 'warning',
       });
     } else {
@@ -268,6 +509,19 @@ function computeValidation(
           edgeId:   edge.id,
           message:  `"${tgt.data.label as string}" has no inputs`,
           severity: 'warning',
+        });
+      }
+
+      const sourcePort = srcDef?.outputs.find((port) => port.id === sourceHandle);
+      const targetPort = tgtDef?.inputs.find((port) => port.id === targetHandle);
+      const sourceType = getPortType(sourcePort);
+      const targetType = getPortType(targetPort);
+
+      if (!isPortCompatible(sourceType, targetType)) {
+        errors.push({
+          edgeId:   edge.id,
+          message:  `Type mismatch: ${sourceType} cannot connect to ${targetType}`,
+          severity: 'error',
         });
       }
     }
@@ -317,8 +571,10 @@ interface WorkflowCanvasProps {
   readOnly?:           boolean;
   organizationId?:     string;
   projectId?:          string;
+  workflowId?:         string;
   bulkModeRequest?:    BulkModeRequest | null;
   draftRequest?:       DraftRequest | null;
+  onGroupRunCompleted?: () => void;
   /** Called whenever canvas validation changes — true = has blocking errors, Run should be disabled */
   onValidationChange?: (hasErrors: boolean) => void;
 }
@@ -341,8 +597,10 @@ function WorkflowCanvasInner({
   readOnly = false,
   organizationId,
   projectId,
+  workflowId,
   bulkModeRequest,
   draftRequest,
+  onGroupRunCompleted,
   onValidationChange,
 }: WorkflowCanvasProps) {
   const { fitView } = useReactFlow();
@@ -351,9 +609,18 @@ function WorkflowCanvasInner({
 
   const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(definition.nodes ?? []));
   const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(definition.connections ?? []));
+  const [groups, setGroups] = useState<WorkflowSkillGroup[]>(normalizeGroups(definition.ui?.groups));
+  const [fastGroupBypassers, setFastGroupBypassers] = useState<WorkflowFastGroupBypasser[]>(
+    normalizeFastGroupBypassers(definition.ui?.fastGroupBypassers),
+  );
+  const [runGroupId, setRunGroupId] = useState<string | null>(null);
+  const [selectedSkillNodeIds, setSelectedSkillNodeIds] = useState<string[]>([]);
   const [selectedNode, setSelectedNode]   = useState<Node | null>(null);
   const [contextMenu, setContextMenu]     = useState<ContextMenuState | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectionErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastConnectionValidRef = useRef(true);
 
   // ── S18-001: Validation ────────────────────────────────────────────────────
 
@@ -373,6 +640,54 @@ function WorkflowCanvasInner({
       .catch(() => {/* validation works without registry — silently ignore */});
   }, []);
 
+  useEffect(() => {
+    if (nodeRegistry.size === 0) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        const nodeType = (node.data as { nodeType?: string }).nodeType;
+        const def = nodeType ? nodeRegistry.get(nodeType) : undefined;
+
+        if (!def) return node;
+
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            inputs: def.inputs,
+            outputs: def.outputs,
+          },
+        };
+      }),
+    );
+  }, [nodeRegistry, setNodes]);
+
+  const portTypeMap = useMemo(() => {
+    const map = new Map<string, Map<string, PortDataType>>();
+
+    for (const node of nodes) {
+      const nodeType = (node.data as { nodeType?: string }).nodeType;
+      const def = nodeType ? nodeRegistry.get(nodeType) : undefined;
+      const ports = new Map<string, PortDataType>();
+
+      for (const port of def?.inputs ?? []) {
+        const type = getPortType(port);
+        if (type) ports.set(port.id, type);
+      }
+
+      for (const port of def?.outputs ?? []) {
+        const type = getPortType(port);
+        if (type) ports.set(port.id, type);
+      }
+
+      if (ports.size > 0) {
+        map.set(node.id, ports);
+      }
+    }
+
+    return map;
+  }, [nodes, nodeRegistry]);
+
   const validationErrors = useMemo(
     () => computeValidation(nodes, edges, nodeRegistry),
     [nodes, edges, nodeRegistry],
@@ -383,6 +698,12 @@ function WorkflowCanvasInner({
   useEffect(() => {
     onValidationChange?.(hasErrors);
   }, [hasErrors, onValidationChange]);
+
+  useEffect(() => {
+    return () => {
+      if (connectionErrorTimerRef.current) clearTimeout(connectionErrorTimerRef.current);
+    };
+  }, []);
 
   // Visual styling on edges: red = error, amber = warning, gray = ok
   const styledEdges = useMemo(() => {
@@ -537,10 +858,14 @@ function WorkflowCanvasInner({
     if (!draftRequest) return;
     const rfNodes = toRFNodes(draftRequest.definition.nodes ?? []);
     const rfEdges = toRFEdges(draftRequest.definition.connections ?? []);
+    const draftGroups = normalizeGroups(draftRequest.definition.ui?.groups);
+    const draftBypassers = normalizeFastGroupBypassers(draftRequest.definition.ui?.fastGroupBypassers);
     setNodes(rfNodes);
     setEdges(rfEdges);
+    setGroups(draftGroups);
+    setFastGroupBypassers(draftBypassers);
     pushHistory(rfNodes, rfEdges);
-    scheduleAutoSave(rfNodes, rfEdges);
+    scheduleAutoSave(rfNodes, rfEdges, draftGroups, draftBypassers);
     setTimeout(() => fitView({ padding: 0.15 }), 50);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftRequest?.stamp]);
@@ -566,7 +891,12 @@ function WorkflowCanvasInner({
   // ── Auto-save (debounced 1.5s) ─────────────────────────────────────────────
 
   const scheduleAutoSave = useCallback(
-    (updatedNodes: Node[], updatedEdges: Edge[]) => {
+    (
+      updatedNodes: Node[],
+      updatedEdges: Edge[],
+      updatedGroups: WorkflowSkillGroup[] = groups,
+      updatedFastGroupBypassers: WorkflowFastGroupBypasser[] = fastGroupBypassers,
+    ) => {
       if (!onSave) return;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
@@ -575,20 +905,285 @@ function WorkflowCanvasInner({
           workflow:    { ...definition.workflow, updatedAt: new Date().toISOString() },
           nodes:       fromRFNodes(updatedNodes),
           connections: fromRFEdges(updatedEdges),
+          ui:          {
+            ...definition.ui,
+            groups: normalizeGroups(updatedGroups),
+            fastGroupBypassers: normalizeFastGroupBypassers(updatedFastGroupBypassers),
+          },
         };
         onSave(updated);
       }, 1500);
     },
-    [definition, onSave],
+    [definition, fastGroupBypassers, groups, onSave],
   );
 
-  const handleNodesChange = useCallback(
-    (changes: Parameters<typeof onNodesChange>[0]) => {
-      onNodesChange(changes);
-      setNodes((nds) => { scheduleAutoSave(nds, edges); return nds; });
+  const persistGroups = useCallback(
+    (nextGroups: WorkflowSkillGroup[], nextNodes: Node[] = nodes) => {
+      const normalized = normalizeGroups(nextGroups);
+      setGroups(normalized);
+      scheduleAutoSave(nextNodes, edges, normalized, fastGroupBypassers);
     },
-    [onNodesChange, setNodes, edges, scheduleAutoSave],
+    [edges, fastGroupBypassers, nodes, scheduleAutoSave],
   );
+
+  const applyGroupMode = useCallback(
+    (groupId: string, mode: SkillMode) => {
+      let nextGroups = normalizeGroups(groups).map((group) =>
+        group.id === groupId ? { ...group, mode } : group,
+      );
+      const targetGroup = nextGroups.find((group) => group.id === groupId);
+
+      if (mode === 'active' && targetGroup?.toggleRestriction === 'max-one') {
+        nextGroups = nextGroups.map((group) =>
+          group.id !== groupId && group.toggleRestriction === 'max-one'
+            ? { ...group, mode: 'muted' as SkillMode }
+            : group,
+        );
+      }
+
+      if (
+        mode !== 'active' &&
+        targetGroup?.toggleRestriction === 'always-one' &&
+        nextGroups.filter((group) => group.toggleRestriction === 'always-one' && group.mode === 'active').length === 0
+      ) {
+        setConnectionError('At least one always-one group must stay active');
+        return;
+      }
+
+      const modeByNodeId = new Map<string, SkillMode>();
+      for (const group of nextGroups) {
+        for (const nodeId of group.nodeIds) {
+          modeByNodeId.set(nodeId, group.mode ?? 'active');
+        }
+      }
+
+      setGroups(nextGroups);
+      setNodes((nds) => {
+        const updated = nds.map((node) =>
+          isGroupNode(node) || !modeByNodeId.has(node.id)
+            ? node
+            : { ...node, data: { ...node.data, mode: modeByNodeId.get(node.id) } },
+        );
+        scheduleAutoSave(updated, edges, nextGroups, fastGroupBypassers);
+        return updated;
+      });
+    },
+    [edges, fastGroupBypassers, groups, scheduleAutoSave, setNodes],
+  );
+
+  const updateGroup = useCallback(
+    (groupId: string, patch: Partial<WorkflowSkillGroup>) => {
+      persistGroups(
+        groups.map((group) => (group.id === groupId ? { ...group, ...patch } : group)),
+      );
+    },
+    [groups, persistGroups],
+  );
+
+  const removeGroup = useCallback(
+    (groupId: string) => {
+      const nextGroups = groups.filter((group) => group.id !== groupId);
+      setGroups(nextGroups);
+      setNodes((nds) => {
+        const updated = nds
+          .filter((node) => node.id !== groupNodeId(groupId))
+          .map((node) => ({ ...node, hidden: false }));
+        scheduleAutoSave(updated, edges, nextGroups, fastGroupBypassers);
+        return updated;
+      });
+    },
+    [edges, fastGroupBypassers, groups, scheduleAutoSave, setNodes],
+  );
+
+  const focusGroup = useCallback(
+    (groupId: string) => {
+      void fitView({ nodes: [{ id: groupNodeId(groupId) }], padding: 0.18, duration: 300 });
+    },
+    [fitView],
+  );
+
+  const createFastGroupBypasser = useCallback(() => {
+    const offset = fastGroupBypassers.length * 28;
+    const nextBypasser: WorkflowFastGroupBypasser = {
+      id: `fgb_${Date.now().toString(36)}`,
+      name: 'Group Mode Switcher',
+      position: { x: 120 + offset, y: 120 + offset },
+      collapsed: false,
+    };
+    const nextBypassers = [...fastGroupBypassers, nextBypasser];
+    setFastGroupBypassers(nextBypassers);
+    scheduleAutoSave(nodes, edges, groups, nextBypassers);
+  }, [edges, fastGroupBypassers, groups, nodes, scheduleAutoSave]);
+
+  const removeFastGroupBypasser = useCallback(
+    (bypasserId: string) => {
+      const nextBypassers = fastGroupBypassers.filter((bypasser) => bypasser.id !== bypasserId);
+      setFastGroupBypassers(nextBypassers);
+      setNodes((nds) => {
+        const updated = nds.filter((node) => node.id !== fastGroupBypasserNodeId(bypasserId));
+        scheduleAutoSave(updated, edges, groups, nextBypassers);
+        return updated;
+      });
+    },
+    [edges, fastGroupBypassers, groups, scheduleAutoSave, setNodes],
+  );
+
+  const selectedSkillNodes = useMemo(
+    () => {
+      const selectedIds = new Set(selectedSkillNodeIds);
+      return canvasNodesOnly(nodes).filter((node) =>
+        selectedIds.size > 0 ? selectedIds.has(node.id) : node.selected,
+      );
+    },
+    [nodes, selectedSkillNodeIds],
+  );
+
+  const createGroupFromSelection = useCallback(() => {
+    if (selectedSkillNodes.length < 2) return;
+
+    const padding = 40;
+    const minX = Math.min(...selectedSkillNodes.map((node) => node.position.x));
+    const minY = Math.min(...selectedSkillNodes.map((node) => node.position.y));
+    const maxX = Math.max(
+      ...selectedSkillNodes.map((node) => node.position.x + (node.width ?? 260)),
+    );
+    const maxY = Math.max(
+      ...selectedSkillNodes.map((node) => node.position.y + (node.height ?? 90)),
+    );
+    const groupId = `grp_${Date.now().toString(36)}`;
+    const nextGroup: WorkflowSkillGroup = {
+      id: groupId,
+      name: `Group ${groups.length + 1}`,
+      color: GROUP_COLORS[groups.length % GROUP_COLORS.length],
+      nodeIds: selectedSkillNodes.map((node) => node.id as WorkflowSkillGroup['nodeIds'][number]),
+      collapsed: false,
+      mode: 'active',
+      toggleRestriction: 'default',
+      bounds: {
+        x: minX - padding,
+        y: minY - padding,
+        width: Math.max(maxX - minX + padding * 2, 260),
+        height: Math.max(maxY - minY + padding * 2, 180),
+      },
+    };
+    const nextGroups = [...groups, nextGroup];
+    setGroups(nextGroups);
+    scheduleAutoSave(nodes, edges, nextGroups);
+  }, [edges, groups, nodes, scheduleAutoSave, selectedSkillNodes]);
+
+  useEffect(() => {
+    if (readOnly) return;
+
+    function handleGroupShortcut(event: KeyboardEvent) {
+      const mod = event.ctrlKey || event.metaKey;
+      if (!mod && event.key.toLowerCase() === 'g' && selectedSkillNodes.length >= 2) {
+        event.preventDefault();
+        createGroupFromSelection();
+      }
+    }
+
+    window.addEventListener('keydown', handleGroupShortcut);
+    return () => window.removeEventListener('keydown', handleGroupShortcut);
+  }, [createGroupFromSelection, readOnly, selectedSkillNodes.length]);
+
+  useEffect(() => {
+    setNodes((nds) => {
+      const nonUtilityNodes = nds.filter((node) => !isCanvasUtilityNode(node));
+      const collapsedNodeIds = new Set<string>(
+        groups.flatMap((group) => (group.collapsed ? group.nodeIds : [])),
+      );
+      const nextSkillNodes = nonUtilityNodes.map((node) => ({
+        ...node,
+        hidden: collapsedNodeIds.has(node.id),
+      }));
+      const groupNodes = groups.map((group) =>
+        createGroupNode(group, {
+          group,
+          readOnly,
+          onRename: (id: string, name: string) => updateGroup(id, { name }),
+          onColorChange: (id: string, color: string) => updateGroup(id, { color }),
+          onModeChange: applyGroupMode,
+          onCollapseChange: (id: string, collapsed: boolean) => updateGroup(id, { collapsed }),
+          onRunGroup: workflowId && projectId ? (id: string) => setRunGroupId(id) : undefined,
+          onRemove: removeGroup,
+        }),
+      );
+      const bypasserNodes = fastGroupBypassers.map((bypasser) =>
+        createFastGroupBypasserNode(bypasser, {
+          bypasser,
+          groups,
+          readOnly,
+          onModeChange: applyGroupMode,
+          onFocusGroup: focusGroup,
+          onRemove: removeFastGroupBypasser,
+        }),
+      );
+      return [...groupNodes, ...bypasserNodes, ...nextSkillNodes];
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyGroupMode, fastGroupBypassers, groups, readOnly, removeFastGroupBypasser, removeGroup, setNodes]);
+
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      const removedGroupIds = new Set(
+        changes.flatMap((change) =>
+          change.type === 'remove' && 'id' in change && change.id.startsWith(GROUP_NODE_PREFIX)
+            ? [groupIdFromNodeId(change.id)]
+            : [],
+        ),
+      );
+      const removedFastGroupBypasserIds = new Set(
+        changes.flatMap((change) =>
+          change.type === 'remove' && 'id' in change && change.id.startsWith(FAST_GROUP_BYPASSER_PREFIX)
+            ? [fastGroupBypasserIdFromNodeId(change.id)]
+            : [],
+        ),
+      );
+      const shouldPersistLayout = changes.some((change) => change.type !== 'select');
+      if (!shouldPersistLayout) {
+        onNodesChange(changes);
+        return;
+      }
+
+      const updatedNodes = applyNodeChanges(changes, nodes);
+      const activeGroups = groups.filter((group) => !removedGroupIds.has(group.id));
+      const activeFastGroupBypassers = fastGroupBypassers.filter(
+        (bypasser) => !removedFastGroupBypasserIds.has(bypasser.id),
+      );
+      const nextGroups = activeGroups.map((group) => {
+        const node = updatedNodes.find((candidate) => candidate.id === groupNodeId(group.id));
+        return node ? { ...group, bounds: groupBoundsFromNode(node, group) } : group;
+      });
+      const nextFastGroupBypassers = activeFastGroupBypassers.map((bypasser) => {
+        const node = updatedNodes.find((candidate) => candidate.id === fastGroupBypasserNodeId(bypasser.id));
+        return node ? { ...bypasser, position: node.position } : bypasser;
+      });
+
+      if (
+        nextGroups.length !== groups.length ||
+        nextGroups.some((group, index) => !sameGroupBounds(group.bounds, groups[index]?.bounds))
+      ) {
+        setGroups(nextGroups);
+      }
+      if (
+        nextFastGroupBypassers.length !== fastGroupBypassers.length ||
+        nextFastGroupBypassers.some((bypasser, index) => !samePosition(bypasser.position, fastGroupBypassers[index]?.position))
+      ) {
+        setFastGroupBypassers(nextFastGroupBypassers);
+      }
+
+      onNodesChange(changes);
+      scheduleAutoSave(updatedNodes, edges, nextGroups, nextFastGroupBypassers);
+    },
+    [edges, fastGroupBypassers, groups, nodes, onNodesChange, scheduleAutoSave],
+  );
+
+  const handleSelectionChange = useCallback(({ nodes: selectedNodes }: { nodes: Node[] }) => {
+    const nextSelectedIds = canvasNodesOnly(selectedNodes).map((node) => node.id);
+    setSelectedSkillNodeIds((previousIds) =>
+      sameStringArray(previousIds, nextSelectedIds) ? previousIds : nextSelectedIds,
+    );
+  }, []);
 
   const handleEdgesChange = useCallback(
     (changes: Parameters<typeof onEdgesChange>[0]) => {
@@ -600,8 +1195,63 @@ function WorkflowCanvasInner({
 
   // ── Connect ────────────────────────────────────────────────────────────────
 
+  const showConnectionError = useCallback((message: string) => {
+    setConnectionError(message);
+    if (connectionErrorTimerRef.current) clearTimeout(connectionErrorTimerRef.current);
+    connectionErrorTimerRef.current = setTimeout(() => setConnectionError(null), 2200);
+  }, []);
+
+  const isValidConnection = useCallback(
+    (connection: Connection): boolean => {
+      const { source, sourceHandle, target, targetHandle } = connection;
+
+      if (!source || !target || source === target) {
+        lastConnectionValidRef.current = false;
+        return false;
+      }
+
+      const normalizedSourceHandle = sourceHandle ?? 'out';
+      const normalizedTargetHandle = targetHandle ?? 'in';
+      const alreadyConnected = edges.some(
+        (edge) =>
+          edge.source === source &&
+          (edge.sourceHandle ?? 'out') === normalizedSourceHandle &&
+          edge.target === target &&
+          (edge.targetHandle ?? 'in') === normalizedTargetHandle,
+      );
+
+      if (alreadyConnected) {
+        lastConnectionValidRef.current = false;
+        return false;
+      }
+
+      const sourceType = portTypeMap.get(source)?.get(normalizedSourceHandle);
+      const targetType = portTypeMap.get(target)?.get(normalizedTargetHandle);
+      const isValid = isPortCompatible(sourceType, targetType);
+      lastConnectionValidRef.current = isValid;
+      return isValid;
+    },
+    [edges, portTypeMap],
+  );
+
+  const onConnectStart = useCallback(() => {
+    lastConnectionValidRef.current = true;
+    setConnectionError(null);
+  }, []);
+
+  const onConnectEnd = useCallback(() => {
+    if (!lastConnectionValidRef.current) {
+      showConnectionError('Incompatible port types or duplicate connection');
+    }
+  }, [showConnectionError]);
+
   const onConnect = useCallback(
     (params: Connection) => {
+      if (!isValidConnection(params)) {
+        showConnectionError('Incompatible port types or duplicate connection');
+        return;
+      }
+
       setEdges((eds) => {
         const updated = addEdge({ ...params, id: `e-${Date.now()}` }, eds);
         pushHistory(nodes, updated);
@@ -610,7 +1260,7 @@ function WorkflowCanvasInner({
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setEdges, nodes, scheduleAutoSave],
+    [setEdges, nodes, scheduleAutoSave, isValidConnection, showConnectionError],
   );
 
   // ── Delete node ────────────────────────────────────────────────────────────
@@ -686,12 +1336,47 @@ function WorkflowCanvasInner({
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.preventDefault();
+      if (isCanvasUtilityNode(node)) return;
       setContextMenu({ x: event.clientX, y: event.clientY, nodeId: node.id });
     },
     [],
   );
 
   // ── Drag-and-drop from palette ─────────────────────────────────────────────
+
+  const onNodeDragStop = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      if (isGroupNode(node)) {
+        const groupId = node.id.replace(GROUP_NODE_PREFIX, '');
+        const group = groups.find((candidate) => candidate.id === groupId);
+        if (!group) return;
+        updateGroup(groupId, { bounds: groupBoundsFromNode(node, group) });
+        return;
+      }
+
+      const nodeWidth = node.width ?? 260;
+      const nodeHeight = node.height ?? 90;
+      const center = {
+        x: node.position.x + nodeWidth / 2,
+        y: node.position.y + nodeHeight / 2,
+      };
+      const containingGroup = groups.find((group) => {
+        if (group.collapsed) return false;
+        const { x, y, width, height } = group.bounds;
+        return center.x >= x && center.x <= x + width && center.y >= y && center.y <= y + height;
+      });
+
+      const nextGroups = groups.map((group) => {
+        const withoutNode = group.nodeIds.filter((nodeId) => nodeId !== node.id);
+        return group.id === containingGroup?.id
+          ? { ...group, nodeIds: [...withoutNode, node.id as WorkflowSkillGroup['nodeIds'][number]] }
+          : { ...group, nodeIds: withoutNode };
+      });
+
+      persistGroups(nextGroups);
+    },
+    [groups, persistGroups, updateGroup],
+  );
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -702,6 +1387,7 @@ function WorkflowCanvasInner({
       const nodeColor = event.dataTransfer.getData('application/lados-node-color');
       const nodeCat   = event.dataTransfer.getData('application/lados-node-category');
       if (!nodeType) return;
+      const nodeDef = nodeRegistry.get(nodeType);
 
       const bounds = (event.currentTarget as HTMLElement).getBoundingClientRect();
       const position = {
@@ -721,6 +1407,8 @@ function WorkflowCanvasInner({
           icon:     nodeIcon  || undefined,
           color:    nodeColor || undefined,
           category: nodeCat   || undefined,
+          inputs:   nodeDef?.inputs ?? [],
+          outputs:  nodeDef?.outputs ?? [],
         },
       };
 
@@ -732,7 +1420,7 @@ function WorkflowCanvasInner({
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setNodes, edges, scheduleAutoSave],
+    [setNodes, edges, scheduleAutoSave, nodeRegistry],
   );
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -742,6 +1430,7 @@ function WorkflowCanvasInner({
 
   const handlePaneClick = useCallback(() => {
     setSelectedNode(null);
+    setSelectedSkillNodeIds([]);
     setContextMenu(null);
   }, []);
 
@@ -750,6 +1439,7 @@ function WorkflowCanvasInner({
   const errorCount = validationErrors.filter((e) => e.severity === 'error').length;
   const warnCount  = validationErrors.filter((e) => e.severity === 'warning').length;
   const firstMsg   = validationErrors[0]?.message ?? '';
+  const runGroup = runGroupId ? groups.find((group) => group.id === runGroupId) : undefined;
 
   return (
     <div className="relative flex h-full w-full">
@@ -781,9 +1471,31 @@ function WorkflowCanvasInner({
           </div>
         )}
 
+        {!readOnly && connectionError && validationErrors.length === 0 && (
+          <div className="absolute top-0 left-0 right-0 z-20 flex items-center gap-2 border-b border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700">
+            <span>Blocked</span>
+            <span className="truncate opacity-80">{connectionError}</span>
+          </div>
+        )}
+
         {/* Canvas overlay toolbar (top-right) */}
         {!readOnly && (
           <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
+            <button
+              onClick={createGroupFromSelection}
+              disabled={selectedSkillNodes.length < 2}
+              title="Group selected skills (G)"
+              className="p-1.5 rounded text-sm bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm leading-none"
+            >
+              Group
+            </button>
+            <button
+              onClick={createFastGroupBypasser}
+              title="Add Group Mode Switcher"
+              className="p-1.5 rounded text-sm bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm leading-none"
+            >
+              Group Switcher
+            </button>
             <button
               onClick={undo}
               disabled={!canUndo}
@@ -842,12 +1554,17 @@ function WorkflowCanvasInner({
           onNodesChange={readOnly ? undefined : handleNodesChange}
           onEdgesChange={readOnly ? undefined : handleEdgesChange}
           onConnect={readOnly ? undefined : onConnect}
+          isValidConnection={readOnly ? undefined : isValidConnection}
+          onConnectStart={readOnly ? undefined : onConnectStart}
+          onConnectEnd={readOnly ? undefined : onConnectEnd}
           onNodeClick={(_, node) => {
-            setSelectedNode(node);
+            setSelectedNode(isCanvasUtilityNode(node) ? null : node);
             setContextMenu(null);
           }}
+          onSelectionChange={handleSelectionChange}
           onPaneClick={handlePaneClick}
           onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
+          onNodeDragStop={readOnly ? undefined : onNodeDragStop}
           deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
           fitView
           attributionPosition="bottom-right"
@@ -910,6 +1627,16 @@ function WorkflowCanvasInner({
             );
           })}
         </div>
+      )}
+
+      {runGroup && projectId && workflowId && (
+        <RunGroupModal
+          projectId={projectId}
+          workflowId={workflowId}
+          group={runGroup}
+          onClose={() => setRunGroupId(null)}
+          onCompleted={() => onGroupRunCompleted?.()}
+        />
       )}
     </div>
   );

@@ -1,4 +1,9 @@
-# QS-WFUI — Sprint Plan: Phase 10 + Phase 11
+> **⚠️ HISTORICAL DOCUMENT — Phases 10 & 11 are complete.**
+> Preserved for reference. Platform formerly called QS-WFUI, now Lados — a universal business workflow engine.
+
+---
+
+# Lados — Sprint Plan: Phase 10 + Phase 11
 **Version:** 2.0 (revised from original Project Pipeline plan)
 **Date:** 2026-06-24
 **Covers:** Phase 10 — AI Runtime Upgrade · Phase 11 — AI Workflow Design Studio

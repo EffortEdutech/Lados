@@ -3,7 +3,7 @@
 **Document status:** Living document — update as each task is completed  
 **Architecture version:** V3  
 **Repository:** `https://github.com/EffortEdutech/QS-WFUI`  
-**Last updated:** 2026-06-18  
+**Last updated:** 2026-06-30  
 
 > **How to use this document:**  
 > Mark each task `[x]` when done. Add notes under tasks when decisions change.  
@@ -99,6 +99,9 @@ QS-OS Platform
 │   ├── Canvas                      ← WorkflowCanvas (built)
 │   ├── Inspector                   ← PropertyPanel enrich (Sprint 13)
 │   ├── Execution Console           ← ExecutionLogPanel (built, polish Sprint 13)
+│   ├── Skill Groups                ← visual grouping (Sprint 14A)
+│   ├── Group Execution Modes       ← mute/bypass per group (Sprint 14A)
+│   ├── Selective Group Execution   ← "Run Group" partial exec (Sprint 14B)
 │   └── Artifact Viewer             ← stub (Sprint 17)
 │
 └── Project Workspace
@@ -535,6 +538,280 @@ Seed all 8 V3 services with current status:
 - [ ] Group bulk mute: all nodes in group show 🔇, execution skips them
 - [ ] Group bulk bypass: all nodes show →, execution passes input through
 - [ ] Git commit and push Sprint 14
+
+---
+
+---
+
+# SPRINT 14A — Canvas Skill Groups (rgthree Phase A + B)
+
+**Goal:** Add visual Skill Groups to the workflow canvas and wire group-level execution modes (Mute / Bypass / Activate). Phase A = visual grouping only. Phase B = group mode controls + engine enforcement.
+
+**Reference:** `docs/Lados_rgthree_Canvas_Upgrade_Paper.md` §4.1, §4.2, §4.4, §4.5, §6.1, §6.2
+
+---
+
+### S14A-001 — SkillGroupNode React Flow Component (Phase A)
+
+**File:** `apps/web/src/components/canvas/SkillGroupNode.tsx` (new)  
+**What:** Custom React Flow node type for the group container — coloured frame, header bar, resize handles, name editor, collapse toggle.
+
+- [ ] Create `SkillGroupNode` functional component
+- [ ] Render semi-transparent coloured background with 2px solid border (group colour)
+- [ ] Header bar: group name (editable inline), mode badge, colour picker swatch, collapse arrow
+- [ ] `NodeResizer` on all 4 corners + 4 edge midpoints (from `@reactflow/node-resizer`)
+- [ ] Collapse / expand: collapsed → compact card (name + mode badge + node count); expanded → full frame
+- [ ] Save `collapsed` state to `ui.groups[].collapsed` via workflow state update
+- [ ] Register in `WorkflowCanvas` as custom node type `"skillGroup"`
+
+---
+
+### S14A-002 — Group Creation Interaction (Phase A)
+
+**File:** `apps/web/src/components/canvas/WorkflowCanvas.tsx`  
+**What:** Let designers create groups from selected nodes.
+
+- [ ] Keyboard shortcut `G` — when ≥ 2 skill nodes selected, create a group around them
+- [ ] Toolbar button: Group icon (active when ≥ 2 nodes selected)
+- [ ] Right-click multi-select → "Group selected nodes" context menu item
+- [ ] Auto-compute group bounds = bounding box of selected nodes + 40px padding
+- [ ] Add group to `ui.groups[]` in workflow JSON immediately (generate `id`, default name, default colour)
+- [ ] Assign selected nodes as group members: add `nodeIds` array, set `parentNode` in React Flow data
+
+---
+
+### S14A-003 — Group Membership: Drag to Join / Leave (Phase A)
+
+**File:** `apps/web/src/components/canvas/WorkflowCanvas.tsx`  
+**What:** When a skill node is dragged inside a group boundary, it automatically becomes a group member. Dragged out → removed.
+
+- [ ] On node drag-stop: check if node centre is inside any group bounds
+- [ ] If inside a group → add `nodeId` to `ui.groups[groupId].nodeIds`; set `parentNode` in React Flow
+- [ ] If previously in a group and now outside → remove from `nodeIds`, clear `parentNode`
+- [ ] Right-click node → "Remove from group" option
+
+---
+
+### S14A-004 — Persist + Restore Groups in Workflow JSON (Phase A)
+
+**Files:** `WorkflowCanvas` serialisation, `packages/workflow-json/src/validate.ts`  
+**What:** Groups must survive save and reload.
+
+- [ ] On workflow save: serialise `ui.groups[]` array with `id`, `name`, `color`, `nodeIds`, `collapsed`, `mode`, `toggleRestriction`, `bounds`
+- [ ] On workflow load: restore `SkillGroupNode` instances from `ui.groups[]`
+- [ ] Update `validate.ts` schema to accept all new group fields (all optional, backward-compat)
+- [ ] Rebuild `packages/workflow-json/dist/validate.js`
+
+---
+
+### S14A-005 — Group Mode Controls on Header (Phase B)
+
+**Files:** `SkillGroupNode.tsx`, `WorkflowCanvas.tsx`  
+**What:** Three buttons on the group header that set all member nodes to a mode simultaneously.
+
+- [ ] Add `▶ Activate` | `🔇 Mute` | `→ Bypass` buttons to group header
+- [ ] On Mute click: set `ui.groups[id].mode = 'muted'`; set `mode: 'muted'` on all `nodeIds`
+- [ ] On Bypass click: set `ui.groups[id].mode = 'bypassed'`; set `mode: 'bypassed'` on all `nodeIds`
+- [ ] On Activate click: set `ui.groups[id].mode = 'active'`; restore `mode: 'active'` on all `nodeIds`
+- [ ] Mode badge in header updates to reflect current group mode
+- [ ] Save `ui.groups[].mode` in workflow JSON
+
+---
+
+### S14A-006 — Execution Engine: Group Mode Enforcement (Phase B)
+
+**File:** WorkflowRunner / execution engine  
+**What:** Execution engine checks group membership before running each node.
+
+Group mode precedence (from paper §5.4):
+- Group mute > individual bypass > group bypass > individual active
+- Individual mute always wins
+
+- [ ] Before executing a node, resolve effective mode:
+  - If node is in a group with `mode: 'muted'` → skip, emit null on all outputs (group wins)
+  - If node is in a group with `mode: 'bypassed'` AND node's own mode is NOT `muted` → bypass
+  - Otherwise, use node's own `mode` field (existing logic unchanged)
+- [ ] Add helper `resolveNodeEffectiveMode(node, groups[])` to keep logic clean
+- [ ] Log resolved mode to execution log when it differs from node's own mode (e.g. "Muted by group: RFQ Generation")
+
+---
+
+### S14A-007 — Skill Group Controls Panel (Phase B)
+
+**File:** `apps/web/src/components/canvas/SkillGroupControlsPanel.tsx` (new)  
+**What:** Sidebar panel listing all groups with bulk toggle buttons — the rgthree "Fast Groups Muter/Bypasser" equivalent.
+
+- [ ] Collapsible panel below Skill Library in left sidebar
+- [ ] Only visible when workflow has ≥ 1 group
+- [ ] One row per group: colour swatch, group name, node count badge, `▶` / `🔇` / `→` buttons
+- [ ] Clicking group name → `fitView` zooms canvas to centre on that group
+- [ ] Buttons trigger same logic as S14A-005 group header buttons
+
+---
+
+### S14A-008 — Toggle Restriction (Radio Mode) (Phase B)
+
+**File:** `WorkflowCanvas.tsx`  
+**What:** Optional `toggleRestriction` property on a group.
+
+- [ ] Right-click group header → "Group settings" → modal with `toggleRestriction` dropdown: `default` / `max-one` / `always-one`
+- [ ] Save `toggleRestriction` to `ui.groups[].toggleRestriction`
+- [ ] `max-one` enforcement: when activating a group, auto-mute all other `max-one` groups in the workflow
+- [ ] `always-one` enforcement: block de-activation when this is the last active `max-one` group
+
+---
+
+### S14A-009 — Build Verification
+
+- [ ] Select 2+ nodes → press `G` → group frame appears around them
+- [ ] Group name editable inline; colour picker changes frame colour
+- [ ] Drag a node inside group boundary → it joins the group
+- [ ] Collapse group → single compact card; expand → nodes reappear
+- [ ] Click 🔇 Mute on group header → all nodes show 🔇 badge; execution skips them
+- [ ] Click → Bypass → nodes show dashed border; execution passes input through
+- [ ] Group Controls Panel lists the group; clicking name zooms canvas to it
+- [ ] Toggle restriction `max-one`: activate group A → group B auto-mutes
+- [ ] Group state persists after workflow save + reload
+- [ ] TypeScript typecheck passes; dev servers start without errors
+- [ ] Git commit and push Sprint 14A
+
+---
+
+---
+
+# SPRINT 14B — Selective Group Execution ("Run Group") (rgthree Phase C)
+
+**Goal:** Allow designers to run only the nodes inside a named group, with user-supplied test inputs, without executing the entire workflow. This is the most powerful rgthree-inspired feature and the one with the highest iterative-development value.
+
+**Reference:** `docs/Lados_rgthree_Canvas_Upgrade_Paper.md` §4.3, §5.3, §6.3
+
+**Depends on:** Sprint 14A complete.
+
+---
+
+### S14B-001 — `group_run_logs` Table Migration
+
+**File:** `supabase/migrations/0048_group_run_logs.sql`
+
+```sql
+CREATE TABLE group_run_logs (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  workflow_id   UUID NOT NULL REFERENCES workflows(id),
+  group_id      TEXT NOT NULL,
+  group_name    TEXT,
+  triggered_by  UUID REFERENCES auth.users(id),
+  run_at        TIMESTAMPTZ DEFAULT now(),
+  status        TEXT DEFAULT 'running',  -- 'running' | 'completed' | 'failed'
+  node_results  JSONB DEFAULT '{}',
+  duration_ms   INTEGER,
+  error         TEXT
+);
+```
+
+- [ ] Write and apply migration 0048 via Supabase Dashboard SQL editor
+- [ ] Enable RLS: users can read/write their own org's logs only
+
+---
+
+### S14B-002 — Sub-graph Extraction Helper
+
+**File:** `apps/api/src/workflow/group-execution.helper.ts` (new)  
+**What:** Pure function that takes the full workflow JSON and a `groupId`, returns a sub-workflow containing only that group's nodes and the edges between them.
+
+```typescript
+function extractGroupSubgraph(
+  workflow: WorkflowJSON,
+  groupId: string
+): WorkflowJSON
+```
+
+- [ ] Find `ui.groups[groupId].nodeIds`
+- [ ] Filter `workflow.nodes` to only `nodeIds`
+- [ ] Filter `workflow.edges` to only edges where both `source` and `target` are in `nodeIds`
+- [ ] Return a valid `WorkflowJSON` with `nodes` and `edges` sub-sets; preserve `config` per node
+
+---
+
+### S14B-003 — Test Input Injection
+
+**File:** `apps/api/src/workflow/group-execution.helper.ts`  
+**What:** Identify the group's entry ports (inputs with no source in the sub-graph) and inject `testInputs` as synthetic upstream outputs.
+
+- [ ] Detect entry ports: for each node in sub-graph, find `input` handles that have no matching edge `target` in the sub-graph
+- [ ] Inject `testInputs` (from `GroupRunRequest`) into the execution context as pre-filled outputs for those ports
+- [ ] Validate that all required entry ports have a matching `testInput` key; return 400 if missing
+
+---
+
+### S14B-004 — `POST /workflows/:id/run-group` Endpoint
+
+**Files:** `apps/api/src/workflow/workflow.controller.ts`, `apps/api/src/workflow/workflow.service.ts`
+
+```typescript
+// POST /workflows/:id/run-group
+// Body: { groupId: string; testInputs: Record<string, unknown> }
+// Returns: { runId: string }
+```
+
+- [ ] Add route to `WorkflowController`
+- [ ] `WorkflowService.runGroup()`:
+  1. Load workflow JSON
+  2. Call `extractGroupSubgraph()` to get sub-graph
+  3. Call test input injection to pre-fill entry ports
+  4. Run sub-graph via existing `WorkflowRunner.run()` (pass sub-graph, not full workflow)
+  5. Write results to `group_run_logs` table
+  6. Return `{ runId, groupId, status, nodeResults }`
+- [ ] JWT guard + org access check (reuse existing guards)
+
+---
+
+### S14B-005 — Run Group Modal Component
+
+**File:** `apps/web/src/components/canvas/RunGroupModal.tsx` (new)  
+**What:** Modal that opens when the designer right-clicks a group and selects "Run Group".
+
+- [ ] Modal title: "Run Group: [group name]"
+- [ ] Fetch group entry ports from `GET /workflows/:id/groups/:groupId/entry-ports` (new endpoint)
+- [ ] For each entry port: label (port name + node name), type badge, text input for test value
+- [ ] "Run" button → `POST /workflows/:id/run-group` → show loading state
+- [ ] On success: close modal, switch Execution Console to "Group Runs" tab, show run results
+- [ ] On error: show error message inline
+
+---
+
+### S14B-006 — Execution Console "Group Runs" Tab
+
+**File:** `apps/web/src/components/canvas/ExecutionConsole.tsx`  
+**What:** Separate tab in the bottom Execution Console showing group run results.
+
+- [ ] Add "Group Runs" tab alongside "Workflow Runs" tab
+- [ ] Fetch from `GET /workflows/:id/group-run-logs`
+- [ ] Each row: group name, triggered at, status badge, duration, expand to see per-node results
+- [ ] Auto-switch to this tab when a "Run Group" call completes
+
+---
+
+### S14B-007 — Right-click "Run Group" Context Menu
+
+**File:** `apps/web/src/components/canvas/SkillGroupNode.tsx`  
+**What:** Add "Run Group" to the right-click context menu on the group header.
+
+- [ ] Right-click on `SkillGroupNode` header → context menu with "▶ Run Group" item
+- [ ] Opens `RunGroupModal` with `groupId` passed as prop
+
+---
+
+### S14B-008 — Build Verification
+
+- [ ] Right-click a named group → "Run Group" → modal opens
+- [ ] Modal shows correct entry port inputs for the group
+- [ ] Enter test values → click Run → execution runs only that group's nodes
+- [ ] Execution Console "Group Runs" tab shows the result
+- [ ] Full workflow run is not triggered; `workflow_run_logs` has no new entry
+- [ ] `group_run_logs` table has a new row with `node_results` populated
+- [ ] Invalid/missing test input → 400 error shown inline in modal
+- [ ] TypeScript typecheck passes; dev servers start without errors
+- [ ] Git commit and push Sprint 14B
 
 ---
 

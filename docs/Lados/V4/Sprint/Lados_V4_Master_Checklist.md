@@ -23,7 +23,7 @@ At the end of every coding task, Claude will:
 
 ## Important — V4 is Evolutionary, Not a Rebuild
 
-> The existing **QS-WFUI codebase** (NestJS 10 + Next.js 14 + Supabase) **is** the V4 foundation. We are not rewriting from scratch.
+> The existing **Lados codebase** (NestJS 10 + Next.js 14 + Supabase) **is** the V4 foundation. We are not rewriting from scratch.
 > Phase 1 refactors and renames existing code. Phases 2–12 add new engine layers on top.
 > "Implement" means: *the capability described in an LCE Volume is present in the codebase* — not "rewrite the volume."
 
@@ -306,7 +306,7 @@ Each **Phase** is a gate — complete and verify everything in a phase before mo
 | AI Design Studio generates a valid workflow from plain-English description | ✅ | Click "✨ AI Design" → describe workflow → Generate → preview nodes → Load to Canvas |
 | Generated workflow loads into canvas with purple advisory banner | ✅ | "AI-generated draft — review before publishing" banner dismissible |
 | Advisory banner: AI cannot publish (guardrail preserved) | ✅ | `DesignStudio` never calls `/publish`; banner warns human review required |
-| `pnpm typecheck` passes with 0 errors | Verify | Run in PowerShell: `cd QS-WFUI; pnpm typecheck` |
+| `pnpm typecheck` passes with 0 errors | Verify | Run in PowerShell: `cd lados;  # (repo folder name) pnpm typecheck` |
 
 ---
 
@@ -578,11 +578,71 @@ Each **Phase** is a gate — complete and verify everything in a phase before mo
 
 ---
 
+## Current Sprint P13-P15 — Canvas UX + Typed Ports + Resource Bindings
+
+> Active source plan: `docs/Lados/V4/Sprint/Lados_V4_Sprint_P13-P15_Canvas_UX_ResourceBindings.md`
+
+### Phase 13 — Manifest-Driven Inspector
+
+- [x] Manifest-driven field router and section rendering are in place in the web inspector.
+- [x] Existing panel chrome, node metadata, service chips, data pack chips, and resource requirement display preserved.
+
+### Phase 14 — Typed Port Connection Enforcement
+
+- [x] `apps/web/src/lib/portTypes.ts` added with port color tokens, type normalization, and compatibility rules.
+- [x] `WorkflowCanvas.tsx` hydrates node ports from `/nodes` and builds a port type lookup.
+- [x] ReactFlow `isValidConnection` blocks same-node, duplicate exact-port, and incompatible typed-port connections.
+- [x] Inline `SkillNode` renders typed input/output handles with hover labels.
+- [x] `PropertyPanel.tsx` shows colored port type dots.
+- [x] `corepack pnpm --filter web typecheck` passes on 2026-06-30.
+- [ ] Browser verification pending for representative typed-port drag/drop scenarios.
+
+### Sprint 14A — Canvas Skill Groups + Group Execution Modes
+
+- [x] `WorkflowSkillGroup` / `ui.groups[]` model added to shared workflow JSON.
+- [x] `SkillGroupNode` canvas container added with editable name, colour, collapse, resize, and mode controls.
+- [x] Group creation via selected nodes, keyboard `G`, and toolbar button.
+- [x] Drag-to-join / drag-to-leave membership stored in `ui.groups[].nodeIds`.
+- [x] Group mode controls apply member node modes and persist `ui.groups[].mode`.
+- [x] Execution engine resolves effective node mode from individual node mode plus group mode.
+- [x] `corepack pnpm typecheck` passes on 2026-06-30.
+- [ ] Browser verification pending for group create, resize, collapse, membership, persistence, and execution mode behavior.
+- [ ] Follow-up: expose `toggleRestriction` settings UI; enforcement is implemented for stored values.
+- [ ] Follow-up: move group controls panel below Skill Library if/when group state is lifted out of `WorkflowCanvas`.
+
+### Sprint 14B — Selective Group Execution
+
+- [x] `group_run_logs` migration added as `supabase/migrations/0048_group_run_logs.sql`.
+- [x] Group subgraph extraction helper added in `apps/api/src/workflow/group-execution.helper.ts`.
+- [x] API routes added for group entry ports, group run logs, and selective `run-group` execution.
+- [x] `RunGroupModal` added with entry input fields and inline run result/error states.
+- [x] `SkillGroupNode` header supports visible Run action and right-click "Run Group".
+- [x] History sidebar now includes "Workflow Runs" and "Group Runs" tabs.
+- [x] `corepack pnpm typecheck` passes on 2026-06-30.
+- [x] `corepack pnpm build` passes on 2026-06-30.
+- [ ] Apply `0048_group_run_logs.sql` in Supabase.
+- [ ] Browser verification pending for Run Group modal, selective execution, and group log display.
+- [ ] Follow-up: required-entry-port validation once backend manifest port metadata is available to the group helper.
+
+### Phase 15 — Resource Bindings
+
+- [ ] Not started. Planned after Sprint 14A/14B canvas upgrade path.
+
+### Current Handover — 2026-06-30
+
+**Done:** Phase 14 code implementation, Sprint 14A implementation pass, and Sprint 14B Run Group implementation pass with typecheck.
+
+**Next:** Apply the Sprint 14B Supabase migration, then browser verify Phase 14 typed-port behavior, Sprint 14A group behavior, and Sprint 14B selective group execution.
+
+**Ad-hoc:** Extract inline `SkillNode` later if canvas complexity continues growing; add a settings modal for group `toggleRestriction`; upgrade Run Group input injection to per-port synthetic upstream outputs when the runner supports it.
+
+---
+
 ## Overall Done Criteria — V4 Launch Ready
 
 | # | Criterion | Phase Gate |
 |---|-----------|-----------|
-| 1 | All V4 capabilities from LCE Vols 1–12 are present in the codebase (evolutionary build on existing QS-WFUI — not a rewrite) | All phases |
+| 1 | All V4 capabilities from LCE Vols 1–12 are present in the codebase (evolutionary build on the existing Lados codebase — not a rewrite) | All phases |
 | 2 | Construction Pack installed and fully working | Phase 7 |
 | 3 | Finance Pack installed and fully working | Phase 9 |
 | 4 | Marketplace UI allows install/uninstall of all official packs | Phase 8 |
@@ -598,3 +658,22 @@ Each **Phase** is a gate — complete and verify everything in a phase before mo
 ---
 
 *LADOS V4 — Sprint Plan & Implementation Checklist — v4.0 — 2026-06-27*
+## Sprint 14B Correction -- 2026-07-01
+
+**Corrected intention:** the Lados rgthree feature is primarily **Skill Groups + Fast Group Bypasser Node**, not selective group execution.
+
+- [x] `WorkflowFastGroupBypasser` / `ui.fastGroupBypassers[]` model added to shared workflow JSON.
+- [x] `FastGroupBypasserNode` added as a persisted canvas utility node, not an execution node.
+- [x] Toolbar action added to place the Lados "Group Mode Switcher" directly on the canvas.
+- [x] Fast Group Bypasser lists groups and toggles Active / Muted / Bypassed modes.
+- [x] Floating `SkillGroupControlsPanel` removed to match rgthree canvas-node behavior.
+- [x] Full workflow execution continues to respect `ui.groups[].mode`.
+- [x] Added invisible legacy `in` / `out` compatibility handles to stop React Flow edge-creation console loops on older saved edges.
+- [x] Fixed React Flow responsiveness loop by ignoring selection-only node changes for group/bypasser geometry persistence.
+- [x] Added group deletion from group header, context menu, and Delete/Backspace without deleting member skills.
+- [x] Made Group Mode Switcher movable via its header drag handle; internal `fastGroupBypasser` schema name retained for compatibility.
+- [ ] Browser verify Skill Groups + Fast Group Bypasser on the canvas.
+
+**Secondary diagnostic path:** the earlier Run Group implementation can remain for developer testing, but it is not the primary rgthree-inspired UX.
+
+---

@@ -131,6 +131,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
 
   // ── Sidebar tab ───────────────────────────────────────────────────────────
   const [sidebarTab, setSidebarTab] = useState<'nodes' | 'documents' | 'datapacks' | 'history'>('nodes');
+  const [groupRunRefreshKey, setGroupRunRefreshKey] = useState(0);
 
   // ── Validation state (S18-001) ────────────────────────────────────────────
   const [hasValidationErrors, setHasValidationErrors] = useState(false);
@@ -505,6 +506,8 @@ export default function WorkflowEditorPage({ params }: PageProps) {
             {sidebarTab === 'history'   && (
               <RunHistoryPanel
                 workflowId={workflowId}
+                projectId={projectId}
+                groupRunRefreshKey={groupRunRefreshKey}
                 reRunning={running}
                 onLoadRun={(summary, logs) => {
                   setRunSummary(summary);
@@ -524,8 +527,13 @@ export default function WorkflowEditorPage({ params }: PageProps) {
               onSave={handleSave}
               organizationId={organizationId}
               projectId={projectId}
+              workflowId={workflowId}
               bulkModeRequest={bulkModeRequest}
               draftRequest={draftRequest}
+              onGroupRunCompleted={() => {
+                setSidebarTab('history');
+                setGroupRunRefreshKey((key) => key + 1);
+              }}
               onValidationChange={setHasValidationErrors}
             />
           </div>

@@ -7,11 +7,14 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../common/supabase/supabase.service';
 import { EventBusService } from '../event-bus/event-bus.service';
+import { ExecutionService } from '../execution/execution.service';
 import { validateWorkflow, WorkflowBuilder } from '@lados/workflow-json';
 import type { WorkflowId, QSWorkflowDefinition, WorkflowTrigger } from '@lados/shared-types';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { SaveDefinitionDto } from './dto/save-definition.dto';
+import { RunGroupDto } from './dto/run-group.dto';
+import { extractGroupSubgraph, type GroupEntryPort } from './group-execution.helper';
 
 @Injectable()
 export class WorkflowService {
@@ -20,6 +23,7 @@ export class WorkflowService {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly eventBus: EventBusService,
+    private readonly executionService: ExecutionService,
   ) {}
 
   /** List all workflows in a project */
@@ -155,6 +159,131 @@ export class WorkflowService {
       tags:            workflow.tags ?? [],
       definition:      workflow.definition,
     };
+  }
+
+  async getGroupEntryPorts(workflowId: string, groupId: string, userId: string) {
+    const workflow = await this.findOne(workflowId, userId);
+    const { entryPorts, group } = extractGroupSubgraph(
+      workflow.definition as QSWorkflowDefinition,
+      groupId,
+    );
+
+    return { groupId: group.id, groupName: group.name, entryPorts };
+  }
+
+  async listGroupRunLogs(workflowId: string, userId: string) {
+    const workflow = await this.findOne(workflowId, userId);
+
+    const { data, error } = await this.supabase.admin
+      .from('group_run_logs')
+      .select('id, group_id, group_name, run_at, status, test_inputs, node_results, logs, duration_ms, error')
+      .eq('workflow_id', workflowId)
+      .order('run_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw new Error(error.message);
+    await this.assertProjectAccess(workflow.project_id as string, userId);
+    return data ?? [];
+  }
+
+  async runGroup(workflowId: string, dto: RunGroupDto, userId: string) {
+    const workflow = await this.findOne(workflowId, userId);
+    await this.assertProjectAccess(workflow.project_id as string, userId, ['owner', 'admin', 'member']);
+
+    const project = await this.getProjectOrganization(workflow.project_id as string);
+    const extracted = extractGroupSubgraph(workflow.definition as QSWorkflowDefinition, dto.groupId);
+    const testInputs = this.normalizeGroupTestInputs(extracted.entryPorts, dto.testInputs ?? {});
+    const runStartedAt = Date.now();
+
+    const { data: run, error: insertErr } = await this.supabase.admin
+      .from('group_run_logs')
+      .insert({
+        workflow_id: workflowId,
+        project_id: workflow.project_id,
+        organization_id: project.organization_id,
+        group_id: extracted.group.id,
+        group_name: extracted.group.name,
+        triggered_by: userId,
+        status: 'running',
+        test_inputs: testInputs,
+      })
+      .select('id')
+      .single();
+
+    if (insertErr ?? !run) {
+      throw new Error(insertErr?.message ?? 'Failed to create group run log');
+    }
+
+    const runId = run.id as string;
+
+    try {
+      const result = await this.executionService.runDefinitionInline({
+        executionId:    runId,
+        workflowId,
+        projectId:      workflow.project_id as string,
+        organizationId: project.organization_id as string,
+        userId,
+        definition:     extracted.definition,
+        inputs:         testInputs,
+        variables:      {},
+      });
+
+      const nodeResults = Object.fromEntries(
+        result.logs.map((log) => [
+          log.nodeId,
+          {
+            nodeType:   log.nodeType,
+            nodeName:   log.nodeName,
+            status:     log.status,
+            outputs:    log.outputs ?? {},
+            error:      log.error ?? null,
+            messages:   log.messages ?? [],
+            durationMs: log.durationMs ?? null,
+          },
+        ]),
+      );
+      const status = result.status === 'completed' ? 'completed'
+        : result.status === 'paused'              ? 'paused'
+        : result.status === 'cancelled'           ? 'cancelled'
+        : 'failed';
+
+      await this.supabase.admin
+        .from('group_run_logs')
+        .update({
+          status,
+          node_results: nodeResults,
+          logs: result.logs,
+          duration_ms: result.durationMs,
+          error: result.error ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', runId);
+
+      return {
+        runId,
+        groupId: extracted.group.id,
+        groupName: extracted.group.name,
+        status,
+        durationMs: result.durationMs,
+        nodeResults,
+        logs: result.logs,
+      };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const error = { code: 'GROUP_RUN_EXCEPTION', message };
+
+      await this.supabase.admin
+        .from('group_run_logs')
+        .update({
+          status: 'failed',
+          duration_ms: Date.now() - runStartedAt,
+          error,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', runId);
+
+      throw err;
+    }
   }
 
   /**
@@ -478,5 +607,34 @@ export class WorkflowService {
     if (roles && !roles.includes(member.role as string)) {
       throw new ForbiddenException(`Requires role: ${roles.join(' or ')}`);
     }
+  }
+
+  private async getProjectOrganization(projectId: string) {
+    const { data: project } = await this.supabase.admin
+      .from('projects')
+      .select('organization_id')
+      .eq('id', projectId)
+      .maybeSingle();
+
+    if (!project) throw new NotFoundException('Project not found');
+    return project as { organization_id: string };
+  }
+
+  private normalizeGroupTestInputs(
+    entryPorts: GroupEntryPort[],
+    rawInputs: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const normalized: Record<string, unknown> = { ...rawInputs };
+
+    for (const port of entryPorts) {
+      const scopedKey = `${port.nodeId}.${port.portId}`;
+      const value = rawInputs[scopedKey] ?? rawInputs[port.portId];
+      if (value !== undefined) {
+        normalized[port.portId] = value;
+        normalized[scopedKey] = value;
+      }
+    }
+
+    return normalized;
   }
 }

@@ -19,6 +19,7 @@ export interface QSWorkflowDefinition {
   variables?: WorkflowVariable[];
   triggers?: WorkflowTrigger[];
   metadata?: WorkflowMetadata;
+  ui?: WorkflowUiState;
 }
 
 // ─── Workflow info ────────────────────────────────────────────────────────────
@@ -68,6 +69,38 @@ export interface WorkflowConnection {
   sourcePortId: string;
   targetNodeId: NodeInstanceId;
   targetPortId: string;
+}
+
+export type SkillGroupToggleRestriction = 'default' | 'max-one' | 'always-one';
+
+export interface WorkflowGroupBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface WorkflowSkillGroup {
+  id: string;
+  name: string;
+  color: string;
+  nodeIds: NodeInstanceId[];
+  collapsed?: boolean;
+  mode?: SkillMode;
+  toggleRestriction?: SkillGroupToggleRestriction;
+  bounds: WorkflowGroupBounds;
+}
+
+export interface WorkflowFastGroupBypasser {
+  id: string;
+  name?: string;
+  position: { x: number; y: number };
+  collapsed?: boolean;
+}
+
+export interface WorkflowUiState {
+  groups?: WorkflowSkillGroup[];
+  fastGroupBypassers?: WorkflowFastGroupBypasser[];
 }
 
 // ─── Variable ─────────────────────────────────────────────────────────────────

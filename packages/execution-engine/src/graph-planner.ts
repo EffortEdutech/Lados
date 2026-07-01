@@ -112,6 +112,7 @@ export function planWorkflow(definition: QSWorkflowDefinition): ExecutionPlan {
       nodeType:  node.type,
       nodeLabel: node.label ?? node.type,
       config:    (node.config as Record<string, unknown>) ?? {},
+      mode:      node.mode ?? 'active',
       dependsOn: Array.from(adj.get(nodeId) ?? []),
       level:     levels.get(nodeId) ?? 0,
     };

@@ -1,4 +1,4 @@
-# QS-WFUI — Sprint Plan: Phases 13 → 15
+# Lados — Sprint Plan: Phases 13 → 15
 **Version:** 1.0  
 **Date:** 2026-06-30  
 **Covers:** Phase 13 — Manifest-Driven Inspector · Phase 14 — Typed Connection Enforcement · Phase 15 — Resource Bindings  
@@ -278,6 +278,8 @@ Consistent visual language for port types across the canvas:
 
 #### P14-001 — Add portTypes utility
 
+**Status:** Done on 2026-06-30.
+
 **File:** `apps/web/src/lib/portTypes.ts`
 
 ```typescript
@@ -314,6 +316,8 @@ export function isPortCompatible(
 ---
 
 #### P14-002 — Extend WorkflowCanvas with port type registry
+
+**Status:** Done on 2026-06-30.
 
 **File:** `apps/web/src/components/canvas/WorkflowCanvas.tsx`
 
@@ -372,6 +376,8 @@ Add a small `connectionError` dismissible banner at top of canvas.
 
 #### P14-003 — Add type-coloured handles to SkillNode
 
+**Status:** Done on 2026-06-30. Current code keeps `SkillNode` inline inside `WorkflowCanvas.tsx`; typed handle rendering was implemented there rather than in a separate `SkillNode.tsx` file.
+
 **File:** `apps/web/src/components/canvas/SkillNode.tsx`
 
 Currently handles render as plain circles. Upgrade:
@@ -408,6 +414,8 @@ Currently handles render as plain circles. Upgrade:
 
 #### P14-004 — Add PORT_COLORS to shared-types
 
+**Status:** Decision recorded on 2026-06-30. Kept runtime helper in `apps/web/src/lib/portTypes.ts` to avoid introducing a shared-types dependency back to frontend code.
+
 **File:** `packages/shared-types/src/portTypes.ts` (new)
 
 Re-export `PORT_COLORS` and `isPortCompatible` from a shared location so they can be used by both the canvas and any future CLI tooling.
@@ -421,6 +429,8 @@ export { PORT_COLORS, isPortCompatible } from '../../apps/web/src/lib/portTypes'
 ---
 
 #### P14-005 — Guard against same-node and duplicate connections
+
+**Status:** Done on 2026-06-30.
 
 **File:** `apps/web/src/components/canvas/WorkflowCanvas.tsx`
 
@@ -439,15 +449,38 @@ if (alreadyConnected) return false;
 
 #### P14-X — Verify + checklist update
 
-- [ ] `pnpm --filter @lados/web tsc --noEmit` — zero errors
+- [x] `corepack pnpm --filter web typecheck` — zero errors on 2026-06-30
 - [ ] Connecting `string` output → `number` input is blocked (no edge added)
 - [ ] Connecting `string` output → `any` input is allowed
 - [ ] Connecting `boq` output → `object` input is allowed
-- [ ] Connecting a node to itself is blocked
-- [ ] "Incompatible port types" toast appears on rejected drag-drop
-- [ ] Handles show coloured rings — blue for string, amber for number, teal for boq, etc.
-- [ ] Port type label shows on handle hover
-- [ ] Mark Phase 14 complete in this checklist
+- [x] Connecting a node to itself is blocked in `isValidConnection`
+- [x] "Incompatible port types" banner appears on rejected drag-drop
+- [x] Handles show coloured rings from `PORT_COLORS`
+- [x] Port type label shows on handle hover
+- [ ] Browser verify representative drag/drop scenarios against live manifests
+- [ ] Mark Phase 14 complete in this checklist after browser verification
+
+### Phase 14 Progress Update — 2026-06-30
+
+**What's done**
+
+- Added `apps/web/src/lib/portTypes.ts` with normalized port type lookup, `PORT_COLORS`, and compatibility rules.
+- Wired `WorkflowCanvas.tsx` to hydrate node input/output ports from `/nodes`, build a port type map, block same-node, duplicate, and incompatible port connections via ReactFlow `isValidConnection`, and show a short rejection banner.
+- Upgraded inline `SkillNode` handles to render typed left/right handles with hover labels.
+- Upgraded `PropertyPanel.tsx` port lists with matching type color dots.
+- Verified `corepack pnpm --filter web typecheck` passes.
+- Ad-hoc UX fix: replaced overlapping floating port labels with readable in-node port rows; node width/height now allocates space for multi-port manifests.
+- Ad-hoc UX fix: removed duplicate decorative port dots from in-node rows; only the real edge handles remain, with handle positions aligned to text rows.
+
+**What's next**
+
+- Run browser verification with live API manifests for string-to-number blocked, string-to-any allowed, boq-to-object allowed, self-loop blocked, and duplicate exact-port blocked.
+- Proceed to Phase 15 resource bindings once the Phase 14 browser checks are signed off.
+
+**Ad-hoc to complete**
+
+- Consider extracting inline `SkillNode` from `WorkflowCanvas.tsx` into `apps/web/src/components/canvas/SkillNode.tsx` during the larger canvas groups/refactor pass, if that helps Phase 14A/14B maintainability.
+- Keep `PORT_COLORS` web-local unless a backend or CLI runtime use case appears; avoid shared-types importing frontend code.
 
 ---
 

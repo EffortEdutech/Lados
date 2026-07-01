@@ -14,6 +14,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api/client';
+import { PORT_COLORS, getPortLabel, getPortType } from '@/lib/portTypes';
 import type { Node } from 'reactflow';
 
 import ManifestFieldRouter from './ManifestFieldRouter';
@@ -25,7 +26,9 @@ import type { ConfigField } from './fields';
 interface NodePort {
   id: string;
   label?: string;
-  type: string;
+  name?: string;
+  type?: string;
+  dataType?: string;
   description?: string;
   required?: boolean;
 }
@@ -110,6 +113,23 @@ function DataPackChip({ slug }: { slug: string }) {
  * Renders config fields using ManifestSection when ui_schema.sections are
  * declared, otherwise renders flat using ManifestFieldRouter.
  */
+function PortListItem({ port }: { port: NodePort }) {
+  const portType = getPortType(port) ?? 'any';
+
+  return (
+    <li className="flex items-center gap-1.5 text-[10px] text-gray-600">
+      <span
+        className="h-2 w-2 flex-shrink-0 rounded-full border border-white shadow-sm"
+        style={{ backgroundColor: PORT_COLORS[portType] }}
+      />
+      <span className="min-w-0 flex-1 truncate font-medium text-gray-700">
+        {getPortLabel(port)}
+      </span>
+      <span className="flex-shrink-0 font-mono text-[9px] text-gray-400">{portType}</span>
+    </li>
+  );
+}
+
 function ConfigFields({
   nodeDef,
   config,
@@ -314,10 +334,7 @@ export default function PropertyPanel({
                   ) : (
                     <ul className="space-y-0.5">
                       {(nodeDef.inputs ?? []).map((port) => (
-                        <li key={port.id ?? port.label} className="text-[10px] text-gray-600">
-                          <span className="font-medium text-gray-700">{port.label ?? port.id}</span>
-                          <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
-                        </li>
+                        <PortListItem key={port.id ?? port.label ?? port.name} port={port} />
                       ))}
                     </ul>
                   )}
@@ -331,10 +348,7 @@ export default function PropertyPanel({
                   ) : (
                     <ul className="space-y-0.5">
                       {(nodeDef.outputs ?? []).map((port) => (
-                        <li key={port.id ?? port.label} className="text-[10px] text-gray-600">
-                          <span className="font-medium text-gray-700">{port.label ?? port.id}</span>
-                          <span className="text-gray-400 ml-0.5 font-mono text-[9px]">{port.type}</span>
-                        </li>
+                        <PortListItem key={port.id ?? port.label ?? port.name} port={port} />
                       ))}
                     </ul>
                   )}

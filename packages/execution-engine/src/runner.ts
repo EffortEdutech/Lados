@@ -12,6 +12,7 @@
  */
 
 import type { NodeContext, NodeExecuteResult } from '@lados/node-sdk';
+import type { SkillMode, WorkflowSkillGroup } from '@lados/shared-types';
 import type {
   RunnerOptions,
   ExecutionResult,
@@ -25,6 +26,32 @@ import { planWorkflow } from './graph-planner';
 import { getMockExecutor } from './mock-registry';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
+
+function resolveNodeEffectiveMode(
+  step: ExecutionStep,
+  groups: WorkflowSkillGroup[],
+): { mode: SkillMode; reason?: string } {
+  const nodeMode = step.mode ?? 'active';
+
+  if (nodeMode === 'muted') {
+    return { mode: 'muted', reason: 'Muted by node mode' };
+  }
+
+  const group = groups.find((candidate) =>
+    candidate.nodeIds.includes(step.nodeId as WorkflowSkillGroup['nodeIds'][number]) &&
+    (candidate.mode ?? 'active') !== 'active',
+  );
+
+  if (group?.mode === 'muted') {
+    return { mode: 'muted', reason: `Muted by group: ${group.name}` };
+  }
+
+  if (group?.mode === 'bypassed') {
+    return { mode: 'bypassed', reason: `Bypassed by group: ${group.name}` };
+  }
+
+  return { mode: nodeMode };
+}
 
 // ── Concurrency semaphore ─────────────────────────────────────────────────────
 
@@ -87,6 +114,7 @@ export class WorkflowRunner {
       skipNodes = [],
       concurrency,
     } = this.options;
+    const workflowGroups = definition.ui?.groups ?? [];
 
     // Build a fast lookup: nodeId -> SkipNodeSpec
     const skipMap = new Map<string, SkipNodeSpec>(skipNodes.map((s) => [s.nodeId, s]));
@@ -175,6 +203,7 @@ export class WorkflowRunner {
         step, nodeOutputs, inputs, variables,
         { executionId, workflowId, projectId, organizationId, userId },
         skipMap,
+        workflowGroups,
       ));
 
       const settled = await runWithConcurrency(levelTasks, concurrency);
@@ -274,32 +303,12 @@ export class WorkflowRunner {
       userId: string;
     },
     skipMap: Map<string, SkipNodeSpec>,
+    workflowGroups: WorkflowSkillGroup[],
   ): Promise<{
     logEntry: NodeLogEntry;
     nodeOutput: Record<string, unknown>;
     stepStatus: 'completed' | 'failed' | 'paused' | 'skipped';
   }> {
-    // -- Skip nodes requested by AI trigger (Phase 11) ----------------------
-    const skipSpec = skipMap.get(step.nodeId);
-    if (skipSpec) {
-      const skipOutputs = skipSpec.outputs ?? {};
-      return {
-        logEntry: {
-          nodeId:   step.nodeId,
-          nodeType: step.nodeType,
-          nodeName: step.nodeLabel,
-          status:   'skipped',
-          outputs:  skipOutputs,
-          messages: [
-            `[SKIP] ${skipSpec.reason ?? 'Node skipped by AI workflow trigger'}`,
-            `[SKIP] Injected outputs: ${JSON.stringify(skipOutputs)}`,
-          ],
-        },
-        nodeOutput: skipOutputs,
-        stepStatus: 'skipped',
-      };
-    }
-
     const nodeStartedAt = new Date().toISOString();
     const resolvedInputs = this._resolveInputs(step.nodeId, step.dependsOn, nodeOutputs, workflowInputs);
 
@@ -312,6 +321,55 @@ export class WorkflowRunner {
       messages:  [],
       startedAt: nodeStartedAt,
     };
+
+    const effectiveMode = resolveNodeEffectiveMode(step, workflowGroups);
+    if (effectiveMode.mode === 'muted') {
+      const mutedOutputs = { out: null };
+      return {
+        logEntry: {
+          ...logEntry,
+          status: 'skipped',
+          outputs: mutedOutputs,
+          completedAt: new Date().toISOString(),
+          messages: [`[MODE] ${effectiveMode.reason ?? 'Muted node'}`],
+        },
+        nodeOutput: mutedOutputs,
+        stepStatus: 'skipped',
+      };
+    }
+
+    if (effectiveMode.mode === 'bypassed') {
+      return {
+        logEntry: {
+          ...logEntry,
+          status: 'skipped',
+          outputs: resolvedInputs,
+          completedAt: new Date().toISOString(),
+          messages: [`[MODE] ${effectiveMode.reason ?? 'Bypassed node'}`],
+        },
+        nodeOutput: resolvedInputs,
+        stepStatus: 'skipped',
+      };
+    }
+
+    // -- Skip nodes requested by AI trigger (Phase 11) ----------------------
+    const skipSpec = skipMap.get(step.nodeId);
+    if (skipSpec) {
+      const skipOutputs = skipSpec.outputs ?? {};
+      return {
+        logEntry: {
+          ...logEntry,
+          status:   'skipped',
+          outputs:  skipOutputs,
+          messages: [
+            `[SKIP] ${skipSpec.reason ?? 'Node skipped by AI workflow trigger'}`,
+            `[SKIP] Injected outputs: ${JSON.stringify(skipOutputs)}`,
+          ],
+        },
+        nodeOutput: skipOutputs,
+        stepStatus: 'skipped',
+      };
+    }
 
     const nodeMessages: string[] = [];
     const nodeCtx: NodeContext = {

@@ -1,4 +1,4 @@
-# QS-WFUI — Sprint Plan: Phases 16 → 18
+# Lados — Sprint Plan: Phases 16 → 18
 **Version:** 1.0  
 **Date:** 2026-06-30  
 **Covers:** Phase 16 — Full Explorer · Phase 17 — Frontend State Engine · Phase 18 — External Marketplace  
