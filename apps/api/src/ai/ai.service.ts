@@ -496,7 +496,7 @@ Rules:
         for (const tc of assistMsg.tool_calls) {
           allToolCalls.push(tc);
           let parsedArgs: Record<string, unknown> = {};
-          try { parsedArgs = JSON.parse(tc.function.arguments) as Record<string, unknown>; } catch {}
+          try { parsedArgs = JSON.parse(tc.function.arguments) as Record<string, unknown>; } catch { /* malformed tool args — keep {} */ }
 
           const result = await executeToolCall(
             tc.function.name,

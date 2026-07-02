@@ -854,6 +854,7 @@ export class ExecutionService implements OnModuleInit {
       inputs:         { resourceId, ...inputs },
       variables:      {},
       logger: {
+        // eslint-disable-next-line no-console
         info:  (msg: string, data?: unknown) => console.log(`[NodeAction:${nodeType}] ${msg}`, data ?? ''),
         warn:  (msg: string, data?: unknown) => console.warn(`[NodeAction:${nodeType}] ${msg}`, data ?? ''),
         error: (msg: string, data?: unknown) => console.error(`[NodeAction:${nodeType}] ${msg}`, data ?? ''),

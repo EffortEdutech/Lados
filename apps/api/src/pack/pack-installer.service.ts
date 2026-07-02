@@ -21,7 +21,6 @@ import {
   Logger,
   OnModuleInit,
   BadRequestException,
-  NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService }     from '../common/supabase/supabase.service';
 import { PackRegistryService } from './pack-registry.service';

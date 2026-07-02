@@ -44,7 +44,7 @@ export type LadosEventType =
   // Custom (from event.publish node)
   | 'event.custom'
   // Catch-all for future types
-  | (string & {});
+  | (string & NonNullable<unknown>);
 
 export type EventSourceType = 'resource' | 'workflow' | 'approval' | 'node' | 'system';
 

@@ -385,6 +385,7 @@ Every QS/commercial Data Pack item needs:
 
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
 - `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`
+- `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
 - `Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md`
 - `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
 
@@ -436,7 +437,7 @@ Knowledge Packs are the Lados answer to this shift. A supplier website may still
 - [x] Strategy paper created.
 - [x] Documentation sprint plan created.
 - [x] Naming lock created for Capability Packs and Knowledge Packs.
-- [ ] New target Capability Pack catalogue drafted.
+- [x] New target Capability Pack catalogue drafted.
 - [ ] Current prototype packs/nodes classified for keep/rename/merge/split/deprecate/remove.
 - [ ] Canonical capability registry drafted.
 - [ ] Workflow template index drafted.
@@ -699,9 +700,8 @@ Done:
 - Updated this sprint plan to make Phase 20 documentation-first.
 
 Next:
-- Draft the new target Capability Pack catalogue for current and future business operations.
-- Classify current prototype packs/nodes as keep, rename, merge, split, deprecate, or remove.
-- Draft canonical capability registry and workflow template index.
+- Use the target Capability Pack catalogue to classify current prototype packs/nodes as keep, rename, merge, split, deprecate, or remove.
+- Draft the canonical capability registry and workflow template index.
 - Complete supplier Knowledge Pack specification.
 - Complete AI retrieval/result-shape requirements.
 - Complete Marketplace screen specification.
@@ -752,6 +752,35 @@ Docs updated:
 
 Verification:
 - Documentation-only update. Text scan completed for active Phase 20 terminology.
+
+### Phase 20A Target Capability Pack Catalogue - 2026-07-03
+
+Done:
+- Created the draft target Capability Pack catalogue.
+- Defined official pack layers from L0 Platform Foundation to L5 Template Packs.
+- Drafted target pack IDs, ownership boundaries, dependencies, first template families, and Knowledge Pack dependency map.
+- Mapped current prototype pack folders into target destinations.
+- Defined the first official bundle sets: Platform Foundation, Business Operations, Contractor and QS, and Marketplace Starter.
+- Updated the active sprint plan, master checklist, productization plan, and V4 README.
+
+Next:
+- Create the canonical capability registry table/document.
+- Create the target workflow template index.
+- Audit current prototype nodes against the target catalogue.
+
+Ad-hoc:
+- Current implementation folder names stay unchanged until a planned refactor/migration phase.
+- The catalogue is the planning source for future official pack naming and ownership.
+
+Docs updated:
+- `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
+- `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- Documentation-only update. Link and terminology scan completed.
 
 ---
 

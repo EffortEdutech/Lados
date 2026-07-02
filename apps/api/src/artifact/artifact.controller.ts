@@ -14,7 +14,7 @@ import {
   Controller, Get, Post, Param, Body, Query, UseGuards,
 } from '@nestjs/common';
 import { SupabaseJwtGuard }                    from '../common/guards/supabase-jwt.guard';
-import { ArtifactService, UpsertArtifactParams } from './artifact.service';
+import { ArtifactService } from './artifact.service';
 
 interface UpsertArtifactDto {
   key:            string;

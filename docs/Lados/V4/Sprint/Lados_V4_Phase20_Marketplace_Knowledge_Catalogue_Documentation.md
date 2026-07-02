@@ -120,6 +120,7 @@ Create the Capability Pack planning paper explaining:
 Output:
 
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
+- `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
 
 Acceptance:
 
@@ -129,6 +130,7 @@ Acceptance:
 - [x] Workflow template ownership is documented.
 - [x] Manifest extension direction is documented.
 - [x] Prototype reset policy is documented.
+- [x] Draft target Capability Pack catalogue is documented.
 
 ### P20-002 - Marketplace Strategy Paper
 
@@ -290,6 +292,7 @@ Note: `data_pack_usages` is the current Phase 19C technical column name. Product
 
 - [x] Capability Pack planning paper complete.
 - [x] Node taxonomy and overlap-control model drafted.
+- [x] Draft target Capability Pack catalogue complete.
 - [x] Marketplace strategy paper complete.
 - [ ] Supplier Knowledge Pack specification complete.
 - [ ] AI retrieval requirements complete.
@@ -312,11 +315,12 @@ Done:
 - Captured AI-search shift and supplier/seller Knowledge Pack marketplace thesis.
 - Created strategy paper and sprint plan.
 - Created Capability Pack planning and node taxonomy paper.
+- Created draft target Capability Pack catalogue.
 
 Next:
 - Review and refine Capability Pack taxonomy and official pack boundaries.
-- Draft the new target Capability Pack catalogue without being constrained by current pack families.
 - Classify current prototype packs/nodes as keep, rename, merge, split, deprecate, or remove.
+- Create the canonical capability registry and workflow template index from the target catalogue.
 - Expand supplier Knowledge Pack specification after Capability Pack planning is accepted.
 - Draft Marketplace screen specification.
 - Draft AI retrieval result shape and governance checklist.
@@ -328,6 +332,7 @@ Docs updated:
 - `Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md`
 - `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
+- `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
 - `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
 
 Verification:

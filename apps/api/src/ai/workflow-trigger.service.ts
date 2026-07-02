@@ -192,7 +192,7 @@ export class WorkflowTriggerService {
 
   // ── Phase: project answer ─────────────────────────────────────────────────
 
-  private async phaseProjectAnswer(session: WorkflowTriggerSession, answer: string, actorId: string): Promise<WorkflowTriggerResponse> {
+  private async phaseProjectAnswer(session: WorkflowTriggerSession, answer: string, _actorId: string): Promise<WorkflowTriggerResponse> {
     // answer = project UUID
     const projects = await this.fetchProjects(session.orgId);
     const project  = projects.find(p => p.id === answer || p.name.toLowerCase().includes(answer.toLowerCase()));
@@ -232,7 +232,7 @@ export class WorkflowTriggerService {
 
   // ── Phase: workflow answer ────────────────────────────────────────────────
 
-  private async phaseWorkflowAnswer(session: WorkflowTriggerSession, answer: string, actorId: string): Promise<WorkflowTriggerResponse> {
+  private async phaseWorkflowAnswer(session: WorkflowTriggerSession, answer: string, _actorId: string): Promise<WorkflowTriggerResponse> {
     const workflows = await this.fetchWorkflows(session.projectId!, session.orgId);
     const workflow  = workflows.find(w => w.id === answer || w.name.toLowerCase().includes(answer.toLowerCase()));
 

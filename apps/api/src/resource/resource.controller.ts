@@ -45,7 +45,7 @@ export class ResourceController {
   async list(
     @Query() q: ListResourcesDto,
     @Query('organizationId') orgId: string,
-    @Request() req: AuthenticatedRequest,
+    @Request() _req: AuthenticatedRequest,
   ) {
     const data = await this.resources.listResources(this.requireOrg(orgId), {
       type:      q.type as ResourceType | undefined,

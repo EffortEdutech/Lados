@@ -153,7 +153,7 @@
 - [x] Define workflow template ownership model.
 - [x] Define Capability Pack manifest extension direction.
 - [x] Define prototype reset policy: keep, rename, merge, split, deprecate, remove.
-- [ ] Draft new target Capability Pack catalogue.
+- [x] Draft new target Capability Pack catalogue.
 - [ ] Classify current prototype packs/nodes against the target catalogue.
 - [ ] Create first canonical capability registry table/document.
 - [ ] Create target workflow template index.
@@ -340,7 +340,7 @@ Lados V4 can be presented as a full platform only when:
 
 **Done:** Reframed Phase 20 as Marketplace Knowledge Catalogue documentation. Created the strategy paper and active documentation sprint plan for supplier/seller Knowledge Packs, AI conversational search, governance, and marketplace business model.
 
-**Next:** Draft the new target Capability Pack catalogue, classify current prototype packs/nodes for retirement or migration, complete the canonical capability registry, workflow template index, supplier Knowledge Pack specification, AI retrieval requirements, screen specification, governance checklist, business model notes, and Phase 21+ backlog.
+**Next:** Use the target Capability Pack catalogue to classify current prototype packs/nodes for retirement or migration, complete the canonical capability registry, workflow template index, supplier Knowledge Pack specification, AI retrieval requirements, screen specification, governance checklist, business model notes, and Phase 21+ backlog.
 
 **Ad-hoc:** Phase 19C runtime provenance workflow test remains deferred. Professional Lados Pack Bundles are deferred to Phase 20B after the marketplace knowledge-catalogue strategy is accepted.
 
@@ -348,7 +348,7 @@ Lados V4 can be presented as a full platform only when:
 
 **Done:** Added Phase 20A Capability Pack planning before Marketplace Knowledge Packs. Created the Capability Pack planning and node taxonomy paper covering greenfield target pack planning, prototype reset policy, pack layering, candidate capability domains, node indexing, canonical capability keys, overlap control, template ownership, UI discovery, manifest extensions, and governance checklist.
 
-**Next:** Draft the new target Capability Pack catalogue, classify current prototype packs/nodes as keep/rename/merge/split/deprecate/remove, then create the canonical capability registry and workflow template index.
+**Next:** Classify current prototype packs/nodes as keep/rename/merge/split/deprecate/remove, then create the canonical capability registry and workflow template index.
 
 **Ad-hoc:** Current test-era packs are not the target architecture. Knowledge Pack marketplace documentation should proceed only after the new Capability Pack ownership and node/template indexing are agreed.
 
@@ -372,6 +372,14 @@ Lados V4 can be presented as a full platform only when:
 
 **Done:** Locked the product language for Phase 20: Capability Pack means workflow capabilities, nodes, templates, and action grammar; Knowledge Pack means governed knowledge catalogues, supplier listings, standards references, SOPs, compliance rules, technical guidelines, rates, and evidence rules. Updated the Phase 20 strategy paper, active documentation sprint plan, Capability Pack planning paper, productization sprint plan, master checklist, and V4 README.
 
-**Next:** Continue with the new target Capability Pack catalogue, canonical capability registry, workflow template index, then the Supplier Knowledge Pack specification and marketplace screen specification.
+**Next:** Continue with the canonical capability registry, workflow template index, current prototype node classification, then the Supplier Knowledge Pack specification and marketplace screen specification.
 
 **Ad-hoc:** Existing `data_pack_*` database/API/test identifiers remain legacy Phase 19 technical names until a deliberate compatibility migration aliases or renames them.
+
+### 2026-07-03 - Target Capability Pack catalogue draft
+
+**Done:** Created `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`. The draft defines the target official Capability Pack layers, pack IDs, ownership boundaries, dependencies, first professional bundle sets, template ownership, Knowledge Pack dependency map, prototype pack mapping, naming standard, and acceptance gate for official packs.
+
+**Next:** Create the first canonical capability registry table/document and target workflow template index, then audit current prototype nodes against the catalogue.
+
+**Ad-hoc:** Current pack folder names remain prototype implementation names until the refactor/migration phase.

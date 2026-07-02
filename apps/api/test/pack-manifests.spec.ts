@@ -79,7 +79,7 @@ describe.each(packs)('%s', (packName, pack) => {
 
 describe('cross-pack registry integrity', () => {
   it('node types are globally unique across all packs', () => {
-    const all = packs.flatMap(([name, pack]) => manifestsOf(pack).map((m) => `${m.type}`));
+    const all = packs.flatMap(([, pack]) => manifestsOf(pack).map((m) => `${m.type}`));
     const dupes = all.filter((t, i) => all.indexOf(t) !== i);
     expect(dupes).toEqual([]);
   });

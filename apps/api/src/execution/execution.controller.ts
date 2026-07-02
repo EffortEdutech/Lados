@@ -143,8 +143,6 @@ export class ExecutionController {
     req.socket?.on('error', (err: NodeJS.ErrnoException) => {
       if (err.code !== 'ECONNRESET') throw err;
     });
-    // Terminal events that close the stream
-    const terminalEvents = [RUN_EVENT.RUN_COMPLETE, RUN_EVENT.RUN_PAUSED, RUN_EVENT.RUN_FAILED];
 
     // Safety timeout — close after 10 min regardless
     const timeout$ = timer(10 * 60 * 1000);

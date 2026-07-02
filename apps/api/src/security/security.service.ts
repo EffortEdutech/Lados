@@ -39,8 +39,8 @@ export type OrgRole = 'owner' | 'admin' | 'member' | 'driver' | 'operator' | 'vi
 
 // Ordered hierarchy — index 0 = highest authority.
 // driver and operator are parallel (same index), checked separately.
-const ROLE_HIERARCHY: OrgRole[] = ['owner', 'admin', 'member', 'viewer'];
-const PARALLEL_ROLES: OrgRole[] = ['driver', 'operator'];
+export const ROLE_HIERARCHY: OrgRole[] = ['owner', 'admin', 'member', 'viewer'];
+export const PARALLEL_ROLES: OrgRole[] = ['driver', 'operator'];
 
 // ── Permission matrix ─────────────────────────────────────────────────────────
 //

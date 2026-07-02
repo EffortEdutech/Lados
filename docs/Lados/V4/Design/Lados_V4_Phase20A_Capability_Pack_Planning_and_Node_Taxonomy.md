@@ -437,6 +437,7 @@ Before a Capability Pack is accepted:
 
 - Capability Pack taxonomy.
 - Target capability domain map.
+- Target Capability Pack catalogue.
 - Node indexing model.
 - Canonical capability registry model.
 - Overlap-control rules.

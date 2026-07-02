@@ -58,7 +58,7 @@ function matchesCron(expr: string, now: Date): boolean {
   );
 }
 
-function matchField(field: string, value: number, min: number, max: number): boolean {
+function matchField(field: string, value: number, min: number, _max: number): boolean {
   if (field === '*') return true;
 
   // */n — step
