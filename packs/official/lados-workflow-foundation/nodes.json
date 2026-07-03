@@ -4,7 +4,7 @@
     "displayName": "Manual Trigger",
     "canonicalCapability": "workflow.trigger.manual",
     "ownerPack": "lados.workflow-foundation",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Start a workflow from a manual operator action.",
     "inputPattern": [
       "inspector"
@@ -46,13 +46,99 @@
       "maxVisiblePortsPerSide": 3
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Workflow Foundation",
     "icon": "Workflow",
     "searchKeywords": [
       "workflow foundation",
       "manual",
       "trigger"
+    ],
+    "events": [
+      {
+        "eventType": "workflow.RunTriggered",
+        "description": "Fires when this trigger starts a workflow run.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "triggeredAt": { "type": "string" },
+            "triggerType": { "type": "string" }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "lados.workflow.trigger_schedule",
+    "displayName": "Scheduled Trigger",
+    "canonicalCapability": "workflow.trigger.schedule",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Start a workflow on a recurring cron schedule.",
+    "inputPattern": [
+      "inspector"
+    ],
+    "outputPattern": "trigger context object with schedule metadata",
+    "ports": {
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "trigger",
+          "label": "Trigger",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "schedule",
+        "label": "Schedule",
+        "fields": [
+          "cronExpression",
+          "timezone",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Starts execution only; does not approve or certify anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 220,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 3
+    },
+    "compatibilityAliases": [
+      "core.cron_trigger"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "schedule",
+      "cron",
+      "trigger"
+    ],
+    "events": [
+      {
+        "eventType": "workflow.RunTriggered",
+        "description": "Fires when the schedule fires a workflow run.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "triggeredAt": { "type": "string" },
+            "cronExpression": { "type": "string" }
+          }
+        }
+      }
     ]
   },
   {
@@ -60,7 +146,7 @@
     "displayName": "Condition",
     "canonicalCapability": "workflow.control.condition",
     "ownerPack": "lados.workflow-foundation",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Route workflow execution based on an explicit condition.",
     "inputPattern": [
       "ports",
@@ -116,7 +202,7 @@
     "compatibilityAliases": [
       "core.condition"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Workflow Foundation",
     "icon": "Workflow",
     "searchKeywords": [
@@ -125,11 +211,206 @@
     ]
   },
   {
+    "type": "lados.workflow.parallel",
+    "displayName": "Parallel",
+    "canonicalCapability": "workflow.control.parallel",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Mark an explicit fan-out point where a workflow splits into parallel branches.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "fan-out marker with pass-through inputs",
+    "ports": {
+      "inputs": [
+        {
+          "id": "value",
+          "label": "Value",
+          "dataType": "any"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "branches",
+          "label": "Branches",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "branches",
+        "label": "Branches",
+        "fields": [
+          "branchCount",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Structural marker only; does not approve or certify anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 220,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 3
+    },
+    "compatibilityAliases": [
+      "core.parallel"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "parallel",
+      "fan-out"
+    ]
+  },
+  {
+    "type": "lados.workflow.merge",
+    "displayName": "Merge",
+    "canonicalCapability": "workflow.control.merge",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Fan-in and merge the outputs of parallel branches once all of them complete.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "merged object plus per-branch outputs",
+    "ports": {
+      "inputs": [
+        {
+          "id": "branches",
+          "label": "Branches",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "merged",
+          "label": "Merged",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "merge",
+        "label": "Merge",
+        "fields": [
+          "mergeStrategy",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Structural marker only; does not approve or certify anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 220,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 3
+    },
+    "compatibilityAliases": [
+      "core.merge"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "merge",
+      "fan-in"
+    ]
+  },
+  {
+    "type": "lados.workflow.delay",
+    "displayName": "Delay",
+    "canonicalCapability": "workflow.control.delay",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Pause execution for a configured duration before continuing.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "delay confirmation with timestamps",
+    "ports": {
+      "inputs": [
+        {
+          "id": "value",
+          "label": "Value",
+          "dataType": "any"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "resumed",
+          "label": "Resumed",
+          "dataType": "boolean"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "delay",
+        "label": "Delay",
+        "fields": [
+          "delayMs",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Timed pause only; does not approve or certify anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 220,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "core.delay"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "delay",
+      "wait"
+    ]
+  },
+  {
     "type": "lados.workflow.write_log",
     "displayName": "Write Log",
     "canonicalCapability": "workflow.log.write",
     "ownerPack": "lados.workflow-foundation",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Write an explicit checkpoint message to workflow runtime logs.",
     "inputPattern": [
       "ports",
@@ -180,13 +461,26 @@
     "compatibilityAliases": [
       "core.logger"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Workflow Foundation",
     "icon": "Workflow",
     "searchKeywords": [
       "workflow foundation",
       "write",
       "log"
+    ],
+    "events": [
+      {
+        "eventType": "workflow.LogWritten",
+        "description": "Fires when a checkpoint message is written to the run log.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string" },
+            "level": { "type": "string" }
+          }
+        }
+      }
     ]
   }
 ]

@@ -44,4 +44,6 @@ export const RUN_EVENT = {
   RUN_COMPLETE:  'run.complete',
   RUN_PAUSED:    'run.paused',
   RUN_FAILED:    'run.failed',
+  /** Phase 21 S3 (D3) — emitted by RunWatchdogService when a run is marked 'timed_out'. */
+  RUN_TIMED_OUT: 'run.timed_out',
 } as const;

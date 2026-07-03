@@ -154,6 +154,7 @@ export class ExecutionController {
       fromEvent(this.emitter, RUN_EVENT.RUN_COMPLETE),
       fromEvent(this.emitter, RUN_EVENT.RUN_PAUSED),
       fromEvent(this.emitter, RUN_EVENT.RUN_FAILED),
+      fromEvent(this.emitter, RUN_EVENT.RUN_TIMED_OUT), // Phase 21 S3 (D3)
     ).pipe(
       filter((payload: unknown) => (payload as { runId: string }).runId === runId),
       map((payload: unknown): MessageEvent => ({
@@ -170,6 +171,7 @@ export class ExecutionController {
             fromEvent(this.emitter, RUN_EVENT.RUN_COMPLETE),
             fromEvent(this.emitter, RUN_EVENT.RUN_PAUSED),
             fromEvent(this.emitter, RUN_EVENT.RUN_FAILED),
+            fromEvent(this.emitter, RUN_EVENT.RUN_TIMED_OUT), // Phase 21 S3 (D3)
           ).pipe(
             filter((p: unknown) => (p as { runId: string }).runId === runId),
           ),

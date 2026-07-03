@@ -4,7 +4,7 @@
     "displayName": "Request Approval",
     "canonicalCapability": "human.approval.request",
     "ownerPack": "lados.human-work",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Pause or route work for a human approval decision.",
     "inputPattern": [
       "ports",
@@ -68,13 +68,93 @@
       "core.human_approval",
       "foundation.request_approval"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Human Work",
     "icon": "UserCheck",
     "searchKeywords": [
       "human work",
       "request",
       "approval"
+    ],
+    "events": [
+      {
+        "eventType": "human.ApprovalRequested",
+        "description": "Fires when an approval task is created and the workflow pauses.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "approvalTaskId": { "type": "string" },
+            "assigneeRole": { "type": "string" }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "lados.human.assign_user",
+    "displayName": "Assign User",
+    "canonicalCapability": "human.assignment.assign",
+    "ownerPack": "lados.human-work",
+    "status": "draft",
+    "intent": "Assign a user to a resource or task within a workflow.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "assignment confirmation",
+    "ports": {
+      "inputs": [
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "assignment",
+          "label": "Assignment",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "assignment",
+        "label": "Assignment",
+        "fields": [
+          "resourceId",
+          "userId",
+          "assigneeRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Assigns work only; does not approve, certify, or decide entitlement.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "foundation.assign_user"
+    ],
+    "executorStatus": "implemented",
+    "category": "Human Work",
+    "icon": "UserCheck",
+    "searchKeywords": [
+      "human work",
+      "assign",
+      "user"
     ]
   },
   {
@@ -82,7 +162,7 @@
     "displayName": "Record Decision",
     "canonicalCapability": "human.decision.record",
     "ownerPack": "lados.human-work",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record a human decision and its evidence without making the decision automatically.",
     "inputPattern": [
       "ports",
@@ -141,13 +221,102 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Human Work",
     "icon": "UserCheck",
     "searchKeywords": [
       "human work",
       "record",
       "decision"
+    ],
+    "events": [
+      {
+        "eventType": "human.DecisionRecorded",
+        "description": "Fires when a human decision record is written.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "decisionType": { "type": "string" },
+            "decisionBy": { "type": "string" }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "lados.human.review_checkpoint",
+    "displayName": "Review Checkpoint",
+    "canonicalCapability": "human.review.checkpoint",
+    "ownerPack": "lados.human-work",
+    "status": "draft",
+    "intent": "Insert a lightweight human review checkpoint before the workflow proceeds.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "review task reference and pending state",
+    "ports": {
+      "inputs": [
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "reviewTask",
+          "label": "Task",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "review",
+        "label": "Review",
+        "fields": [
+          "title",
+          "description",
+          "assigneeRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Requires a human actor to acknowledge or annotate before the workflow continues.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Human Work",
+    "icon": "UserCheck",
+    "searchKeywords": [
+      "human work",
+      "review",
+      "checkpoint"
+    ],
+    "events": [
+      {
+        "eventType": "human.ReviewCheckpointReached",
+        "description": "Fires when a review checkpoint task is created and the workflow pauses.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "reviewTaskId": { "type": "string" }
+          }
+        }
+      }
     ]
   }
 ]

@@ -4,7 +4,7 @@
     "displayName": "Create Resource",
     "canonicalCapability": "resource.create",
     "ownerPack": "lados.resource-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a Workspace Resource using typed data from inspector fields, upstream data, or bindings.",
     "inputPattern": [
       "ports",
@@ -65,7 +65,7 @@
     "compatibilityAliases": [
       "resource.create"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Resource Operations",
     "icon": "Database",
     "searchKeywords": [
@@ -75,11 +75,279 @@
     ]
   },
   {
+    "type": "lados.resource.read",
+    "displayName": "Read Resource",
+    "canonicalCapability": "resource.read",
+    "ownerPack": "lados.resource-operations",
+    "status": "draft",
+    "intent": "Read a single Workspace Resource by id.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "resource record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "ref",
+          "label": "Reference",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "resource",
+          "label": "Resource",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "lookup",
+        "label": "Lookup",
+        "fields": [
+          "resourceId"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Reads a record only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Resource Operations",
+    "icon": "Database",
+    "searchKeywords": [
+      "resource operations",
+      "read",
+      "resource"
+    ]
+  },
+  {
+    "type": "lados.resource.list",
+    "displayName": "List Resources",
+    "canonicalCapability": "resource.list",
+    "ownerPack": "lados.resource-operations",
+    "status": "draft",
+    "intent": "List Workspace Resources for the organization, optionally filtered by type or state.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "array of resource summaries",
+    "ports": {
+      "inputs": [
+        {
+          "id": "filter",
+          "label": "Filter",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "resources",
+          "label": "Resources",
+          "dataType": "array"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "filter",
+        "label": "Filter",
+        "fields": [
+          "resourceType",
+          "state",
+          "limit"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Reads records only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Resource Operations",
+    "icon": "Database",
+    "searchKeywords": [
+      "resource operations",
+      "list",
+      "resource"
+    ]
+  },
+  {
+    "type": "lados.resource.update",
+    "displayName": "Update Resource",
+    "canonicalCapability": "resource.update",
+    "ownerPack": "lados.resource-operations",
+    "status": "draft",
+    "intent": "Update a Workspace Resource's data (not its state — use Transition Resource for state changes).",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "updated resource summary",
+    "ports": {
+      "inputs": [
+        {
+          "id": "resource",
+          "label": "Resource",
+          "dataType": "object"
+        },
+        {
+          "id": "data",
+          "label": "Data",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "updated",
+          "label": "Updated",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "target",
+        "label": "Target",
+        "fields": [
+          "resourceId"
+        ]
+      },
+      {
+        "id": "data",
+        "label": "Data Mapping",
+        "fields": [
+          "fieldMap"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Updates data only; approval must be modeled separately.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Resource Operations",
+    "icon": "Database",
+    "searchKeywords": [
+      "resource operations",
+      "update",
+      "resource"
+    ]
+  },
+  {
+    "type": "lados.resource.transition",
+    "displayName": "Transition Resource",
+    "canonicalCapability": "resource.transition",
+    "ownerPack": "lados.resource-operations",
+    "status": "draft",
+    "intent": "Transition a Workspace Resource's state through the org's configured state machine (guarded).",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "transition result, paused if approval-gated",
+    "ports": {
+      "inputs": [
+        {
+          "id": "resource",
+          "label": "Resource",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "transitioned",
+          "label": "Transitioned",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "transition",
+        "label": "Transition",
+        "fields": [
+          "resourceId",
+          "toState"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Transition nodes must not bypass human approval rules declared by domain packs — a requires_approval guard pauses the workflow instead of transitioning silently.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "state.change"
+    ],
+    "executorStatus": "implemented",
+    "category": "Resource Operations",
+    "icon": "Database",
+    "searchKeywords": [
+      "resource operations",
+      "transition",
+      "state"
+    ]
+  },
+  {
     "type": "lados.resource.resolve_binding",
     "displayName": "Resolve Binding",
     "canonicalCapability": "resource.binding.resolve",
     "ownerPack": "lados.resource-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Resolve a named Resource Binding for use by downstream workflow nodes.",
     "inputPattern": [
       "inspector",
@@ -122,7 +390,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Resource Operations",
     "icon": "Database",
     "searchKeywords": [
@@ -136,7 +404,7 @@
     "displayName": "Write Artifact",
     "canonicalCapability": "artifact.write",
     "ownerPack": "lados.resource-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Persist a workflow artifact for later workflow steps or future runs.",
     "inputPattern": [
       "ports",
@@ -189,12 +457,71 @@
       "artifact.write",
       "project.save_artifact"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Resource Operations",
     "icon": "Database",
     "searchKeywords": [
       "resource operations",
       "write",
+      "artifact"
+    ]
+  },
+  {
+    "type": "lados.artifact.read",
+    "displayName": "Read Artifact",
+    "canonicalCapability": "artifact.read",
+    "ownerPack": "lados.resource-operations",
+    "status": "draft",
+    "intent": "Read a named artifact written by a prior workflow run.",
+    "inputPattern": [
+      "inspector"
+    ],
+    "outputPattern": "artifact value",
+    "ports": {
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "artifact",
+          "label": "Artifact",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "artifact",
+        "label": "Artifact",
+        "fields": [
+          "key",
+          "required"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Reads data only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "artifact.read",
+      "project.read_artifact"
+    ],
+    "executorStatus": "implemented",
+    "category": "Resource Operations",
+    "icon": "Database",
+    "searchKeywords": [
+      "resource operations",
+      "read",
       "artifact"
     ]
   }

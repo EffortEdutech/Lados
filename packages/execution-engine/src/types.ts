@@ -168,6 +168,26 @@ export interface RunnerOptions {
    * Set to 1 to force sequential execution even for independent nodes.
    */
   concurrency?: number;
+  /**
+   * Phase 21 S3 (D4): optional per-node progress hook. Called once with
+   * type:'started' right before a node executes, and once with type:'done'
+   * when it finishes (whatever the outcome — completed/failed/skipped/
+   * waiting). Never awaited and never allowed to throw into the runner —
+   * callers use this to bridge live node progress to e.g. an SSE stream.
+   * Purely observational: it cannot affect execution.
+   */
+  onNodeEvent?: (event: NodeProgressEvent) => void;
+}
+
+/** Payload passed to RunnerOptions.onNodeEvent — see its doc comment. */
+export interface NodeProgressEvent {
+  type: 'started' | 'done';
+  nodeId: string;
+  nodeType: string;
+  nodeName?: string;
+  /** Only present on type:'done' */
+  status?: NodeRunStatus;
+  durationMs?: number;
 }
 
 // ── Mock node executor type ───────────────────────────────────────────────────

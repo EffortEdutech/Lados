@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.document-intelligence",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Document Intelligence",
   "layer": "L1",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "stub_executors",
   "description": "Official Lados document intake, reading, extraction, classification, and document generation pack.",
   "ownerBoundary": [
     "file upload and intake",
@@ -57,8 +57,8 @@
     "ai-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified",
+    "runtime": "partial — upload_file, read_excel, extract_table, generate_document implemented; read_pdf and read_docx are stubs pending a PDF/DOCX text-extraction dependency",
     "canvas": "not_started",
     "templates": "not_started"
   },

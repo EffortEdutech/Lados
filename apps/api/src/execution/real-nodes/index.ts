@@ -26,6 +26,19 @@ import type { ArtifactService }     from '../../artifact/artifact.service';
 import type { EmailService }        from '../../notification/email.service';   // Phase 10
 import type { SmsService }          from '../../notification/sms.service';     // Phase 10
 
+// Phase 21 S2 (Wave 1) — official Capability Pack executors. Tried first —
+// these are the canonical successors declared in the compatibility alias
+// map (packages/@lados/pack-sdk/src/compatibility-aliases.ts) and should
+// take priority over the prototype nodes they alias/merge.
+import { resolveNode as officialWorkflowFoundationResolve } from '@lados/official-workflow-foundation';
+import { resolveNode as officialHumanWorkResolve }          from '@lados/official-human-work';
+import { resolveNode as officialDocumentIntelligenceResolve } from '@lados/official-document-intelligence';
+
+// Phase 21 S4 (Wave 2) — official Capability Pack executors.
+import { resolveNode as officialResourceOperationsResolve } from '@lados/official-resource-operations';
+import { resolveNode as officialTaskCaseResolve }           from '@lados/official-task-case';
+import { resolveNode as officialCommunicationResolve }      from '@lados/official-communication';
+
 import { resolveNode as coreResolve }         from '@lados/core-pack';
 import { resolveNode as documentResolve }     from '@lados/document-pack';
 import { resolveNode as qsResolve }           from '@lados/qs-pack';
@@ -240,7 +253,59 @@ export function buildRealNodeResolver(
   const artifactAdapter = artifactService as any;
 
   const resolvers = [
-    // Foundation Pack first — canonical nodes take priority over core-pack equivalents
+    // Phase 21 S2 (Wave 1) — official Capability Packs first. Canonical
+    // successors take priority over every prototype pack below, including
+    // Foundation Pack (per the compatibility alias map: core.human_approval
+    // and foundation.request_approval both merge into
+    // lados.human.request_approval, etc.).
+    officialWorkflowFoundationResolve(),
+    officialHumanWorkResolve({
+      approvalTaskService: approvalService,
+      notificationService,
+      resourceService,
+    }),
+    officialDocumentIntelligenceResolve({
+      fileService,
+      libraryService,
+      documentService,
+      // No storage service implements IDocumentStorageService yet —
+      // generate_document falls back to returning the file inline.
+    }),
+    // Phase 21 S4 (Wave 2) — Resource Operations (L0). ResourceService
+    // satisfies create/read/list/update/transition all at once via
+    // structural typing; ArtifactService satisfies both artifact interfaces.
+    // Cast needed: ResourceService's `type`/`state` params are narrowed to
+    // its own ResourceType/DEFAULT_STATE union, while the official pack's
+    // interfaces intentionally accept any string (same class of cast as
+    // core-pack's resourceService below — the runtime shape is compatible,
+    // only the TS union differs).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialResourceOperationsResolve({
+      createService: resourceService as any,
+      readService: resourceService,
+      listService: resourceService as any,
+      updateService: resourceService,
+      transitionService: resourceService,
+      artifactWriteService: artifactService,
+      artifactReadService: artifactService,
+    }),
+    // Phase 21 S4 (Wave 2) — Task/Case Management (L1). Tasks/Cases are
+    // Workspace Resources (type "task"/"case") — same ResourceService.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialTaskCaseResolve({
+      createService: resourceService as any,
+      updateService: resourceService,
+      transitionService: resourceService,
+    }),
+    // Phase 21 S4 (Wave 2) — Communication (L1). send_sms is a stub
+    // (executorStatus:"stub") until a real SMS provider is wired into
+    // SmsService — see packs/official/lados-communication/src/nodes/send-sms.ts.
+    officialCommunicationResolve({
+      emailService,
+      smsService,
+      notificationService,
+    }),
+    // Foundation Pack — canonical nodes take priority over core-pack equivalents
     foundationResolve({
       notificationService,
       approvalTaskService: approvalService,

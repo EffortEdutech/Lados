@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.task-case",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Task and Case Management",
   "layer": "L1",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados task, case, checklist, and operational follow-up capability pack.",
   "ownerBoundary": [
     "create task",
@@ -53,8 +53,8 @@
     "foundation-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified",
+    "runtime": "implemented — all 4 nodes implemented; checklist tracking (ownerBoundary) is aspirational, no dedicated node yet",
     "canvas": "not_started",
     "templates": "not_started"
   },

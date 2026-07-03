@@ -29,6 +29,7 @@ export type {
   RunnerOptions,
   SkipNodeSpec,
   MockNodeExecutor,
+  NodeProgressEvent,
 } from './types';
 
 // ── Graph planner ─────────────────────────────────────────────────────────────

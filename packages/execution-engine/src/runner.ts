@@ -21,6 +21,7 @@ import type {
   NodeRunStatus,
   RunStatus,
   SkipNodeSpec,
+  NodeProgressEvent,
 } from './types';
 import { planWorkflow } from './graph-planner';
 import { getMockExecutor } from './mock-registry';
@@ -288,6 +289,20 @@ export class WorkflowRunner {
     };
   }
 
+  // -- Node progress hook (Phase 21 S3 / D4) -----------------------------------
+
+  /**
+   * Fires RunnerOptions.onNodeEvent, if provided. Never throws — a bad
+   * callback (e.g. an SSE emitter that errors) must never break execution.
+   */
+  private _emitNodeEvent(event: NodeProgressEvent): void {
+    try {
+      this.options.onNodeEvent?.(event);
+    } catch {
+      // Deliberately swallowed — see doc comment above.
+    }
+  }
+
   // -- Execute a single step ---------------------------------------------------
 
   private async _executeStep(
@@ -322,9 +337,14 @@ export class WorkflowRunner {
       startedAt: nodeStartedAt,
     };
 
+    // Phase 21 S3 (D4) — fires for every path below (even muted/skipped),
+    // since all of them represent this node instance "starting" its turn.
+    this._emitNodeEvent({ type: 'started', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel });
+
     const effectiveMode = resolveNodeEffectiveMode(step, workflowGroups);
     if (effectiveMode.mode === 'muted') {
       const mutedOutputs = { out: null };
+      this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'skipped', durationMs: 0 });
       return {
         logEntry: {
           ...logEntry,
@@ -339,6 +359,7 @@ export class WorkflowRunner {
     }
 
     if (effectiveMode.mode === 'bypassed') {
+      this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'skipped', durationMs: 0 });
       return {
         logEntry: {
           ...logEntry,
@@ -356,6 +377,7 @@ export class WorkflowRunner {
     const skipSpec = skipMap.get(step.nodeId);
     if (skipSpec) {
       const skipOutputs = skipSpec.outputs ?? {};
+      this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'skipped', durationMs: 0 });
       return {
         logEntry: {
           ...logEntry,
@@ -410,16 +432,19 @@ export class WorkflowRunner {
       // -- Phase 1: handle pause signal from human_approval -------------------
       if (result.status === 'paused') {
         logEntry.status = 'waiting';
+        this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'waiting', durationMs });
         return { logEntry, nodeOutput: result.outputs ?? {}, stepStatus: 'paused' };
       }
 
       if (result.status === 'failure') {
         logEntry.status = 'failed';
         logEntry.error  = result.error ?? { code: 'NODE_FAILED', message: 'Node reported failure' };
+        this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'failed', durationMs });
         return { logEntry, nodeOutput: result.outputs ?? {}, stepStatus: 'failed' };
       }
 
       logEntry.status = 'completed';
+      this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'completed', durationMs });
       return { logEntry, nodeOutput: result.outputs ?? {}, stepStatus: 'completed' };
 
     } catch (err: unknown) {
@@ -434,6 +459,7 @@ export class WorkflowRunner {
       logEntry.completedAt = nodeCompletedAt;
       logEntry.durationMs  = durationMs;
 
+      this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'failed', durationMs });
       return { logEntry, nodeOutput: {}, stepStatus: 'failed' };
     }
   }

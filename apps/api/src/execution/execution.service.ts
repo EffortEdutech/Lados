@@ -16,6 +16,7 @@ import {
   BadRequestException,
   OnModuleInit,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseService } from '../common/supabase/supabase.service';
 import { FileService } from '../file/file.service';
 import { LibraryService } from '../library/library.service';
@@ -33,12 +34,30 @@ import { SecurityEngineService } from '../security/security.service';
 import { ApprovalTaskCreator } from '../approval/approval-task.creator';
 import { ArtifactService }     from '../artifact/artifact.service';
 import { ExecutionQueueService } from '../queue/execution-queue.service';
+import { RUN_EVENT } from '../queue/queue.constants';
 import { PackRegistryService }   from '../pack/pack-registry.service';
 import { buildRealNodeResolver } from './real-nodes';
 import { runWorkflow } from '@lados/execution-engine';
-import type { ExecutionResult, RunnerOptions, SkipNodeSpec } from '@lados/execution-engine';
+import type { ExecutionResult, RunnerOptions, SkipNodeSpec, NodeProgressEvent } from '@lados/execution-engine';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
 import type { TriggerRunDto } from './dto/trigger-run.dto';
+
+/** Params for the shared enqueue-or-fallback helper — see enqueueOrRunInline(). */
+interface EnqueueOrRunInlineParams {
+  runId: string;
+  workflowId: string;
+  projectId: string;
+  orgId: string;
+  userId: string;
+  definition: QSWorkflowDefinition;
+  inputs?: Record<string, unknown>;
+  variables?: Record<string, unknown>;
+  skipNodes?: SkipNodeSpec[];
+  resumeFromCheckpoint?: RunnerOptions['resumeFromCheckpoint'];
+  /** Passed through to _executeAndPersist for audit-log/event naming only. */
+  workflow?: Record<string, unknown> | null;
+  project?: Record<string, unknown> | null;
+}
 
 @Injectable()
 export class ExecutionService implements OnModuleInit {
@@ -64,6 +83,7 @@ export class ExecutionService implements OnModuleInit {
     private readonly dataPacks: DataPacksService,
     private readonly emailService: EmailService,    // Phase 10
     private readonly smsService: SmsService,        // Phase 10
+    private readonly emitter: EventEmitter2,        // Phase 21 S3 (D4) — SSE node progress
   ) {
     // nodeResolver used only for in-process fallback (no Redis) and executeNodeAction.
     this.nodeResolver = buildRealNodeResolver(
@@ -143,6 +163,82 @@ export class ExecutionService implements OnModuleInit {
         `Crash recovery threw unexpectedly: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
+  }
+
+  // ── Shared enqueue-or-fallback helper (Phase 21 S3 / D2) ────────────────────
+
+  /**
+   * Attempts to enqueue via BullMQ; if Redis is not configured, or the
+   * enqueue call itself fails or times out (ExecutionQueueService's own D2
+   * hardening), runs the definition in-process instead — so a run is never
+   * stranded at 'running'/'queued' with zero progress and no worker ever
+   * picks it up. Shared by triggerRun/resumeRun/_triggerFromEvent, and by
+   * SchedulerService (which has no node-resolver wiring of its own).
+   */
+  async enqueueOrRunInline(params: EnqueueOrRunInlineParams): Promise<{ enqueued: boolean }> {
+    const isResume = !!params.resumeFromCheckpoint;
+    let enqueued = false;
+
+    if (this.executionQueue.isAvailable) {
+      const result = isResume
+        ? await this.executionQueue.enqueueResume({
+            runId: params.runId,
+            workflowId: params.workflowId,
+            projectId: params.projectId,
+            orgId: params.orgId,
+            userId: params.userId,
+            skipNodes: params.skipNodes,
+            resumeFromCheckpoint: params.resumeFromCheckpoint,
+          })
+        : await this.executionQueue.enqueueTrigger({
+            runId: params.runId,
+            workflowId: params.workflowId,
+            projectId: params.projectId,
+            orgId: params.orgId,
+            userId: params.userId,
+            skipNodes: params.skipNodes,
+          });
+      enqueued = result.enqueued;
+    }
+
+    if (!enqueued) {
+      if (this.executionQueue.isAvailable) {
+        this.logger.warn(
+          `Run ${params.runId}: BullMQ enqueue failed — falling back to in-process execution so the run isn't stranded.`,
+        );
+      }
+      const runOptions = {
+        executionId:    params.runId,
+        workflowId:     params.workflowId,
+        projectId:      params.projectId,
+        organizationId: params.orgId,
+        userId:         params.userId,
+        definition:     params.definition,
+        inputs:         params.inputs ?? {},
+        variables:      params.variables ?? {},
+        nodeResolver:   this.nodeResolver,
+        skipNodes:      params.skipNodes ?? [],
+        // Phase 21 S3 (D4) — same SSE bridge as ExecutionWorker's queue path,
+        // so in-process fallback runs also drive live node progress.
+        onNodeEvent: (event: NodeProgressEvent) => {
+          const eventName = event.type === 'started' ? RUN_EVENT.NODE_STARTED : RUN_EVENT.NODE_DONE;
+          this.emitter.emit(eventName, { runId: params.runId, ...event });
+        },
+        ...(params.resumeFromCheckpoint ? { resumeFromCheckpoint: params.resumeFromCheckpoint } : {}),
+      };
+      this._executeAndPersist(
+        params.runId,
+        params.workflow ?? null,
+        params.project ?? null,
+        runOptions,
+      ).catch((err: unknown) => {
+        this.logger.error(
+          `[ExecutionService] Fallback run ${params.runId} threw: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      });
+    }
+
+    return { enqueued };
   }
 
   // ── Trigger ────────────────────────────────────────────────────────────────
@@ -244,33 +340,19 @@ export class ExecutionService implements OnModuleInit {
       : [];
     const skipNodes: SkipNodeSpec[] = [...(dto.skipNodes ?? []), ...overrideSpecs];
 
-    if (this.executionQueue.isAvailable) {
-      await this.executionQueue.enqueueTrigger({
-        runId,
-        workflowId,
-        projectId:  workflow.project_id as string,
-        orgId,
-        userId,
-        skipNodes,
-      });
-    } else {
-      // In-process fallback (dev without Redis)
-      const runOptions = {
-        executionId:    runId,
-        workflowId,
-        projectId:      workflow.project_id as string,
-        organizationId: orgId,
-        skipNodes,
-        userId,
-        definition,
-        inputs:         dto.inputs ?? {},
-        variables:      dto.variables ?? {},
-        nodeResolver:   this.nodeResolver,
-      };
-      this._executeAndPersist(runId, workflow, project as Record<string, unknown>, runOptions).catch((err: unknown) => {
-        console.error(`[ExecutionService] Fallback run ${runId} threw: ${err instanceof Error ? err.message : String(err)}`);
-      });
-    }
+    await this.enqueueOrRunInline({
+      runId,
+      workflowId,
+      projectId:  workflow.project_id as string,
+      orgId,
+      userId,
+      definition,
+      inputs:     dto.inputs ?? {},
+      variables:  dto.variables ?? {},
+      skipNodes,
+      workflow,
+      project: project as Record<string, unknown>,
+    });
 
     return { runId, status: 'running' };
   }
@@ -424,35 +506,19 @@ export class ExecutionService implements OnModuleInit {
           .map((n) => ({ nodeId: n.id as string, reason: `Node type "${n.type}" is disabled for this org` }))
       : [];
 
-    if (this.executionQueue.isAvailable) {
-      await this.executionQueue.enqueueResume({
-        runId,
-        workflowId:  run['workflow_id'] as string,
-        projectId:   run['project_id'] as string,
-        orgId:       resumeOrgId,
-        userId,
-        skipNodes:   resumeSkipNodes,
-        resumeFromCheckpoint,
-      });
-    } else {
-      // In-process fallback
-      const resumeOptions = {
-        executionId:    runId,
-        workflowId:     run['workflow_id'] as string,
-        projectId:      run['project_id'] as string,
-        organizationId: resumeOrgId,
-        userId,
-        definition,
-        inputs:         (run['inputs'] ?? {}) as Record<string, unknown>,
-        variables:      {} as Record<string, unknown>,
-        nodeResolver:   this.nodeResolver,
-        skipNodes:      resumeSkipNodes,
-        resumeFromCheckpoint,
-      };
-      this._executeAndPersist(runId, workflow, project, resumeOptions).catch((err: unknown) => {
-        console.error(`[ExecutionService] Fallback resume ${runId} threw: ${err instanceof Error ? err.message : String(err)}`);
-      });
-    }
+    await this.enqueueOrRunInline({
+      runId,
+      workflowId:  run['workflow_id'] as string,
+      projectId:   run['project_id'] as string,
+      orgId:       resumeOrgId,
+      userId,
+      definition,
+      inputs:      (run['inputs'] ?? {}) as Record<string, unknown>,
+      skipNodes:   resumeSkipNodes,
+      resumeFromCheckpoint,
+      workflow,
+      project,
+    });
 
     return { runId, status: 'running', resumed: true };
   }
@@ -781,36 +847,18 @@ export class ExecutionService implements OnModuleInit {
           .map((n) => ({ nodeId: n.id as string, reason: `Node type "${n.type}" is disabled for this org` }))
       : [];
 
-    if (this.executionQueue.isAvailable) {
-      await this.executionQueue.enqueueTrigger({
-        runId,
-        workflowId,
-        projectId:  workflow['project_id'] as string,
-        orgId,
-        userId:     actorId,
-        skipNodes:  eventSkipNodes,
-      });
-    } else {
-      const runOptions = {
-        executionId:    runId,
-        workflowId,
-        projectId:      workflow['project_id'] as string,
-        organizationId: orgId,
-        userId:         actorId,
-        definition,
-        inputs:         inputs ?? {},
-        variables:      {} as Record<string, unknown>,
-        nodeResolver:   this.nodeResolver,
-        skipNodes:      eventSkipNodes,
-      };
-      this._executeAndPersist(runId, workflow, { organization_id: orgId }, runOptions).catch(
-        (err: unknown) => {
-          console.error(
-            `[ExecutionService] Event-triggered fallback run ${runId} threw: ${err instanceof Error ? err.message : String(err)}`,
-          );
-        },
-      );
-    }
+    await this.enqueueOrRunInline({
+      runId,
+      workflowId,
+      projectId:  workflow['project_id'] as string,
+      orgId,
+      userId:     actorId,
+      definition,
+      inputs:     inputs ?? {},
+      skipNodes:  eventSkipNodes,
+      workflow,
+      project: { organization_id: orgId },
+    });
   }
 
   // ── Direct node execution (inline actions) ─────────────────────────────────

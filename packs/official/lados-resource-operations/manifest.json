@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.resource-operations",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Resource Operations",
   "layer": "L0",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados Workspace Resource and artifact operations.",
   "ownerBoundary": [
     "Workspace Resource create/read/list/update",
@@ -35,6 +35,7 @@
     "lados.resource.read",
     "lados.resource.list",
     "lados.resource.update",
+    "lados.resource.transition",
     "lados.resource.resolve_binding",
     "lados.artifact.write",
     "lados.artifact.read"
@@ -54,8 +55,8 @@
     "foundation-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S4 fix: the skeleton declared capability \"resource.transition\" with no corresponding node in `nodes`; added lados.resource.transition to close the gap",
+    "runtime": "implemented — all 8 nodes implemented",
     "canvas": "not_started",
     "templates": "not_started"
   },

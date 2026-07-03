@@ -3,6 +3,7 @@ packages:
   - 'packages/*'
   - 'packages/@lados/*'
   - 'packs/*'
+  - 'packs/official/*'
 allowBuilds:
   '@nestjs/core': false
   unrs-resolver: false

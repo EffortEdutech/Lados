@@ -4,7 +4,7 @@
     "displayName": "Upload File",
     "canonicalCapability": "document.file.upload",
     "ownerPack": "lados.document-intelligence",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Attach or upload a source file for workflow processing.",
     "inputPattern": [
       "inspector"
@@ -51,7 +51,7 @@
     "compatibilityAliases": [
       "document.upload_file"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Document Intelligence",
     "icon": "FileSearch",
     "searchKeywords": [
@@ -65,7 +65,7 @@
     "displayName": "Read Excel",
     "canonicalCapability": "document.table.read_excel",
     "ownerPack": "lados.document-intelligence",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Read workbook tables into structured workflow data.",
     "inputPattern": [
       "ports",
@@ -119,7 +119,7 @@
     "compatibilityAliases": [
       "document.read_excel"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Document Intelligence",
     "icon": "FileSearch",
     "searchKeywords": [
@@ -129,11 +129,138 @@
     ]
   },
   {
+    "type": "lados.document.read_pdf",
+    "displayName": "Read PDF",
+    "canonicalCapability": "document.pdf.read",
+    "ownerPack": "lados.document-intelligence",
+    "status": "draft",
+    "intent": "Fetch a PDF source file for downstream processing.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "file metadata; text extraction not yet implemented",
+    "ports": {
+      "inputs": [
+        {
+          "id": "file",
+          "label": "File",
+          "dataType": "file"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "document",
+          "label": "Document",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "read",
+        "label": "Read Options",
+        "fields": [
+          "pageRange"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "document control SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Reads data only; downstream review decides whether data is accepted.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "stub",
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "searchKeywords": [
+      "document intelligence",
+      "read",
+      "pdf"
+    ]
+  },
+  {
+    "type": "lados.document.read_docx",
+    "displayName": "Read Word Document",
+    "canonicalCapability": "document.docx.read",
+    "ownerPack": "lados.document-intelligence",
+    "status": "draft",
+    "intent": "Fetch a Word document source file for downstream processing.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "file metadata; text extraction not yet implemented",
+    "ports": {
+      "inputs": [
+        {
+          "id": "file",
+          "label": "File",
+          "dataType": "file"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "document",
+          "label": "Document",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "read",
+        "label": "Read Options",
+        "fields": []
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "document control SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Reads data only; downstream review decides whether data is accepted.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "stub",
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "searchKeywords": [
+      "document intelligence",
+      "read",
+      "docx",
+      "word"
+    ]
+  },
+  {
     "type": "lados.document.extract_table",
     "displayName": "Extract Table",
     "canonicalCapability": "document.table.extract",
     "ownerPack": "lados.document-intelligence",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Extract tabular data from a document with source references.",
     "inputPattern": [
       "ports",
@@ -187,13 +314,79 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Document Intelligence",
     "icon": "FileSearch",
     "searchKeywords": [
       "document intelligence",
       "extract",
       "table"
+    ]
+  },
+  {
+    "type": "lados.document.generate_document",
+    "displayName": "Generate Document",
+    "canonicalCapability": "document.generate",
+    "ownerPack": "lados.document-intelligence",
+    "status": "draft",
+    "intent": "Generate a Word document from workflow data.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "generated document reference or inline content",
+    "ports": {
+      "inputs": [
+        {
+          "id": "data",
+          "label": "Data",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "document",
+          "label": "Document",
+          "dataType": "file"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "generate",
+        "label": "Generate",
+        "fields": [
+          "title",
+          "template"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "document control SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Generates a draft document only; distribution/approval is a separate step.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "searchKeywords": [
+      "document intelligence",
+      "generate",
+      "document",
+      "word"
     ]
   }
 ]

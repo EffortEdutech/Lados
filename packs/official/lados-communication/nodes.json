@@ -68,7 +68,7 @@
     "compatibilityAliases": [
       "notification.send_email"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Communication",
     "icon": "MessagesSquare",
     "searchKeywords": [
@@ -136,7 +136,7 @@
     "compatibilityAliases": [
       "notification.send_sms"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "stub",
     "category": "Communication",
     "icon": "MessagesSquare",
     "searchKeywords": [
@@ -215,7 +215,7 @@
       "notification.send_in_app",
       "foundation.send_notification"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Communication",
     "icon": "MessagesSquare",
     "searchKeywords": [
@@ -291,7 +291,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Communication",
     "icon": "MessagesSquare",
     "searchKeywords": [

@@ -41,6 +41,8 @@ export type ResourceType =
   | 'operator'
   // Phase 9 M4 — HR / Payroll
   | 'payroll_run'
+  // Phase 21 S4 (Wave 2) — Task/Case Management official pack
+  | 'task' | 'case'
   // escape hatch
   | 'custom';
 
@@ -96,6 +98,9 @@ const DEFAULT_STATE: Record<ResourceType, string> = {
   // Phase 9 M3 / M4
   operator:           'available',
   payroll_run:        'draft',
+  // Phase 21 S4 (Wave 2) — Task/Case Management official pack
+  task:               'open',
+  case:               'open',
   // escape hatch
   custom:             'active',
 };
@@ -122,9 +127,11 @@ export class ResourceService {
     data?: Record<string, unknown>;
     parentId?: string;
     createdBy: string;
+    /** Phase 21 S4 — overrides the type's default initial state, if the caller has one. */
+    initialState?: string;
   }): Promise<Resource> {
     const { orgId, projectId, type, name, data = {}, parentId, createdBy } = params;
-    const initialState = DEFAULT_STATE[type] ?? 'draft';
+    const initialState = params.initialState ?? DEFAULT_STATE[type] ?? 'draft';
 
     const { data: row, error } = await this.supabase.admin
       .from('lados_resources')

@@ -35,6 +35,7 @@ import { ExecutionQueueService, parseRedisUrl } from './execution-queue.service'
 import { buildRealNodeResolver } from '../execution/real-nodes';
 import { runWorkflow } from '@lados/execution-engine';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
+import type { NodeProgressEvent } from '@lados/execution-engine';
 import {
   EXECUTION_QUEUE_NAME,
   EXECUTION_JOB_TYPE,
@@ -148,6 +149,13 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       variables:      {},
       nodeResolver:   this.nodeResolver,
       skipNodes:      skipNodes ?? [],
+      // Phase 21 S3 (D4) — bridges the engine's per-node progress hook to the
+      // SSE stream. The /runs/:runId/stream endpoint was declared since Phase
+      // 12 but nothing ever emitted NODE_STARTED/NODE_DONE — this is the fix.
+      onNodeEvent: (event: NodeProgressEvent) => {
+        const eventName = event.type === 'started' ? RUN_EVENT.NODE_STARTED : RUN_EVENT.NODE_DONE;
+        this.emitter.emit(eventName, { runId, ...event });
+      },
       ...(type === EXECUTION_JOB_TYPE.RESUME && resumeFromCheckpoint
         ? { resumeFromCheckpoint }
         : {}),

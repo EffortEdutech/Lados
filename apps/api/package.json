@@ -36,6 +36,12 @@
     "@lados/qs-pack": "workspace:*",
     "@lados/shared-types": "workspace:*",
     "@lados/workflow-json": "workspace:*",
+    "@lados/official-workflow-foundation": "workspace:*",
+    "@lados/official-human-work": "workspace:*",
+    "@lados/official-document-intelligence": "workspace:*",
+    "@lados/official-communication": "workspace:*",
+    "@lados/official-task-case": "workspace:*",
+    "@lados/official-resource-operations": "workspace:*",
     "@nestjs/event-emitter": "^2.0.4",
     "@supabase/supabase-js": "^2.45.4",
     "bullmq": "^5.13.2",
@@ -49,6 +55,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@lados/testing": "workspace:*",
     "@nestjs/cli": "^10.4.5",
     "@nestjs/testing": "^10.4.4",
     "@types/express": "^5.0.0",

@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.human-work",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Human Work",
   "layer": "L0",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados human approval, assignment, review, and decision-capture pack.",
   "ownerBoundary": [
     "approval requests",
@@ -51,8 +51,8 @@
     "core-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified",
+    "runtime": "implemented",
     "canvas": "not_started",
     "templates": "not_started"
   },

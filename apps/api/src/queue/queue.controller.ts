@@ -55,11 +55,15 @@ export class QueueController {
       };
     }
 
+    // S3 (D2) — surface the last startup/PING healthcheck result so ops can
+    // tell "configured but unreachable" apart from "configured and healthy"
+    // instead of only ever seeing counts.
     return {
       success: true,
       data: {
         mode:      'bullmq',
         queueName: 'lados-execution',
+        redisHealthy: this.queueService.lastKnownHealthy ?? null,
         counts:    stats,
       },
     };

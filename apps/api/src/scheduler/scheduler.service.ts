@@ -7,7 +7,11 @@
  * Architecture:
  *   - Single setInterval at startup (no external cron library needed)
  *   - Cron expressions stored in `filter.cronExpression` on the subscription row
- *   - Fires via ExecutionQueueService (BullMQ) → falls back to in-process if Redis absent
+ *   - Fires via ExecutionService.enqueueOrRunInline() (BullMQ) → falls back to
+ *     in-process if Redis is absent or the enqueue call fails/times out
+ *     (Phase 21 S3 / D2 — this scheduler used to call ExecutionQueueService
+ *     directly with no fallback path of its own, so a cron-triggered run
+ *     could get silently dropped forever if Redis was down)
  *   - Workflow snapshot loaded from published_version_id to ensure idempotency
  *
  * Supported cron syntax (standard 5-field: min hour day month weekday):
@@ -28,7 +32,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { SupabaseService }       from '../common/supabase/supabase.service';
-import { ExecutionQueueService } from '../queue/execution-queue.service';
+import { ExecutionService }      from '../execution/execution.service';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
 
 // ── Cron evaluator ────────────────────────────────────────────────────────────
@@ -91,8 +95,8 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
   private timer: ReturnType<typeof setInterval> | undefined;
 
   constructor(
-    private readonly supabase:       SupabaseService,
-    private readonly executionQueue: ExecutionQueueService,
+    private readonly supabase:         SupabaseService,
+    private readonly executionService: ExecutionService,
   ) {}
 
   onModuleInit(): void {
@@ -191,6 +195,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
       }
 
       const definition = snap.definition as QSWorkflowDefinition;
+      const runInputs = { cron_expression: cronExpression, fired_at: new Date().toISOString() };
 
       // 2. Create run record
       const { data: run, error: runErr } = await this.supabase.admin
@@ -202,7 +207,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
           workflow_snapshot: definition,
           status:           'running',
           trigger_type:     'schedule',
-          inputs:           { cron_expression: cronExpression, fired_at: new Date().toISOString() },
+          inputs:           runInputs,
           started_by:       'system',
           started_at:       new Date().toISOString(),
         })
@@ -216,17 +221,23 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
       const runId = run.id as string;
 
-      // 3. Enqueue via BullMQ (falls back to in-process if Redis absent)
-      await this.executionQueue.enqueueTrigger({
+      // 3. Enqueue via BullMQ, falling back to in-process if Redis is absent
+      //    or the enqueue itself fails/times out (Phase 21 S3 / D2) — this
+      //    used to call ExecutionQueueService directly with no fallback, so
+      //    a cron-triggered run could be silently dropped forever.
+      const { enqueued } = await this.executionService.enqueueOrRunInline({
         runId,
         workflowId,
         projectId: workflow.project_id as string,
         orgId,
         userId:    'system',
+        definition,
+        inputs:    runInputs,
       });
 
       this.logger.log(
-        `SchedulerService: fired workflow ${workflowId} (run ${runId}) via cron "${cronExpression}"`,
+        `SchedulerService: fired workflow ${workflowId} (run ${runId}) via cron "${cronExpression}" ` +
+        `(${enqueued ? 'queued' : 'in-process fallback'})`,
       );
     } catch (err) {
       this.logger.error(
