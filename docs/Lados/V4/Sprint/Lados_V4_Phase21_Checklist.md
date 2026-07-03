@@ -141,6 +141,33 @@
 
 ## Handover
 
+### 2026-07-03 (2) - S1 Official Runtime Foundation delivered
+
+✅ Completed:
+- Confirmed the S1 executor contract already exists (`NodeExecutor` in `@lados/pack-sdk/src/resolve.ts`) — documented as the standing contract rather than rebuilt.
+- Extended `OfficialNodeManifest` with optional `events` declarations (`OfficialNodeEventEmission`) + validator support in `@lados/pack-sdk`.
+- Built `apps/api/src/pack/official-pack-loader.ts` (pure loader: reads + validates every `packs/official/*` skeleton, no DB deps) and `official-pack-loader.service.ts` (NestJS wrapper, upserts to `packs`/`registered_nodes` as visible-but-non-executable, wired into `PackModule` as its own `OnModuleInit` — kept fully separate from `PackInstallerService` so a broken skeleton can never affect prototype pack sync).
+- Wired `pnpm validate:official-packs` into `.github/workflows/ci.yml` — an invalid official manifest now fails CI.
+- Added `apps/api/test/official-pack-loader.spec.ts`: loader loads all skeletons cleanly, validator rejects a deliberately broken manifest, alias resolution, and the new `events` field (valid, missing eventType, duplicate eventType, omitted).
+- Drafted `supabase/migrations/0056_official_capability_pack_registry.sql` (additive: `packs.layer`, `packs.runtime_status`, `registered_nodes.canonical_capability`, `registered_nodes.executor_status`; existing rows default to fully-enabled so prototype behavior is unchanged).
+
+🔧 Ad-hoc outstanding:
+- Migration 0056 is written but **not applied** to the live Supabase project (`fsrdasrwceuscrfglskd`) — needs `eff` to run it via the normal migration path (per Responsibility Split, Claude drafts migrations; applying + Supabase dashboard settings are `eff`'s call).
+- Note for `eff`: while investigating, `git status`/`git status --porcelain` failed in the Claude sandbox with `fatal: unknown index entry format 0x00730000`, and a `cat` of `package.json` inside the sandbox showed a truncated file — but `Read`-tool access to the real file (and `git diff HEAD`) showed `package.json` is intact and matches HEAD. This looks like a stale/partial mount snapshot in the sandbox, not real corruption, but worth a quick `git status` on your end to confirm nothing is actually wrong.
+
+➡️ Next:
+- S2 — Wave 1 packs: implement real executors for `lados-workflow-foundation`, `lados-human-work`, `lados-document-intelligence` (this is the point where `runtime_status`/`executor_status` for those three packs should start moving off `manifest_only`/`not_started`).
+- Apply migration 0056 once eff has verified it locally.
+
+📝 Checklist updated:
+- `Sprint/Lados_V4_Phase21_Checklist.md` (this file)
+- `Sprint/Lados_V4_Phase21_Production_Build_and_Deployment_Master_Plan.md` §4 S1 checklist
+
+Verification — eff ran locally, 2026-07-03:
+- `pnpm typecheck` — clean across all 21 workspace projects.
+- `pnpm --filter @lados/pack-sdk build && pnpm --filter api test` — 5 suites / 74 tests passed (including the new `official-pack-loader.spec.ts`; first run without the rebuild step showed 2 failures against a stale `dist/` — expected, resolved by rebuilding `@lados/pack-sdk` first).
+- `pnpm validate:official-packs` — passed: 20 packs, 51 nodes, 96 canonical capabilities, 38 compatibility aliases.
+
 ### 2026-07-03 - Phase 21 checklist created
 
 Done:

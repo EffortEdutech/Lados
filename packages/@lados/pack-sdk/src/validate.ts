@@ -354,6 +354,38 @@ export function validateOfficialNodeManifests(
       issues.push({ field: `${prefix}.searchKeywords`, message: 'searchKeywords must be an array of strings when provided' });
     }
 
+    if (node['events'] !== undefined) {
+      if (!Array.isArray(node['events'])) {
+        issues.push({ field: `${prefix}.events`, message: 'events must be an array when provided' });
+      } else {
+        const seenEventTypes = new Set<string>();
+        (node['events'] as unknown[]).forEach((event, eventIndex) => {
+          const eventPrefix = `${prefix}.events[${eventIndex}]`;
+          if (!isRecord(event)) {
+            issues.push({ field: eventPrefix, message: 'event emission must be an object' });
+            return;
+          }
+          const rawEventType = event['eventType'];
+          const eventType = typeof rawEventType === 'string' && rawEventType.trim() !== '' ? rawEventType : undefined;
+          if (!eventType) {
+            issues.push({ field: `${eventPrefix}.eventType`, message: 'eventType is required and must be a non-empty string' });
+          }
+          if (event['description'] !== undefined && typeof event['description'] !== 'string') {
+            issues.push({ field: `${eventPrefix}.description`, message: 'description must be a string when provided' });
+          }
+          if (event['payloadSchema'] !== undefined && !isRecord(event['payloadSchema'])) {
+            issues.push({ field: `${eventPrefix}.payloadSchema`, message: 'payloadSchema must be an object when provided' });
+          }
+          if (eventType) {
+            if (seenEventTypes.has(eventType)) {
+              issues.push({ field: `${eventPrefix}.eventType`, message: `Duplicate event type within node: ${eventType}` });
+            }
+            seenEventTypes.add(eventType);
+          }
+        });
+      }
+    }
+
     if (type) {
       if (!type.startsWith('lados.')) {
         issues.push({ field: `${prefix}.type`, message: 'Official node type must start with lados.' });

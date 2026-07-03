@@ -52,6 +52,7 @@ export type {
   OfficialKnowledgePackRequirements,
   OfficialNodeCanvasUx,
   OfficialNodeConfigGroup,
+  OfficialNodeEventEmission,
   OfficialNodeManifest,
   OfficialNodePort,
   OfficialNodePorts,

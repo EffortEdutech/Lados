@@ -101,15 +101,17 @@ The earlier `Lados_V4_Phase21_Sprint_Plan.md` defined workstreams 21A–21F. The
 
 > Makes `packs/official/*` loadable as real runtime packs, per 20B1 §2 preconditions.
 
-- [ ] Executor contract for official nodes: typed `execute(ctx)` signature returning `{ status, outputs }` (per the long-deferred Phase 1F item — done properly this time).
-- [ ] Official pack loader: compile/register `packs/official/*` with `manifest.json` + `nodes.json` (manifest-first, executors added per wave).
-- [ ] Node registry integration: official nodes appear in `registered_nodes` with layer/capability metadata; prototype and official coexist during transition.
-- [ ] Wire 20B2 validator into CI: invalid official manifest fails the build.
-- [ ] Compatibility alias table live: alias map resolves prototype type → official type (Stage 1 "Planned" per 20B2 §5).
-- [ ] `TEST` Jest: loader registers all 10 skeleton packs; validator rejects a deliberately broken manifest; alias resolution unit test.
-- [ ] Extend manifest contract with `events` declarations (closes deferred Phase 1F item at the standard level).
+- [x] Executor contract for official nodes: typed `execute(ctx)` signature returning `{ status, outputs }`. *(2026-07-03 — already existed as `NodeExecutor` in `@lados/pack-sdk/src/resolve.ts`: `(ctx: NodeContext) => Promise<NodeExecuteResult>`, confirmed as the standing S1 contract; no official executors implemented yet, by design — that's S2+.)*
+- [x] Official pack loader: compile/register `packs/official/*` with `manifest.json` + `nodes.json` (manifest-first, executors added per wave). *(2026-07-03 — `apps/api/src/pack/official-pack-loader.ts`, pure fs-based loader + validator, no DB/NestJS deps.)*
+- [x] Node registry integration: official nodes appear in `registered_nodes` with layer/capability metadata; prototype and official coexist during transition. *(2026-07-03 — `OfficialPackLoaderService` in `apps/api/src/pack/official-pack-loader.service.ts`, wired into `PackModule`, upserts official packs/nodes as visible + non-executable via new `runtime_status`/`executor_status` columns. Does not touch `PackInstallerService` or prototype rows.)*
+- [x] Wire 20B2 validator into CI: invalid official manifest fails the build. *(2026-07-03 — added `pnpm validate:official-packs` step to `.github/workflows/ci.yml`.)*
+- [x] Compatibility alias table live: alias map resolves prototype type → official type (Stage 1 "Planned" per 20B2 §5). *(Already live since 20B.2 — `officialCompatibilityAliases` / `resolveOfficialCompatibilityAlias` in `@lados/pack-sdk`; confirmed still Stage 1 only, no runtime rewrite behavior added.)*
+- [x] `TEST` Jest: loader registers all skeleton packs; validator rejects a deliberately broken manifest; alias resolution unit test. *(2026-07-03 — `apps/api/test/official-pack-loader.spec.ts`.)*
+- [x] Extend manifest contract with `events` declarations (closes deferred Phase 1F item at the standard level). *(2026-07-03 — `OfficialNodeEventEmission` + `OfficialNodeManifest.events?` in `@lados/pack-sdk/src/types.ts`, validated in `validate.ts`, optional/backward-compatible with existing skeleton `nodes.json` files.)*
 
-**Gate:** `pnpm build && test` green; official packs visible in node registry (flagged non-executable until their wave lands).
+**New:** `supabase/migrations/0056_official_capability_pack_registry.sql` — adds `packs.layer`, `packs.runtime_status`, `registered_nodes.canonical_capability`, `registered_nodes.executor_status`. Additive/defaulted; not yet applied to the live Supabase project — needs `eff` to run via the normal migration path.
+
+**Gate:** `pnpm typecheck` clean (21/21 projects) · `pnpm --filter api test` 74/74 green · `pnpm validate:official-packs` passed (20 packs, 51 nodes, 96 capabilities, 38 aliases) — verified by eff 2026-07-03. Official packs visible in node registry (flagged non-executable until their wave lands) — code complete; migration 0056 still needs to be applied to the live Supabase project before the registry rows actually exist there.
 
 ### S2 — Wave 1: `lados-workflow-foundation`, `lados-human-work`, `lados-document-intelligence`
 

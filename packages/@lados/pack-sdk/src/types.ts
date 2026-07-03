@@ -324,6 +324,22 @@ export interface OfficialNodeCanvasUx {
   maxVisiblePortsPerSide: number;
 }
 
+/**
+ * Declares an event type an official node may emit during execution.
+ *
+ * Closes the deferred Phase 1F item at the official-standard level: S1
+ * requires the manifest contract to declare events, not just ports/config.
+ * Optional — skeleton-status nodes may not have events until their
+ * executor wave lands.
+ */
+export interface OfficialNodeEventEmission {
+  /** Event type this node emits, e.g. "workflow.RunCompleted". */
+  eventType: string;
+  description?: string;
+  /** JSON Schema fragment describing the event payload. */
+  payloadSchema?: Record<string, unknown>;
+}
+
 export interface OfficialNodeManifest {
   type: string;
   displayName: string;
@@ -345,6 +361,8 @@ export interface OfficialNodeManifest {
   canvasUx: OfficialNodeCanvasUx;
   compatibilityAliases: string[];
   executorStatus: OfficialExecutorStatus;
+  /** Event types this node may emit at runtime (S1 manifest contract extension). */
+  events?: OfficialNodeEventEmission[];
 }
 
 export interface OfficialPackSkeleton {

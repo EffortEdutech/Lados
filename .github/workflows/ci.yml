@@ -34,6 +34,9 @@ jobs:
       - name: Build packages and packs
         run: pnpm build:packages && pnpm build:packs
 
+      - name: Validate official capability packs (Phase 20B/21 S1)
+        run: pnpm validate:official-packs
+
       - name: Build apps
         run: pnpm --filter api build && pnpm --filter web build
         env:
