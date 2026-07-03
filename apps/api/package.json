@@ -20,6 +20,8 @@
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.4.4",
     "@nestjs/platform-express": "^10.4.4",
+    "@nestjs/throttler": "^6.2.1",
+    "helmet": "^8.0.0",
     "@lados/construction-pack": "workspace:*",
     "@lados/finance-pack": "workspace:*",
     "@lados/notifications-pack": "workspace:*",

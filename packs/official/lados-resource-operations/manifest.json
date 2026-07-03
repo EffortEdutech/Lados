@@ -1,0 +1,55 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.resource-operations",
+  "version": "0.1.0",
+  "displayName": "Resource Operations",
+  "layer": "L0",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados Workspace Resource and artifact operations.",
+  "ownerBoundary": [
+    "Workspace Resource create/read/list/update",
+    "Resource Binding resolution",
+    "artifact read/write"
+  ],
+  "mustNotOwn": [
+    "domain-specific resource validation",
+    "document extraction logic",
+    "external system synchronization"
+  ],
+  "dependencies": ["lados.workflow-foundation"],
+  "capabilities": [
+    "resource.create",
+    "resource.read",
+    "resource.list",
+    "resource.update",
+    "resource.transition",
+    "resource.binding.resolve",
+    "artifact.write",
+    "artifact.read"
+  ],
+  "nodes": [
+    "lados.resource.create",
+    "lados.resource.read",
+    "lados.resource.list",
+    "lados.resource.update",
+    "lados.resource.resolve_binding",
+    "lados.artifact.write",
+    "lados.artifact.read"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": ["resource naming SOP"]
+  },
+  "guardrails": [
+    "Resource nodes must expose Resource Binding support where practical.",
+    "Resource transition nodes must not bypass human approval rules declared by domain packs."
+  ],
+  "prototypeReferences": ["core-pack", "foundation-pack"],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  }
+}

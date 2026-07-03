@@ -1,4 +1,4 @@
-# Lados V4 Phase 20 Sprint Plan: Marketplace Knowledge Catalogue Documentation
+﻿# Lados V4 Phase 20 Sprint Plan: Marketplace Knowledge Catalogue Documentation
 
 **Document ID:** LADOS-V4-SPRINT-P20-MARKETPLACE-KNOWLEDGE  
 **Phase:** 20  
@@ -119,11 +119,19 @@ Create the Capability Pack planning paper explaining:
 
 Output:
 
+- `Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md`
+- `Design/Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md`
+- `Design/Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md`
+- `Design/Lados_V4_Phase20B3_Official_Skeleton_Validation_and_Capability_Check.md`
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
 - `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
+- `Design/Lados_V4_Phase20A_Canonical_Capability_Registry.md`
+- `Design/Lados_V4_Phase20A_Target_Workflow_Template_Index.md`
+- `Design/Lados_V4_Phase20A_Prototype_Node_Audit.md`
 
 Acceptance:
 
+- [x] Fresh-build decision is documented.
 - [x] Capability Pack taxonomy is documented.
 - [x] Node indexing model is documented.
 - [x] Overlap-control rules are documented.
@@ -131,6 +139,9 @@ Acceptance:
 - [x] Manifest extension direction is documented.
 - [x] Prototype reset policy is documented.
 - [x] Draft target Capability Pack catalogue is documented.
+- [x] Canonical capability registry is drafted.
+- [x] Target workflow template index is drafted.
+- [x] Current prototype nodes are audited against the target catalogue.
 
 ### P20-002 - Marketplace Strategy Paper
 
@@ -293,6 +304,10 @@ Note: `data_pack_usages` is the current Phase 19C technical column name. Product
 - [x] Capability Pack planning paper complete.
 - [x] Node taxonomy and overlap-control model drafted.
 - [x] Draft target Capability Pack catalogue complete.
+- [x] Canonical capability registry drafted.
+- [x] Target workflow template index drafted.
+- [x] Prototype node audit drafted.
+- [x] Prototype assets marked reference-only for the official product line.
 - [x] Marketplace strategy paper complete.
 - [ ] Supplier Knowledge Pack specification complete.
 - [ ] AI retrieval requirements complete.
@@ -316,11 +331,18 @@ Done:
 - Created strategy paper and sprint plan.
 - Created Capability Pack planning and node taxonomy paper.
 - Created draft target Capability Pack catalogue.
+- Created canonical capability registry.
+- Created target workflow template index.
+- Created prototype node audit.
+- Accepted fresh-build direction: prototype packs/nodes/templates are reference-only and official assets will be built fresh.
+- Created Phase 20B.1 official pack manifest contract standard and first manifest-only official pack skeletons.
+- Created Phase 20B.2 official SDK types, validators, and compatibility alias plan.
+- Created Phase 20B.3 official skeleton validation script and cross-pack capability checks.
 
 Next:
-- Review and refine Capability Pack taxonomy and official pack boundaries.
-- Classify current prototype packs/nodes as keep, rename, merge, split, deprecate, or remove.
-- Create the canonical capability registry and workflow template index from the target catalogue.
+- Review and refine official pack boundaries.
+- Expand fresh official skeletons for Communication, Task and Case, Commercial Finance, Procurement, and Construction Operations.
+- Plan compatibility aliases or workflow migration before retiring prototype runtime support.
 - Expand supplier Knowledge Pack specification after Capability Pack planning is accepted.
 - Draft Marketplace screen specification.
 - Draft AI retrieval result shape and governance checklist.
@@ -331,9 +353,17 @@ Ad-hoc:
 Docs updated:
 - `Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md`
 - `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`
+- `Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md`
+- `Design/Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md`
+- `Design/Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md`
+- `Design/Lados_V4_Phase20B3_Official_Skeleton_Validation_and_Capability_Check.md`
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
 - `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
+- `Design/Lados_V4_Phase20A_Canonical_Capability_Registry.md`
+- `Design/Lados_V4_Phase20A_Target_Workflow_Template_Index.md`
+- `Design/Lados_V4_Phase20A_Prototype_Node_Audit.md`
 - `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
 
 Verification:
 - Documentation-only phase; no code verification required.
+

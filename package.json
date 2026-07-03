@@ -18,6 +18,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\" --ignore-path .gitignore",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "validate:official-packs": "pnpm --filter @lados/pack-sdk build && node tools/validate-official-packs.cjs",
     "clean": "pnpm -r clean && rm -rf node_modules",
     "db:migrate": "pnpm --filter api db:migrate",
     "db:seed": "pnpm --filter api db:seed"

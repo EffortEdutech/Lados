@@ -43,6 +43,7 @@ import { SupabaseJwtGuard } from '../common/guards/supabase-jwt.guard';
 import { SupabaseService } from '../common/supabase/supabase.service';
 import { ResourceService, ResourceType } from '../resource/resource.service';
 import { ExecutionService } from '../execution/execution.service';
+import { Throttle } from '@nestjs/throttler';
 import type { AuthenticatedRequest } from '../common/types/authenticated-request';
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
@@ -165,6 +166,9 @@ function ok<T>(data: T): ApiResponse<T> {
 
 // ── Controller ────────────────────────────────────────────────────────────────
 
+// PD-3 — strict rate limit: AI routes are cost-bearing (OpenAI spend).
+// 20 requests/min per IP, overriding the global 120/min default.
+@Throttle({ default: { ttl: 60_000, limit: 20 } })
 @Controller('ai')
 export class AiController {
   constructor(

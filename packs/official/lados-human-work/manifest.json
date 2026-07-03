@@ -1,0 +1,50 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.human-work",
+  "version": "0.1.0",
+  "displayName": "Human Work",
+  "layer": "L0",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados human approval, assignment, review, and decision-capture pack.",
+  "ownerBoundary": [
+    "approval requests",
+    "user assignment",
+    "review checkpoints",
+    "human decision records"
+  ],
+  "mustNotOwn": [
+    "professional certification itself",
+    "contract entitlement decision",
+    "finance payment execution",
+    "domain-specific valuation logic"
+  ],
+  "dependencies": ["lados.workflow-foundation", "lados.resource-operations"],
+  "capabilities": [
+    "human.approval.request",
+    "human.assignment.assign",
+    "human.decision.record",
+    "human.review.checkpoint"
+  ],
+  "nodes": [
+    "lados.human.request_approval",
+    "lados.human.assign_user",
+    "lados.human.record_decision",
+    "lados.human.review_checkpoint"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": ["company approval SOP", "approval matrix"]
+  },
+  "guardrails": [
+    "Human Work records decisions; it does not decide on behalf of users.",
+    "Approval nodes must pause or create tasks instead of silently approving workflow actions."
+  ],
+  "prototypeReferences": ["foundation-pack", "core-pack"],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  }
+}

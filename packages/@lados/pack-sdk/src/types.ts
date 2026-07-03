@@ -229,3 +229,123 @@ export interface PackValidationResult {
   valid: boolean;
   issues: PackValidationIssue[];
 }
+
+// Phase 20B official Capability Pack contract.
+
+export type OfficialCapabilityPackContractVersion = 'lados.capability-pack.v1';
+
+export type OfficialCapabilityPackLayer = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
+
+export type OfficialCapabilityPackStatus = 'skeleton' | 'draft' | 'verified' | 'retired';
+
+export type OfficialRuntimeStatus =
+  | 'manifest_only'
+  | 'stub_executors'
+  | 'runtime_enabled'
+  | 'retired';
+
+export type OfficialInputPattern =
+  | 'ports'
+  | 'inspector'
+  | 'resource_binding'
+  | 'knowledge_reference';
+
+export type OfficialAiBoundary = 'none' | 'advisory' | 'requires_human_review';
+
+export type OfficialExecutorStatus = 'not_started' | 'planned' | 'stub' | 'implemented';
+
+export interface OfficialKnowledgePackRequirements {
+  required: string[];
+  recommended: string[];
+}
+
+export interface OfficialVerificationStatus {
+  manifest: string;
+  runtime: string;
+  canvas: string;
+  templates: string;
+}
+
+export interface OfficialCapabilityPackManifest {
+  contractVersion: OfficialCapabilityPackContractVersion;
+  id: string;
+  version: string;
+  displayName: string;
+  layer: OfficialCapabilityPackLayer;
+  status: OfficialCapabilityPackStatus;
+  runtimeStatus: OfficialRuntimeStatus;
+  description?: string;
+  ownerBoundary: string[];
+  mustNotOwn: string[];
+  dependencies: string[];
+  capabilities: string[];
+  nodes: string[];
+  knowledgePacks: OfficialKnowledgePackRequirements;
+  guardrails: string[];
+  prototypeReferences: string[];
+  verification: OfficialVerificationStatus;
+}
+
+export interface OfficialNodePort {
+  id: string;
+  label: string;
+  dataType: string;
+  required?: boolean;
+}
+
+export interface OfficialNodePorts {
+  inputs: OfficialNodePort[];
+  outputs: OfficialNodePort[];
+}
+
+export interface OfficialNodeConfigGroup {
+  id: string;
+  label: string;
+  fields: string[];
+}
+
+export interface OfficialNodeResourceBindingContract {
+  supported: boolean;
+  required: boolean;
+}
+
+export interface OfficialNodeCanvasUx {
+  minWidth: number;
+  minHeight: number;
+  maxVisiblePortsPerSide: number;
+}
+
+export interface OfficialNodeManifest {
+  type: string;
+  displayName: string;
+  canonicalCapability: string;
+  ownerPack: string;
+  status: OfficialCapabilityPackStatus;
+  intent: string;
+  inputPattern: OfficialInputPattern[];
+  outputPattern: string;
+  ports: OfficialNodePorts;
+  configGroups: OfficialNodeConfigGroup[];
+  resourceBindings: OfficialNodeResourceBindingContract;
+  knowledgePackRequirements: OfficialKnowledgePackRequirements;
+  humanDecisionBoundary: string;
+  aiBoundary: OfficialAiBoundary;
+  canvasUx: OfficialNodeCanvasUx;
+  compatibilityAliases: string[];
+  executorStatus: OfficialExecutorStatus;
+}
+
+export interface OfficialPackSkeleton {
+  manifest: OfficialCapabilityPackManifest;
+  nodes: OfficialNodeManifest[];
+}
+
+export interface OfficialCompatibilityAlias {
+  prototypeType: string;
+  officialType: string;
+  officialPack: string;
+  canonicalCapability: string;
+  status: 'planned' | 'active' | 'retired';
+  migrationMode: 'alias' | 'manual_review' | 'split' | 'merge' | 'retire';
+  notes?: string;
+}

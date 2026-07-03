@@ -8,6 +8,9 @@
  * POST   /events/subscriptions            — create an event subscription
  * PATCH  /events/subscriptions/:id        — enable / disable a subscription
  * DELETE /events/subscriptions/:id        — delete a subscription
+ *
+ * PD-3 — every route verifies the caller is a member of organizationId
+ * (previously only the param's presence was checked).
  */
 import {
   Controller, Get, Post, Patch, Delete,
@@ -17,6 +20,7 @@ import {
 import { IsString, IsUUID, IsOptional, IsBoolean, IsObject, MinLength } from 'class-validator';
 import { SupabaseJwtGuard } from '../common/guards/supabase-jwt.guard';
 import { EventBusService } from './event-bus.service';
+import { SecurityEngineService } from '../security/security.service';
 import type { AuthenticatedRequest } from '../common/types/authenticated-request';
 
 class CreateSubscriptionDto {
@@ -32,18 +36,24 @@ class PatchSubscriptionDto {
 @UseGuards(SupabaseJwtGuard)
 @Controller('events')
 export class EventBusController {
-  constructor(private readonly eventBus: EventBusService) {}
+  constructor(
+    private readonly eventBus: EventBusService,
+    private readonly security: SecurityEngineService,
+  ) {}
 
-  private requireOrg(orgId: string | undefined): string {
+  /** PD-3 — orgId must be present AND the caller must be a member. */
+  private async requireOrgMember(orgId: string | undefined, userId: string): Promise<string> {
     if (!orgId) throw new BadRequestException('organizationId query param is required');
+    await this.security.requireMembership(userId, orgId);
     return orgId;
   }
 
   // ── Event log ─────────────────────────────────────────────────────────────
 
   @Get()
-  getEvents(
+  async getEvents(
     @Query('organizationId') orgId: string,
+    @Request()               req: AuthenticatedRequest,
     @Query('type')           type?: string,
     @Query('sourceType')     sourceType?: string,
     @Query('sourceId')       sourceId?: string,
@@ -52,7 +62,7 @@ export class EventBusController {
     @Query('to')             to?: string,
     @Query('limit')          limitStr?: string,
   ) {
-    return this.eventBus.getEvents(this.requireOrg(orgId), {
+    return this.eventBus.getEvents(await this.requireOrgMember(orgId, req.user.id), {
       type, sourceType, sourceId, actorId, from, to,
       limit: limitStr ? parseInt(limitStr, 10) : undefined,
     });
@@ -61,24 +71,26 @@ export class EventBusController {
   // ── Correlation / run shortcuts ───────────────────────────────────────────
 
   @Get('correlation/:correlationId')
-  getByCorrelation(
+  async getByCorrelation(
     @Param('correlationId') correlationId: string,
     @Query('organizationId') orgId: string,
+    @Request() req: AuthenticatedRequest,
     @Query('limit') limitStr?: string,
   ) {
-    return this.eventBus.getEvents(this.requireOrg(orgId), {
+    return this.eventBus.getEvents(await this.requireOrgMember(orgId, req.user.id), {
       correlationId,
       limit: limitStr ? parseInt(limitStr, 10) : undefined,
     });
   }
 
   @Get('run/:runId')
-  getByRun(
+  async getByRun(
     @Param('runId') runId: string,
     @Query('organizationId') orgId: string,
+    @Request() req: AuthenticatedRequest,
     @Query('limit') limitStr?: string,
   ) {
-    return this.eventBus.getEvents(this.requireOrg(orgId), {
+    return this.eventBus.getEvents(await this.requireOrgMember(orgId, req.user.id), {
       runId,
       limit: limitStr ? parseInt(limitStr, 10) : undefined,
     });
@@ -87,18 +99,21 @@ export class EventBusController {
   // ── Subscriptions ─────────────────────────────────────────────────────────
 
   @Get('subscriptions')
-  listSubscriptions(@Query('organizationId') orgId: string) {
-    return this.eventBus.listSubscriptions(this.requireOrg(orgId));
+  async listSubscriptions(
+    @Query('organizationId') orgId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.eventBus.listSubscriptions(await this.requireOrgMember(orgId, req.user.id));
   }
 
   @Post('subscriptions')
-  createSubscription(
+  async createSubscription(
     @Body() dto: CreateSubscriptionDto,
     @Query('organizationId') orgId: string,
     @Request() req: AuthenticatedRequest,
   ) {
     return this.eventBus.subscribe({
-      orgId:      this.requireOrg(orgId),
+      orgId:      await this.requireOrgMember(orgId, req.user.id),
       eventType:  dto.eventType,
       workflowId: dto.workflowId,
       filter:     dto.filter,
@@ -107,19 +122,21 @@ export class EventBusController {
   }
 
   @Patch('subscriptions/:id')
-  patchSubscription(
+  async patchSubscription(
     @Param('id') id: string,
     @Body() dto: PatchSubscriptionDto,
     @Query('organizationId') orgId: string,
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.eventBus.setSubscriptionActive(id, this.requireOrg(orgId), dto.active);
+    return this.eventBus.setSubscriptionActive(id, await this.requireOrgMember(orgId, req.user.id), dto.active);
   }
 
   @Delete('subscriptions/:id')
-  deleteSubscription(
+  async deleteSubscription(
     @Param('id') id: string,
     @Query('organizationId') orgId: string,
+    @Request() req: AuthenticatedRequest,
   ) {
-    return this.eventBus.unsubscribe(id, this.requireOrg(orgId));
+    return this.eventBus.unsubscribe(id, await this.requireOrgMember(orgId, req.user.id));
   }
 }

@@ -1,4 +1,4 @@
-# Lados V4 Sprint Plan: P18 Polish to P20 Productization
+﻿# Lados V4 Sprint Plan: P18 Polish to P20 Productization
 
 **Document ID:** LADOS-V4-SPRINT-P18P-P20  
 **Status:** Active planning document  
@@ -54,7 +54,7 @@ UI copy must use these names consistently.
 
 Recommended order: **18P -> 19 -> 20**.
 
-Phase 20 depends on Phase 19 because professional nodes need real Data Pack references for testing and demonstration.
+Phase 20 depends on Phase 19 because professional nodes need real Knowledge Pack references for testing and demonstration.
 
 ---
 
@@ -385,7 +385,11 @@ Every QS/commercial Data Pack item needs:
 
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
 - `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`
+- `Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md`
 - `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
+- `Design/Lados_V4_Phase20A_Canonical_Capability_Registry.md`
+- `Design/Lados_V4_Phase20A_Target_Workflow_Template_Index.md`
+- `Design/Lados_V4_Phase20A_Prototype_Node_Audit.md`
 - `Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md`
 - `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
 
@@ -437,10 +441,11 @@ Knowledge Packs are the Lados answer to this shift. A supplier website may still
 - [x] Strategy paper created.
 - [x] Documentation sprint plan created.
 - [x] Naming lock created for Capability Packs and Knowledge Packs.
+- [x] Fresh-build decision accepted: prototype packs/nodes/templates are reference-only.
 - [x] New target Capability Pack catalogue drafted.
-- [ ] Current prototype packs/nodes classified for keep/rename/merge/split/deprecate/remove.
-- [ ] Canonical capability registry drafted.
-- [ ] Workflow template index drafted.
+- [x] Current prototype packs/nodes classified as reference lessons, fresh-build targets, retirement candidates, and temporary compatibility concerns.
+- [x] Canonical capability registry drafted.
+- [x] Workflow template index drafted.
 - [ ] Supplier Knowledge Pack specification complete.
 - [ ] AI retrieval requirements complete.
 - [ ] Marketplace screen specification complete.
@@ -451,11 +456,11 @@ Knowledge Packs are the Lados answer to this shift. A supplier website may still
 
 ---
 
-## Deferred Phase 20B - Professional Lados Pack Bundles
+## Active Phase 20B - Professional Lados Pack Bundles
 
 ### Goal
 
-Redesign official Lados packs into clean, professional, demonstrable bundles with consistent node naming, icons, categories, ports, configs, Data Pack references, and demo workflows.
+Redesign official Lados packs into clean, professional, demonstrable bundles with consistent node naming, icons, categories, ports, configs, Knowledge Pack references, and demo workflows.
 
 ### Why Phase 20 Matters
 
@@ -465,14 +470,19 @@ The platform is only believable if the official packs feel designed, not accumul
 
 | Bundle | Focus |
 |---|---|
-| `lados.core` | Triggers, control flow, HTTP, delays, state helpers |
-| `lados.document` | Upload/read/parse/generate documents |
-| `lados.qs` | BOQ, measurement, cost plan, claim/variation support |
-| `lados.construction` | Project, site, defects, inspections, progress workflows |
-| `lados.finance` | Invoice, payment, PO, retention |
+| `lados.workflow-foundation` | Triggers, control flow, delays, merge, logging |
+| `lados.resource-operations` | Workspace Resources, Resource Bindings, artifacts |
+| `lados.human-work` | Approval requests, assignments, review checkpoints, decision records |
+| `lados.document-intelligence` | Upload/read/parse/extract/generate documents |
+| `lados.qs-commercial` | BOQ, measurement, cost plan, claim/variation support |
+| `lados.communication` | Email, SMS, in-app, reminders |
+| `lados.task-case` | Tasks, cases, checklists, status |
+| `lados.commercial-finance` | Invoice, payment, PO, retention |
 | `lados.procurement` | RFQ, supplier, quotation comparison |
-| `lados.notification` | Email, SMS, in-app |
-| `lados.contractor` | Contractor operating workflows and field records |
+| `lados.construction-operations` | Project, site, defects, inspections, progress workflows |
+| `lados.contract-admin` | Notices, clauses, correspondence, instruction registers |
+| `lados.asset-fleet` | Jobs, trips, maintenance, fuel |
+| `lados.people-payroll` | Payroll preparation, expense review, human approval handoff |
 
 ### Node Design Standard
 
@@ -486,7 +496,7 @@ Every official node must have:
 - short port labels
 - professional config fields
 - resource binding strategy where needed
-- Data Pack references where useful
+- Knowledge Pack references where useful
 - one example workflow usage
 - one smoke test path or manual verification note
 
@@ -509,7 +519,7 @@ For nodes like Submit Invoice, the user should not manually connect or type ever
 1. The node accepts one primary Workspace Resource input or Resource Binding, such as `Invoice`.
 2. The inspector shows required fields and binding status.
 3. The node can optionally accept supporting inputs: `Contract`, `PO`, `Evidence`.
-4. Data Pack references supply rules, validation tables, and evidence checklists.
+4. Knowledge Pack references supply rules, validation tables, and evidence checklists.
 5. The workflow run uses resolved resource data and node config to execute.
 
 This keeps the canvas readable and makes the PropertyPanel/Explorer do the heavy data work.
@@ -521,7 +531,7 @@ Phase 20 must produce demo workflows:
 | Workflow | Purpose |
 |---|---|
 | Submit Invoice to Approval | Tests finance/resource binding/approval |
-| Progress Claim Evidence Check | Tests construction/QS/Data Pack evidence rules |
+| Progress Claim Evidence Check | Tests construction/QS/Knowledge Pack evidence rules |
 | RFQ to Quotation Comparison | Tests procurement/supplier/data outputs |
 | BOQ Upload to Cost Summary | Tests document/QS workflow |
 | Defect Report to Notification | Tests construction/notification/event flow |
@@ -536,7 +546,13 @@ Phase 20 must produce demo workflows:
 - [ ] Demo workflows added.
 - [ ] Demo workflows pass manual run verification where nodes are functional.
 - [ ] Marketplace shows official packs and Data Packs professionally.
-- [ ] Typecheck passes.
+- [x] Phase 20B.1 official manifest contract standard drafted.
+- [x] Phase 20B.1 first official pack skeletons created under `packs/official/`.
+- [x] Phase 20B.2 official SDK types and validators added.
+- [x] Phase 20B.2 compatibility alias map drafted.
+- [x] Phase 20B.3 official skeleton validation command added.
+- [x] Phase 20B.3 cross-pack capability and alias target checks pass.
+- [x] `@lados/pack-sdk` typecheck/build passes for official manifest validator work.
 - [ ] Build passes.
 
 ---
@@ -700,7 +716,7 @@ Done:
 - Updated this sprint plan to make Phase 20 documentation-first.
 
 Next:
-- Use the target Capability Pack catalogue to classify current prototype packs/nodes as keep, rename, merge, split, deprecate, or remove.
+- Use the target Capability Pack catalogue to classify current prototype packs/nodes as reference lessons, fresh-build targets, retirement candidates, and temporary compatibility concerns.
 - Draft the canonical capability registry and workflow template index.
 - Complete supplier Knowledge Pack specification.
 - Complete AI retrieval/result-shape requirements.
@@ -764,12 +780,11 @@ Done:
 - Updated the active sprint plan, master checklist, productization plan, and V4 README.
 
 Next:
-- Create the canonical capability registry table/document.
-- Create the target workflow template index.
-- Audit current prototype nodes against the target catalogue.
+- Review and accept the canonical capability registry, target workflow template index, and prototype node audit.
+- Turn accepted rows into fresh manifest contracts, pack skeleton tasks, and compatibility/migration tasks.
 
 Ad-hoc:
-- Current implementation folder names stay unchanged until a planned refactor/migration phase.
+- Current implementation folder names stay unchanged until fresh replacements and compatibility migration are ready.
 - The catalogue is the planning source for future official pack naming and ownership.
 
 Docs updated:
@@ -781,6 +796,156 @@ Docs updated:
 
 Verification:
 - Documentation-only update. Link and terminology scan completed.
+
+### Phase 20A Fresh Official Capability Build Decision - 2026-07-03
+
+Done:
+- Accepted the product direction to remove prototype packs, nodes, and templates from the official Lados product line.
+- Created `Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md`.
+- Updated the target catalogue, canonical capability registry, prototype node audit, active sprint plan, master checklist, productization plan, and V4 README.
+- Reframed prototype assets as reference-only and temporary compatibility support, not official migration targets.
+
+Next:
+- Build the roadmap for fresh official Capability Pack implementation.
+- Create clean official pack skeletons and fresh node manifest contracts from the registry.
+- Plan compatibility aliases or workflow migration before retiring prototype runtime support.
+
+Ad-hoc:
+- Prototype code should remain until fresh replacements are working and existing saved workflows have a compatibility path.
+- New Marketplace/product UI should not present prototype packs as official packs.
+
+Docs updated:
+- `Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md`
+- `Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md`
+- `Design/Lados_V4_Phase20A_Canonical_Capability_Registry.md`
+- `Design/Lados_V4_Phase20A_Prototype_Node_Audit.md`
+- `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- Documentation-only update. Link and terminology scan completed.
+
+### Phase 20A Capability Registry, Template Index, and Prototype Audit - 2026-07-03
+
+Done:
+- Created the canonical capability registry.
+- Created the target workflow template index.
+- Created the prototype node audit against the target Capability Pack catalogue.
+- Classified current prototype node families across core, foundation, document, AI, notifications, finance, procurement, QS, construction, and contractor packs.
+- Flagged risky commercial/QS node wording for rename or restriction: approval, certification, payment, and entitlement language must record human decisions rather than imply autonomous authority.
+- Updated the active sprint plan, master checklist, productization plan, and V4 README.
+
+Next:
+- Review and accept the registry, template index, and node audit.
+- Turn accepted registry rows into fresh manifest contracts, pack skeleton tasks, and compatibility/migration tasks.
+- Plan compatibility aliases or workflow migration for existing saved prototype node types.
+- Proceed to Supplier Knowledge Pack specification after Capability Pack ownership is accepted.
+
+Ad-hoc:
+- Existing implementation names remain valid only as temporary compatibility names until fresh official packs are ready.
+- High-input official nodes must be redesigned around Resource Bindings, grouped inspector config, and Knowledge Pack references.
+
+Docs updated:
+- `Design/Lados_V4_Phase20A_Canonical_Capability_Registry.md`
+- `Design/Lados_V4_Phase20A_Target_Workflow_Template_Index.md`
+- `Design/Lados_V4_Phase20A_Prototype_Node_Audit.md`
+- `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+
+### Phase 20B.1 Fresh Official Pack Skeletons - 2026-07-03
+
+Done:
+- Created the official pack manifest contract standard.
+- Created manifest-only skeleton location at `packs/official/`.
+- Created first fresh official skeleton packs: Workflow Foundation, Resource Operations, Human Work, Document Intelligence, and QS Commercial.
+- Added pack-level `manifest.json`, node-level `nodes.json`, README files, and template placeholders for each skeleton.
+- Kept skeletons separate from current runtime registration and build pipeline.
+
+Next:
+- Convert the manifest contract into typed SDK definitions.
+- Add a validator for official pack manifests and canonical capability ownership.
+- Draft compatibility aliases/migration from prototype node types to official node types.
+- Create the next skeleton set: Communication, Task and Case, Commercial Finance, Procurement, and Construction Operations.
+
+Ad-hoc:
+- Do not delete prototype packs yet. They remain temporary runtime support until fresh official packs are executable and saved workflow compatibility is handled.
+
+Docs updated:
+- `Design/Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md`
+- `packs/official/README.md`
+- `packs/official/lados-workflow-foundation/`
+- `packs/official/lados-resource-operations/`
+- `packs/official/lados-human-work/`
+- `packs/official/lados-document-intelligence/`
+- `packs/official/lados-qs-commercial/`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- Documentation and JSON skeleton validation only. Runtime build is not expected to include `packs/official/` yet.
+
+### Phase 20B.2 Official Manifest SDK Validator and Compatibility Aliases - 2026-07-03
+
+Done:
+- Added official Capability Pack manifest types to `@lados/pack-sdk`.
+- Added official node manifest types to `@lados/pack-sdk`.
+- Added official manifest and official node validators.
+- Added typed compatibility alias map from selected prototype node types to official node types.
+- Documented alias staging: planned, active, retirement.
+- Created `Design/Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md`.
+
+Next:
+- Add a validation script for all `packs/official` skeletons.
+- Add cross-pack duplicate canonical capability detection.
+- Add compatibility alias target validation.
+- Expand fresh official skeletons for Communication, Task and Case, Commercial Finance, Procurement, and Construction Operations.
+
+Ad-hoc:
+- Compatibility aliases are not active runtime rewrites yet.
+- Prototype packs must remain until official runtime executors and saved workflow migration are ready.
+
+Docs updated:
+- `Design/Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md`
+- `Design/Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- `corepack pnpm --filter @lados/pack-sdk typecheck` passed.
+
+### Phase 20B.3 Official Skeleton Validation Script - 2026-07-03
+
+Done:
+- Added `tools/validate-official-packs.cjs`.
+- Added root command `validate:official-packs`.
+- The command builds `@lados/pack-sdk` before validation.
+- Validates all official `manifest.json` and `nodes.json` files under `packs/official`.
+- Checks duplicate canonical capability keys across official packs.
+- Checks duplicate official node types across official packs.
+- Checks compatibility aliases point to existing official node skeletons and matching pack/capability metadata.
+- Created `Design/Lados_V4_Phase20B3_Official_Skeleton_Validation_and_Capability_Check.md`.
+
+Next:
+- Expand fresh official skeletons for Communication, Task and Case, Commercial Finance, Procurement, and Construction Operations.
+- Run `corepack pnpm validate:official-packs` after each new pack.
+
+Ad-hoc:
+- This is still manifest-only. No official runtime registration, alias activation, workflow migration, or prototype removal happened.
+
+Docs updated:
+- `Design/Lados_V4_Phase20B3_Official_Skeleton_Validation_and_Capability_Check.md`
+- `Design/Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- `corepack pnpm validate:official-packs` passed: 5 packs, 14 nodes, 40 canonical capabilities, 12 compatibility aliases.
 
 ---
 
@@ -801,3 +966,5 @@ Ad-hoc:
 Docs updated:
 Verification:
 ```
+
+

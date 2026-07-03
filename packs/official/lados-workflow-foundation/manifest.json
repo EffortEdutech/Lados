@@ -1,0 +1,58 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.workflow-foundation",
+  "version": "0.1.0",
+  "displayName": "Workflow Foundation",
+  "layer": "L0",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados workflow control primitives for triggers, branching, parallel flow, delay, and logging.",
+  "ownerBoundary": [
+    "manual, scheduled, and event triggers",
+    "workflow branching and merge control",
+    "loop, delay, and run logging"
+  ],
+  "mustNotOwn": [
+    "domain approvals",
+    "document parsing",
+    "business-specific validation",
+    "supplier or commercial decisions"
+  ],
+  "dependencies": [],
+  "capabilities": [
+    "workflow.trigger.manual",
+    "workflow.trigger.schedule",
+    "workflow.trigger.event",
+    "workflow.control.condition",
+    "workflow.control.loop",
+    "workflow.control.parallel",
+    "workflow.control.merge",
+    "workflow.control.delay",
+    "workflow.log.write",
+    "workflow.event.publish"
+  ],
+  "nodes": [
+    "lados.workflow.trigger_manual",
+    "lados.workflow.trigger_schedule",
+    "lados.workflow.condition",
+    "lados.workflow.parallel",
+    "lados.workflow.merge",
+    "lados.workflow.delay",
+    "lados.workflow.write_log"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": ["organization workflow SOP"]
+  },
+  "guardrails": [
+    "Workflow controls must not approve, certify, or decide commercial entitlement.",
+    "Event publishing must preserve source resource and actor metadata when available."
+  ],
+  "prototypeReferences": ["core-pack"],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  }
+}

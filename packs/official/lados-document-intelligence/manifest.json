@@ -1,0 +1,55 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.document-intelligence",
+  "version": "0.1.0",
+  "displayName": "Document Intelligence",
+  "layer": "L1",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados document intake, reading, extraction, classification, and document generation pack.",
+  "ownerBoundary": [
+    "file upload and intake",
+    "Excel, CSV, PDF, and DOCX reading",
+    "table extraction",
+    "document generation",
+    "document evidence attachment"
+  ],
+  "mustNotOwn": [
+    "QS measurement rules",
+    "procurement award decisions",
+    "supplier pricing authority",
+    "final commercial approval"
+  ],
+  "dependencies": ["lados.workflow-foundation", "lados.resource-operations"],
+  "capabilities": [
+    "document.file.upload",
+    "document.table.read_excel",
+    "document.pdf.read",
+    "document.docx.read",
+    "document.table.extract",
+    "document.generate"
+  ],
+  "nodes": [
+    "lados.document.upload_file",
+    "lados.document.read_excel",
+    "lados.document.read_pdf",
+    "lados.document.read_docx",
+    "lados.document.extract_table",
+    "lados.document.generate_document"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": ["document type library", "document control SOP", "evidence rule packs"]
+  },
+  "guardrails": [
+    "Extraction outputs must preserve source file references.",
+    "AI-assisted extraction is advisory until verified by downstream human or domain nodes."
+  ],
+  "prototypeReferences": ["document-pack", "ai-pack"],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.qs-commercial",
+  "version": "0.1.0",
+  "displayName": "QS Commercial",
+  "layer": "L2",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados quantity surveying and commercial management capability pack.",
+  "ownerBoundary": [
+    "BOQ reading and normalization",
+    "trade classification",
+    "work package split",
+    "quantity measurement",
+    "claim evidence review",
+    "variation valuation",
+    "final account reconciliation"
+  ],
+  "mustNotOwn": [
+    "site inspection creation",
+    "invoice payment processing",
+    "supplier quotation issuance",
+    "formal legal entitlement decision"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.human-work",
+    "lados.document-intelligence"
+  ],
+  "capabilities": [
+    "qs.boq.read",
+    "qs.boq.normalize",
+    "qs.trade.classify",
+    "qs.work_package.split",
+    "qs.boq.generate_draft",
+    "qs.claim.submit",
+    "qs.claim.assess",
+    "qs.claim.record_certification",
+    "qs.variation.submit",
+    "qs.variation.value",
+    "qs.variation.record_approval",
+    "qs.final_account.reconcile"
+  ],
+  "nodes": [
+    "lados.qs.read_boq",
+    "lados.qs.normalize_boq",
+    "lados.qs.classify_trade",
+    "lados.qs.split_work_packages",
+    "lados.qs.assess_progress_claim",
+    "lados.qs.value_variation",
+    "lados.qs.reconcile_final_account"
+  ],
+  "knowledgePacks": {
+    "required": ["claim evidence rules for claim templates"],
+    "recommended": [
+      "BOQ item library",
+      "QS rate library",
+      "measurement rules",
+      "contract clause reference",
+      "standards reference packs"
+    ]
+  },
+  "guardrails": [
+    "QS nodes produce measurements, valuations, checks, and recommendations.",
+    "QS nodes do not certify payment, approve entitlement, or provide legal advice.",
+    "Claim, variation, and final account outputs must preserve assumptions, source references, and review status."
+  ],
+  "prototypeReferences": ["qs-pack", "construction-pack", "finance-pack"],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  }
+}

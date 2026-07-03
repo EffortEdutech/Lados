@@ -21,6 +21,7 @@ import {
 import { SupabaseJwtGuard } from '../common/guards/supabase-jwt.guard';
 import { ResourceService, ResourceType } from './resource.service';
 import { StateEngineService } from '../state-engine/state-engine.service';
+import { SecurityEngineService } from '../security/security.service';
 import {
   CreateResourceDto, UpdateResourceDto, TransitionStateDto, ListResourcesDto,
 } from './resource.dto';
@@ -32,10 +33,17 @@ export class ResourceController {
   constructor(
     private readonly resources: ResourceService,
     private readonly stateEngine: StateEngineService,
+    private readonly security: SecurityEngineService,
   ) {}
 
-  private requireOrg(orgId: string | undefined): string {
+  /**
+   * PD-3 — orgId must be present AND the caller must be a member of that org.
+   * Previously only presence was checked, letting any authenticated user pass
+   * an arbitrary organizationId.
+   */
+  private async requireOrgMember(orgId: string | undefined, userId: string): Promise<string> {
     if (!orgId) throw new BadRequestException('organizationId query param is required');
+    await this.security.requireMembership(userId, orgId);
     return orgId;
   }
 
@@ -45,9 +53,9 @@ export class ResourceController {
   async list(
     @Query() q: ListResourcesDto,
     @Query('organizationId') orgId: string,
-    @Request() _req: AuthenticatedRequest,
+    @Request() req: AuthenticatedRequest,
   ) {
-    const data = await this.resources.listResources(this.requireOrg(orgId), {
+    const data = await this.resources.listResources(await this.requireOrgMember(orgId, req.user.id), {
       type:      q.type as ResourceType | undefined,
       state:     q.state,
       projectId: q.projectId,
@@ -65,7 +73,7 @@ export class ResourceController {
     @Request() req: AuthenticatedRequest,
   ) {
     const data = await this.resources.createResource({
-      orgId:     this.requireOrg(orgId),
+      orgId:     await this.requireOrgMember(orgId, req.user.id),
       projectId: dto.projectId,
       type:      dto.type as ResourceType,
       name:      dto.name,
@@ -82,9 +90,9 @@ export class ResourceController {
   async findOne(
     @Param('id') id: string,
     @Query('organizationId') orgId: string,
-    @Request() _req: AuthenticatedRequest,
+    @Request() req: AuthenticatedRequest,
   ) {
-    const data = await this.resources.getResource(id, this.requireOrg(orgId));
+    const data = await this.resources.getResource(id, await this.requireOrgMember(orgId, req.user.id));
     return { success: true, data };
   }
 
@@ -97,7 +105,7 @@ export class ResourceController {
     @Query('organizationId') orgId: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    const data = await this.resources.updateResource(id, this.requireOrg(orgId), dto, req.user.id);
+    const data = await this.resources.updateResource(id, await this.requireOrgMember(orgId, req.user.id), dto, req.user.id);
     return { success: true, data };
   }
 
@@ -110,7 +118,7 @@ export class ResourceController {
     @Query('organizationId') orgId: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    await this.resources.deleteResource(id, this.requireOrg(orgId), req.user.id);
+    await this.resources.deleteResource(id, await this.requireOrgMember(orgId, req.user.id), req.user.id);
   }
 
   // ── Transition ────────────────────────────────────────────────────────────
@@ -124,7 +132,7 @@ export class ResourceController {
   ) {
     const data = await this.resources.transitionState(
       id,
-      this.requireOrg(orgId),
+      await this.requireOrgMember(orgId, req.user.id),
       dto.toState,
       req.user.id,
     );
@@ -137,9 +145,9 @@ export class ResourceController {
   async events(
     @Param('id') id: string,
     @Query('organizationId') orgId: string,
-    @Request() _req: AuthenticatedRequest,
+    @Request() req: AuthenticatedRequest,
   ) {
-    const data = await this.resources.getEvents(id, this.requireOrg(orgId));
+    const data = await this.resources.getEvents(id, await this.requireOrgMember(orgId, req.user.id));
     return { success: true, data };
   }
 
@@ -149,9 +157,9 @@ export class ResourceController {
   async history(
     @Param('id') id: string,
     @Query('organizationId') orgId: string,
-    @Request() _req: AuthenticatedRequest,
+    @Request() req: AuthenticatedRequest,
   ) {
-    const data = await this.stateEngine.getHistory(id, this.requireOrg(orgId));
+    const data = await this.stateEngine.getHistory(id, await this.requireOrgMember(orgId, req.user.id));
     return { success: true, data };
   }
 }

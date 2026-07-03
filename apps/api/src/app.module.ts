@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { HealthModule } from './health/health.module';
 import { SupabaseModule } from './common/supabase/supabase.module';
 import { AuthModule } from './auth/auth.module';
@@ -43,6 +45,12 @@ import { MulterModule } from '@nestjs/platform-express';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+    // PD-3 — global rate limiting. Default: 120 req/min per IP.
+    // Cost-bearing or public routes carry stricter @Throttle overrides
+    // (see ai.controller, webhook.controller, auth.controller).
+    ThrottlerModule.forRoot({
+      throttlers: [{ name: 'default', ttl: 60_000, limit: 120 }],
+    }),
     SupabaseModule,         // @Global() -- SupabaseService injected everywhere
     HealthModule,
     AuthModule,
@@ -79,6 +87,10 @@ import { MulterModule } from '@nestjs/platform-express';
     ResourceBindingsModule, // Phase 15 -- governed workflow resource bindings
     DataPacksModule,        // Phase 19 -- governed Data Pack engine
     MulterModule.register({ dest: '/tmp/uploads' }),
+  ],
+  providers: [
+    // PD-3 — enforce rate limits on every route
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

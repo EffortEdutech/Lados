@@ -100,6 +100,7 @@ Methodology: phase-gate (consistent with V4). Six sprints, PD-1 → PD-6. Each g
 - [ ] Advisor remediation: `SET search_path = ''` on 6 functions; enable HIBP leaked-password protection; wrap RLS policies in `(select auth.uid())` (79); consolidate duplicate permissive policies (61); index 34 FKs.
 - [ ] Org-scoping audit: every service derives org membership from the authenticated user, never trusts `organizationId` param alone (G15).
 - [ ] Confirm intent on 4 RLS-enabled-no-policy tables (`ai_prompts`, `approval_tasks`, `audit_log`, `workflow_templates`).
+- [x] ~~Consolidate 61 duplicate permissive policies~~ — **deliberately deferred post-launch** (2026-07-03): performance-only lint; merging risks semantic drift in layered policies (`read_own` vs `read_owner_admin`), and app traffic uses the service role which bypasses RLS, so per-row policy cost only affects direct client access that Lados does not use.
 - [ ] Move OpenAI/service-role keys to Supabase Vault or platform secret store (G14).
 - [ ] **Gate:** advisors re-run — zero WARN security lints; throttling verified by test.
 

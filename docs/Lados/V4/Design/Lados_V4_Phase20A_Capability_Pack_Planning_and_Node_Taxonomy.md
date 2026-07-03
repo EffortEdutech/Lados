@@ -13,7 +13,11 @@ Before Lados expands Marketplace Knowledge Packs, the Capability Pack system mus
 
 Capability Packs are the operating grammar of Lados. They define what users can do, what AI can assemble, and what workflow templates can be generated. If Capability Packs are not well indexed and governed, a future marketplace with hundreds or thousands of nodes will become confusing, duplicated, and difficult to trust.
 
-The current packs and nodes are not the target architecture. They are useful learning assets and implementation prototypes. Phase 20A should design the new official Capability Pack system for current and future business operations, then decide what to keep, rename, migrate, merge, or retire.
+The current packs and nodes are not the target architecture. They are useful learning assets and implementation prototypes. Phase 20A should design the new official Capability Pack system for current and future business operations, then build the official packs, nodes, and templates fresh from the accepted registry.
+
+Accepted Phase 20A direction:
+
+> Prototype packs, nodes, and templates are reference-only. They should be removed from the official product line after fresh replacements and compatibility migration are ready.
 
 Phase 20A defines:
 
@@ -23,7 +27,7 @@ Phase 20A defines:
 - how overlap should be avoided
 - how workflow templates should relate to packs
 - how Lados can scale from dozens to thousands of nodes without overwhelming users
-- how prototype/test-era packs and nodes should be retired or migrated
+- how prototype/test-era packs and nodes should be retired from the official product line
 
 ---
 
@@ -60,7 +64,7 @@ See `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`.
 
 ---
 
-## 4. Prototype Reset Policy
+## 4. Fresh Build and Prototype Retirement Policy
 
 The current Capability Packs must be treated as provisional.
 
@@ -71,19 +75,22 @@ The current Capability Packs must be treated as provisional.
 - Do not keep a node only because it already exists.
 - Do not create a future template around a prototype node if the business capability is unclear.
 - Rebuild the official catalogue from business operations, capability ownership, and template needs.
+- Do not promote prototype manifests into official packs.
+- Build fresh official nodes from canonical capability keys.
+- Keep prototype code only as temporary reference or compatibility support until replacement is verified.
 
 ### Current Asset Classification
 
-Every existing pack/node should be classified:
+Every existing pack/node should be classified for reference and retirement planning:
 
 | Classification | Meaning | Action |
 |---|---|---|
-| Keep | Correct capability, acceptable naming and contract | Move into target catalogue |
-| Rename | Useful capability, poor name or wrong namespace | Rename with migration note |
-| Merge | Duplicates or overlaps another capability | Merge into canonical node |
-| Split | Node does too many unrelated things | Split into smaller canonical nodes |
-| Deprecate | Useful only for prototype/demo | Hide from official catalogue |
-| Remove | Test-only or obsolete | Remove from target bundle |
+| Reference | Useful implementation lesson | Study while building fresh official node |
+| Rebuild Fresh | Correct capability exists, but official node must be newly authored | Build from canonical registry |
+| Merge Concept | Prototype overlaps another capability | Consolidate concept in fresh canonical node |
+| Split Concept | Prototype does too many unrelated things | Build separate fresh canonical nodes |
+| Retire | Useful only for prototype/demo | Remove from official product story |
+| Temporary Compatibility | Existing workflows may depend on it | Keep alias/runtime support until migration is verified |
 
 This prevents test-purpose work from becoming permanent product structure.
 
@@ -161,8 +168,8 @@ For each proposed pack:
 - Which resources does it create or consume?
 - Which Knowledge Packs does it require or recommend?
 - Which other packs should it depend on?
-- Which current prototype nodes map into it?
-- Which current prototype nodes should be removed?
+- Which prototype lessons inform it?
+- Which existing prototype node types need temporary compatibility aliases?
 
 ---
 
@@ -257,7 +264,7 @@ dependent packs:
   lados.contractor, lados.qs
 ```
 
-Before a new node is accepted, it should be checked against canonical capability keys. Current prototype nodes must also be checked. Any prototype node without a clear canonical capability key should be deprecated or removed.
+Before a new node is accepted, it should be checked against canonical capability keys. Current prototype nodes are checked only as reference and compatibility concerns. Any prototype node without a clear canonical capability key should be retired from the official product story.
 
 ### 8.3 Dependency Instead of Duplication
 
@@ -370,7 +377,7 @@ Current `.ladosPack` manifest is enough for Phase 18 registry install, but it is
   "domains": ["procurement"],
   "capabilities": ["rfq", "supplier", "quotation", "award"],
   "dependsOnPacks": ["lados.document-intelligence", "lados.communication"],
-  "suggestedDataPacks": ["supplier.catalogue", "procurement.rules"],
+  "suggestedKnowledgePacks": ["supplier.catalogue", "procurement.rules"],
   "nodes": [],
   "templates": [],
   "canonicalCapabilities": []
@@ -404,10 +411,10 @@ Phase 20A should proceed in this order:
 4. Draft canonical capability keys.
 5. Map workflow templates to capability keys.
 6. Map Knowledge Pack requirements to templates and capabilities.
-7. Audit current prototype packs/nodes against the target catalogue.
-8. Mark each current node as keep, rename, merge, split, deprecate, or remove.
-9. Draft target pack manifests and template manifests.
-10. Only then start implementation/refactoring.
+7. Audit current prototype packs/nodes as reference and compatibility concerns.
+8. Mark each current node as reference, rebuild fresh, merge concept, split concept, retire, or temporary compatibility.
+9. Draft fresh target pack manifests and template manifests.
+10. Only then start implementation of the fresh official packs.
 
 This keeps Lados from being trapped by early prototype structure.
 
@@ -424,7 +431,8 @@ Before a Capability Pack is accepted:
 - [ ] Pack does not duplicate canonical nodes.
 - [ ] Nodes have canonical capability keys.
 - [ ] Nodes use professional display names.
-- [ ] Prototype/test nodes have a keep/rename/merge/split/deprecate/remove decision.
+- [ ] Prototype/test nodes have a reference/retirement/compatibility decision.
+- [ ] Pack is a fresh official build, not a copied prototype manifest.
 - [ ] High-input nodes use resource/input strategy, not canvas clutter.
 - [ ] Templates declare required packs and Knowledge Packs.
 - [ ] Events/resources/permissions are declared.
@@ -444,7 +452,7 @@ Before a Capability Pack is accepted:
 - Template ownership and manifest model.
 - UI discovery model.
 - Manifest extension proposal.
-- Prototype retirement/migration plan.
+- Fresh build and prototype retirement plan.
 - Governance checklist.
 
 ---
@@ -460,6 +468,6 @@ Phase 20A succeeds when Lados can answer:
 - Which Knowledge Packs does this template need?
 - How does a user find the right node among thousands?
 - How does AI choose nodes consistently with the UI?
-- Which current prototype nodes should be removed or migrated?
+- Which current prototype nodes should be retired or temporarily supported for compatibility?
 
 Only after this is clear should Phase 20B professional bundles and Phase 20C marketplace Knowledge Packs proceed.

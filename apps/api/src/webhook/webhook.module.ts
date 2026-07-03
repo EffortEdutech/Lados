@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { WebhookController } from './webhook.controller';
+import { WebhookController, WebhookSecretsController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
 
 @Module({
-  controllers: [WebhookController],
+  controllers: [WebhookController, WebhookSecretsController],
   providers:   [WebhookService],
 })
 export class WebhookModule {}

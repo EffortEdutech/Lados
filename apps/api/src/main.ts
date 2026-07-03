@@ -1,15 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { json, urlencoded } from 'express';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // PD-3 — security headers (API-appropriate defaults; CSP is a browser concern
+  // handled by the Next.js app, so it is disabled here)
+  app.use(helmet({ contentSecurityPolicy: false }));
+
   // Increase body size limit to 10 MB to allow base64-encoded receipt images
   // sent inline from the WorkflowActionModal file picker.
-  app.use(json({ limit: '10mb' }));
+  // PD-3 — buffer the raw body so webhook HMAC verification signs exactly the
+  // bytes the sender signed (never a re-serialized JSON approximation).
+  app.use(json({
+    limit: '10mb',
+    verify: (req, _res, buf) => { (req as unknown as { rawBody?: Buffer }).rawBody = buf; },
+  }));
   app.use(urlencoded({ limit: '10mb', extended: true }));
 
   // Global API prefix

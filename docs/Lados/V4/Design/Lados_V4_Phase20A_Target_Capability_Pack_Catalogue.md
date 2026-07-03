@@ -1,8 +1,8 @@
-# Lados V4 Phase 20A: Target Capability Pack Catalogue
+﻿# Lados V4 Phase 20A: Target Capability Pack Catalogue
 
 **Document ID:** LADOS-V4-P20A-TARGET-CAPABILITY-CATALOGUE  
 **Phase:** 20A  
-**Status:** Draft target catalogue  
+**Status:** Draft target catalogue; fresh-build direction accepted  
 **Date:** 2026-07-03  
 **Depends on:** `Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`  
 
@@ -24,6 +24,10 @@ This catalogue answers:
 - Which current prototype packs map into the future target?
 - Which pack owns the first professional workflow templates?
 
+Phase 20A decision update:
+
+> Prototype packs, nodes, and templates will not be refactored into the official Lados product line. The official Capability Packs will be built fresh from this catalogue, the canonical capability registry, and the target workflow template index. Prototype assets remain reference-only until compatibility migration is planned.
+
 ---
 
 ## 2. Catalogue Principles
@@ -35,7 +39,8 @@ This catalogue answers:
 5. Solution packs should prefer templates and orchestration over new low-level nodes.
 6. A node should exist once under the pack that owns its canonical capability.
 7. UI and AI discovery must work from capability intent, not from a flat node list.
-8. Test-era nodes must be classified before being accepted into official bundles.
+8. Test-era nodes must be classified for reference, but should not be accepted directly into official bundles.
+9. Official packs, nodes, and templates are fresh builds. Prototype code may be studied or reused internally only after being rewritten under target contracts.
 
 ---
 
@@ -66,7 +71,7 @@ L0 depends on platform runtime only.
 
 ### 4.1 L0 Platform Foundation Packs
 
-| Target pack ID | Display name | Layer | Ownership boundary | Current prototype source |
+| Target pack ID | Display name | Layer | Ownership boundary | Prototype reference only |
 |---|---|---|---|---|
 | `lados.workflow-foundation` | Workflow Foundation | L0 | control flow, triggers, scheduling, delay, loop, branch, merge, logging | `core-pack` |
 | `lados.resource-operations` | Resource Operations | L0 | create/read/update/bind workspace resources and artifacts | `core-pack`, `foundation-pack` |
@@ -157,7 +162,7 @@ Candidate canonical capabilities:
 
 ### 4.2 L1 Core Business Domain Packs
 
-| Target pack ID | Display name | Layer | Ownership boundary | Current prototype source |
+| Target pack ID | Display name | Layer | Ownership boundary | Prototype reference only |
 |---|---|---|---|---|
 | `lados.document-intelligence` | Document Intelligence | L1 | file intake, parse, extract, classify, generate documents | `document-pack`, `ai-pack`, QS document nodes |
 | `lados.ai-operations` | AI Operations | L1 | generic AI summarization, extraction, classification, comparison, risk detection | `ai-pack` |
@@ -313,7 +318,7 @@ Recommended Knowledge Packs:
 
 ### 4.3 L2 Professional Domain Packs
 
-| Target pack ID | Display name | Layer | Ownership boundary | Current prototype source |
+| Target pack ID | Display name | Layer | Ownership boundary | Prototype reference only |
 |---|---|---|---|---|
 | `lados.qs-commercial` | QS Commercial | L2 | BOQ, measurement, valuation, cost planning, claims, variations, final accounts | `qs-pack`, `construction-pack`, `finance-pack` |
 | `lados.contract-admin` | Contract Administration | L2 | instructions, notices, clauses, submissions, determinations, correspondence control | future/new |
@@ -582,22 +587,26 @@ Template Pack rule:
 
 ---
 
-## 5. Current Prototype Pack Mapping
+## 5. Prototype Reference Mapping
 
-| Current pack/folder | Target decision | Target destination |
+The table below is **not** a migration plan. It is a reference map showing which prototype assets informed each target area.
+
+Official packs must be built fresh from the target catalogue and canonical capability registry.
+
+| Current pack/folder | Reference lesson | Fresh target area |
 |---|---|---|
-| `core-pack` | Split and rename | `lados.workflow-foundation`, `lados.resource-operations`, `lados.human-work` |
-| `foundation-pack` | Split and merge | `lados.human-work`, `lados.task-case`, `lados.communication` |
-| `document-pack` | Rename and expand | `lados.document-intelligence` |
-| `ai-pack` | Rename and govern | `lados.ai-operations` |
-| `notifications-pack` | Rename and merge related foundation notification nodes | `lados.communication` |
-| `finance-pack` | Rename and tighten boundary | `lados.commercial-finance` |
-| `procurement-pack` | Rename and expand | `lados.procurement` |
-| `qs-pack` | Rename and expand professionally | `lados.qs-commercial` |
-| `construction-pack` | Split | `lados.construction-operations`, some nodes to `lados.qs-commercial` |
-| `contractor-pack` | Convert into solution plus domain splits | `lados.solution.contractor-ops`, `lados.asset-fleet`, `lados.people-payroll`, lower-layer dependencies |
+| `core-pack` | workflow/resource primitives, artifact handling, control nodes | `lados.workflow-foundation`, `lados.resource-operations`, `lados.human-work` |
+| `foundation-pack` | approval, assignment, notification ideas | `lados.human-work`, `lados.task-case`, `lados.communication` |
+| `document-pack` | upload and Excel read patterns | `lados.document-intelligence` |
+| `ai-pack` | advisory AI capability categories | `lados.ai-operations` |
+| `notifications-pack` | channel-specific communication nodes | `lados.communication` |
+| `finance-pack` | invoice, payment, PO, retention workflows | `lados.commercial-finance` |
+| `procurement-pack` | RFQ and PO request patterns | `lados.procurement` |
+| `qs-pack` | BOQ read/normalize/classify/package lessons | `lados.qs-commercial` |
+| `construction-pack` | site, defect, inspection, claim/variation lessons | `lados.construction-operations`, `lados.qs-commercial` |
+| `contractor-pack` | fleet, payroll, fuel, job, contractor solution lessons | `lados.solution.contractor-ops`, `lados.asset-fleet`, `lados.people-payroll`, lower-layer dependencies |
 
-This mapping is directional only. Each node still needs a keep/rename/merge/split/deprecate/remove audit.
+This mapping should not be implemented by moving old manifests wholesale. Fresh manifests, fresh node contracts, and fresh templates are required.
 
 ---
 
@@ -793,12 +802,12 @@ Before a target Capability Pack can become official:
 
 After accepting this draft catalogue:
 
-1. Create the first canonical capability registry table.
-2. Create the target workflow template index.
-3. Audit current prototype nodes against this catalogue.
-4. Classify each node as keep, rename, merge, split, deprecate, or remove.
-5. Decide the first professional bundle set for implementation.
-6. Draft manifest examples for the first target packs.
+1. Review and accept the canonical capability registry.
+2. Review and accept the target workflow template index.
+3. Review and accept the prototype node audit as reference-only.
+4. Decide the first professional bundle set for implementation.
+5. Draft fresh manifest examples for the first target packs.
+6. Plan compatibility aliases or migration for existing saved prototype workflows.
 7. Update Marketplace UI planning from prototype names to target pack names.
 
 ---
@@ -810,7 +819,7 @@ After accepting this draft catalogue:
 | Should `lados.human-work` and `lados.task-case` be separate? | Yes. Approval/decision gates are security-sensitive; tasks/cases are operational records. |
 | Should `lados.contract-admin` be separate from QS? | Yes. QS uses contract references, but contract administration has its own notice/register/correspondence boundary. |
 | Should `lados.asset-fleet` stay under contractor solution? | No. Asset/fleet can serve logistics, plant hire, maintenance, and non-construction operations. |
-| Should current `contractor-pack` remain official? | Not as-is. Convert it into `lados.solution.contractor-ops` plus lower-layer domain packs. |
+| Should current `contractor-pack` remain official? | No. Retire it from the official line after fresh solution and domain packs are built with compatibility/migration support. |
 | Should Capability Packs include Knowledge Pack data? | No. They should declare required/recommended Knowledge Packs and consume item references. |
 | Should vendor packs contain business policy? | No. Vendor packs connect systems; policy belongs in domain packs or Knowledge Packs. |
 
@@ -862,3 +871,4 @@ L5 Template Packs
 ```
 
 This catalogue gives Lados a professional base for hundreds or thousands of future nodes without letting prototype folders, test nodes, or overlapping business names become permanent architecture.
+

@@ -1,0 +1,71 @@
+[
+  {
+    "type": "lados.resource.create",
+    "displayName": "Create Resource",
+    "canonicalCapability": "resource.create",
+    "ownerPack": "lados.resource-operations",
+    "status": "skeleton",
+    "intent": "Create a Workspace Resource using typed data from inspector fields, upstream data, or bindings.",
+    "inputPattern": ["ports", "inspector", "resource_binding"],
+    "outputPattern": "created resource summary",
+    "ports": {
+      "inputs": [{ "id": "data", "label": "Data", "dataType": "object" }],
+      "outputs": [{ "id": "resource", "label": "Resource", "dataType": "object" }]
+    },
+    "configGroups": [
+      { "id": "resource", "label": "Resource", "fields": ["resourceType", "name", "initialState"] },
+      { "id": "data", "label": "Data Mapping", "fields": ["dataSource", "fieldMap"] }
+    ],
+    "resourceBindings": { "supported": true, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Creates a record only; approval must be modeled separately.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 3 },
+    "compatibilityAliases": ["resource.create"],
+    "executorStatus": "not_started"
+  },
+  {
+    "type": "lados.resource.resolve_binding",
+    "displayName": "Resolve Binding",
+    "canonicalCapability": "resource.binding.resolve",
+    "ownerPack": "lados.resource-operations",
+    "status": "skeleton",
+    "intent": "Resolve a named Resource Binding for use by downstream workflow nodes.",
+    "inputPattern": ["inspector", "resource_binding"],
+    "outputPattern": "resolved resource reference",
+    "ports": {
+      "inputs": [],
+      "outputs": [{ "id": "resource", "label": "Resource", "dataType": "object" }]
+    },
+    "configGroups": [{ "id": "binding", "label": "Binding", "fields": ["bindingKey", "requiredResourceType"] }],
+    "resourceBindings": { "supported": true, "required": true },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Resolves references only; does not change data.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 240, "minHeight": 104, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started"
+  },
+  {
+    "type": "lados.artifact.write",
+    "displayName": "Write Artifact",
+    "canonicalCapability": "artifact.write",
+    "ownerPack": "lados.resource-operations",
+    "status": "skeleton",
+    "intent": "Persist a workflow artifact for later workflow steps or future runs.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "artifact reference",
+    "ports": {
+      "inputs": [{ "id": "value", "label": "Value", "dataType": "any" }],
+      "outputs": [{ "id": "artifact", "label": "Artifact", "dataType": "object" }]
+    },
+    "configGroups": [{ "id": "artifact", "label": "Artifact", "fields": ["key", "format", "retention"] }],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Persists data only.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 230, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": ["artifact.write", "project.save_artifact"],
+    "executorStatus": "not_started"
+  }
+]

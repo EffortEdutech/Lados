@@ -41,6 +41,24 @@ export type {
   StateMachineDecl,
   ResourceSchemaDecl,
   EventSchemaDecl,
+  OfficialAiBoundary,
+  OfficialCapabilityPackContractVersion,
+  OfficialCapabilityPackLayer,
+  OfficialCapabilityPackManifest,
+  OfficialCapabilityPackStatus,
+  OfficialCompatibilityAlias,
+  OfficialExecutorStatus,
+  OfficialInputPattern,
+  OfficialKnowledgePackRequirements,
+  OfficialNodeCanvasUx,
+  OfficialNodeConfigGroup,
+  OfficialNodeManifest,
+  OfficialNodePort,
+  OfficialNodePorts,
+  OfficialNodeResourceBindingContract,
+  OfficialPackSkeleton,
+  OfficialRuntimeStatus,
+  OfficialVerificationStatus,
 } from './types';
 
 // ── Resolver types ────────────────────────────────────────────────────────────
@@ -51,6 +69,20 @@ export type {
   PackResolverFactory,
 } from './resolve';
 
+// ── Phase 20B official compatibility aliases ───────────────────────────────
+
+export {
+  officialCompatibilityAliases,
+  resolveOfficialCompatibilityAlias,
+} from './compatibility-aliases';
+
 // ── Validation ────────────────────────────────────────────────────────────────
 
-export { validatePackManifest, assertPackManifest } from './validate';
+export {
+  assertOfficialCapabilityPackManifest,
+  assertOfficialNodeManifests,
+  assertPackManifest,
+  validateOfficialCapabilityPackManifest,
+  validateOfficialNodeManifests,
+  validatePackManifest,
+} from './validate';

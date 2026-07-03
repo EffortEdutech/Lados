@@ -22,6 +22,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SupabaseJwtGuard as JwtAuthGuard } from '../common/guards/supabase-jwt.guard';
+import { SecurityEngineService } from '../security/security.service';
 import { LibraryService, LibraryCategory } from './library.service';
 
 const ALLOWED_MIME = new Set([
@@ -37,7 +38,10 @@ const VALID_CATEGORIES = new Set<LibraryCategory>(['boq', 'spec', 'drawing', 'sc
 @Controller('library')
 @UseGuards(JwtAuthGuard)
 export class LibraryController {
-  constructor(private readonly libraryService: LibraryService) {}
+  constructor(
+    private readonly libraryService: LibraryService,
+    private readonly security: SecurityEngineService,
+  ) {}
 
   /**
    * POST /library
@@ -59,6 +63,8 @@ export class LibraryController {
     @Request() req?: { user: { id: string } },
   ) {
     if (!organizationId) throw new BadRequestException('organizationId is required');
+    // PD-3 — caller must be a member of the target org
+    await this.security.requireMembership(req!.user.id, organizationId);
     if (!label?.trim()) throw new BadRequestException('label is required');
     if (!file) throw new BadRequestException('No file attached — use field name "file"');
     if (!ALLOWED_MIME.has(file.mimetype)) {
@@ -88,18 +94,27 @@ export class LibraryController {
   @Get()
   async list(
     @Query('organizationId') organizationId: string,
+    @Request() req: { user: { id: string } },
     @Query('projectId') projectId?: string,
     @Query('category') category?: string,
   ) {
     if (!organizationId) throw new BadRequestException('organizationId is required');
+    // PD-3 — caller must be a member of the target org
+    await this.security.requireMembership(req.user.id, organizationId);
     const files = await this.libraryService.listFiles(organizationId, projectId, category);
     return { success: true, data: files };
   }
 
   /** GET /library/:id */
   @Get(':id')
-  async getOne(@Param('id') id: string) {
+  async getOne(
+    @Param('id') id: string,
+    @Request() req: { user: { id: string } },
+  ) {
     const file = await this.libraryService.getFile(id);
+    // PD-3 — verify membership of the file's own org (was: any authed user)
+    const orgId = (file as { organization_id?: string }).organization_id;
+    if (orgId) await this.security.requireMembership(req.user.id, orgId);
     return { success: true, data: file };
   }
 
