@@ -1,22 +1,22 @@
 # Lados V4 Phase 21 Checklist
 
 **Document ID:** LADOS-V4-P21-CHECKLIST  
-**Status:** Ready to start  
+**Status:** Active — detail checklist for master plan workstreams  
 **Date:** 2026-07-03  
-**Primary sprint plan:** `Sprint/Lados_V4_Phase21_Sprint_Plan.md`
+**Primary sprint plan:** `Sprint/Lados_V4_Phase21_Production_Build_and_Deployment_Master_Plan.md` (§3A maps workstreams to sprints)
 
 ---
 
 ## Status Summary
 
-| Workstream | Title | Status |
-|---|---|---|
-| 21A | UI Copy and Compatibility Pass | Ready |
-| 21B | Provider Profile Data Model | Planned |
-| 21C | Knowledge Pack Listing Layer | Planned |
-| 21D | Review Queue Expansion | Planned |
-| 21E | AI Search Preview | Planned |
-| 21F | Official Capability Runtime Activation Plan | Planned |
+| Workstream | Title | Lands in master plan sprint | Status |
+|---|---|---|---|
+| 21A | UI Copy and Compatibility Pass | S0 (immediate) | Ready |
+| 21B | Provider Profile Data Model | S9A | Planned |
+| 21C | Knowledge Pack Listing Layer | S9A | Planned |
+| 21D | Review Queue Expansion | S9A | Planned |
+| 21E | AI Search Preview | S9A / Phase 22 decision | Planned |
+| 21F | Official Capability Runtime Activation Plan | Superseded by master plan S1–S6 | Superseded |
 
 ---
 
@@ -24,34 +24,34 @@
 
 ### Marketplace
 
-- [ ] Change visible `Data Packs` tab/copy to `Knowledge Packs`.
-- [ ] Change `Organization Data Packs` to `Installed Knowledge Packs`.
-- [ ] Change `Browse Official Data Packs` to `Browse Official Knowledge Packs`.
-- [ ] Change `Install Data Pack` to `Install Knowledge Pack`.
-- [ ] Change `Disable Data Pack` to `Disable Knowledge Pack`.
-- [ ] Change `Installed Packs` to `Installed Capability Packs` where it means executable/action packs.
-- [ ] Change `Browse Registry` to `Browse Capability Packs`.
-- [ ] Change `Publish Pack` to `Publish Capability Pack`.
-- [ ] Keep Review Queue wording unless expanded later.
+- [x] Change visible `Data Packs` tab/copy to `Knowledge Packs`. *(S0, 2026-07-03)*
+- [x] Change `Organization Data Packs` to `Installed Knowledge Packs`.
+- [x] Change `Browse Official Data Packs` to `Browse Official Knowledge Packs`.
+- [x] Change `Install Data Pack` to `Install Knowledge Pack`. *(error copy; card buttons use pack displayName)*
+- [x] Change `Disable Data Pack` to `Disable Knowledge Pack`.
+- [x] Change `Installed Packs` to `Installed Capability Packs` where it means executable/action packs.
+- [x] Change `Browse Registry` to `Browse Capability Packs`.
+- [x] Change `Publish Pack` to `Publish Capability Pack`.
+- [x] Keep Review Queue wording unless expanded later.
 
 ### Explorer / Canvas
 
-- [ ] Change Explorer `Data Packs` panel title to `Knowledge Catalogue`.
-- [ ] Change panel body copy to use `Knowledge Packs`.
-- [ ] Change empty states to use `Knowledge Pack Items`.
-- [ ] Keep component/API technical identifiers unchanged.
+- [x] Change Explorer `Data Packs` panel title to `Knowledge Catalogue`. *(S0, 2026-07-03)*
+- [x] Change panel body copy to use `Knowledge Packs`.
+- [x] Change empty states to use `Knowledge Pack Items`.
+- [x] Keep component/API technical identifiers unchanged. *(verified — only `data_pack_*`/`DataPack*` identifiers and code comments remain)*
 
 ### Property Panel
 
-- [ ] Change `Requires Data Packs` to `Requires Knowledge Packs`.
-- [ ] Change `Data Pack item` labels to `Knowledge Pack Item`.
-- [ ] Preserve manifest field type `data_pack_item`.
+- [x] Change `Requires Data Packs` to `Requires Knowledge Packs`. *(S0, 2026-07-03)*
+- [x] Change `Data Pack item` labels to `Knowledge Pack Item`. *(incl. DataPackItemField placeholder/select/detail)*
+- [x] Preserve manifest field type `data_pack_item`.
 
 ### Execution Log
 
-- [ ] Change `Data Pack Provenance` to `Knowledge Pack Provenance`.
-- [ ] Change `Data Pack usage` to `Knowledge Pack usage`.
-- [ ] Preserve `execution_logs.data_pack_usages` technical naming.
+- [x] Change `Data Pack Provenance` to `Knowledge Pack Provenance`. *(S0, 2026-07-03)*
+- [x] Change `Data Pack usage` to `Knowledge Pack usage`. *(no user-visible instances found beyond provenance block)*
+- [x] Preserve `execution_logs.data_pack_usages` technical naming.
 
 ### Documentation
 

@@ -8,6 +8,8 @@
 | **Methodology** | Phase-gate delivery (each sprint gate closes before the next opens) |
 | **Supersedes** | PD-4/PD-5/PD-6 of `Lados_V4_Audit_and_Production_Deployment_Sprint_Plan.md` (PD-1–PD-3 delivered; their gates remain closed) |
 | **Depends on** | Phase 20A planning docs, Phase 20B1–B4 contracts, Canonical Capability Registry, Target Capability Pack Catalogue, Target Workflow Template Index |
+| **Canonical product designs** | `Design/Lados_V4_Capability_Packs_Product_and_Technical_Design.md` · `Design/Lados_V4_Knowledge_Packs_Product_and_Technical_Design.md` |
+| **Absorbs** | `Lados_V4_Phase21_Sprint_Plan.md` workstreams 21A–21F (see §3A); detailed 21A–21E items live in `Lados_V4_Phase21_Checklist.md` |
 
 ---
 
@@ -55,16 +57,43 @@ Parallelism allowed: S3 may run alongside S4–S5 (different subsystems). S7 may
 
 ---
 
+## 3A. Workstream Integration (from the earlier Phase 21 Sprint Plan)
+
+The earlier `Lados_V4_Phase21_Sprint_Plan.md` defined workstreams 21A–21F. They map into this program as follows — detailed tick-items remain in `Lados_V4_Phase21_Checklist.md`:
+
+| Workstream | Title | Lands in | Notes |
+|---|---|---|---|
+| **21A** | UI Copy & Compatibility Pass (Data Packs → Knowledge Packs wording) | **S0** (immediate — low-risk, independent, ready) | UI wording only; `data_pack_*` technical identifiers unchanged per the compatibility rule |
+| 21B | Provider Profile data model (Catalogue Provider) | **S9A** | After functional completeness; additive migration |
+| 21C | Knowledge Pack Listing Layer (product layer over technical Data Packs) | **S9A** | With 21B |
+| 21D | Review Queue expansion (Provider Profiles + Knowledge Packs) | **S9A** | With 21B/21C |
+| 21E | AI Search Preview (cited search over installed + marketplace knowledge) | **S9A** (stretch) or Phase 22 | Decision at S9A gate |
+| 21F | Official Capability Runtime Activation Plan | **Superseded by S1–S6** | This master plan IS the activation plan |
+
+### New Sprint S9A — Marketplace Knowledge Layer (runs after S9, parallel with S10 allowed)
+
+- [ ] 21B: Provider Profile model + migration (Catalogue Provider identity per Knowledge Packs design doc).
+- [ ] 21C: Knowledge Pack listing layer over `data_pack_*` tables (no rename of technical identifiers).
+- [ ] 21D: Review Queue expansion for Provider Profiles and Knowledge Pack listings.
+- [ ] 21E decision: build AI Search Preview now or seed Phase 22 backlog.
+- [ ] `eff` Browser verify per the Phase 21 Checklist sections.
+
+**Gate:** marketplace presents Knowledge Packs as product listings with provider identity, per the canonical design doc.
+
+---
+
 ## 4. Sprint Checklists
 
 ### S0 — Program Setup & Prototype Freeze
 
-- [ ] Declare prototype freeze: no new features on `packs/*` prototype packs (bug fixes only if blocking).
-- [ ] Move this plan to Active in `docs/Lados/README.md` status table; retire PD-4/5/6 rows.
-- [ ] Delete or clearly label the PD-4 prototype demo workflow (`Demo: Progress Claim Rate Check`) and `test-data/workflows/demo-progress-claim-rate-check.json` as prototype-era.
-- [ ] Define official-pack Definition of Done (below, §5) as the acceptance contract for S2–S6.
+- [x] Declare prototype freeze: no new features on `packs/*` prototype packs (bug fixes only if blocking). *(declared 2026-07-03)*
+- [x] **Execute 21A UI Copy & Compatibility Pass** — done 2026-07-03; all §21A code items ticked in `Lados_V4_Phase21_Checklist.md`; typecheck + browser verify pending (eff).
+- [x] Move this plan to Active in `docs/Lados/README.md` status table; retire PD-4/5/6 rows.
+- [x] Label PD-4 prototype demo workflow as prototype-era. *(DB name prefixed `[PROTOTYPE]` + description; JSON export annotated; deletion in S9)*
+- [x] Define official-pack Definition of Done (§5) as the acceptance contract for S2–S6. *(accepted at kickoff)*
 - [ ] `eff` Confirm Upstash account status + rotate/retrieve valid Redis credentials (needed by S3).
-- [ ] Git tag `prototype-freeze-2026-07` on main for archaeology.
+- [ ] `eff` Git tag `prototype-freeze-2026-07` on main for archaeology.
+- [ ] `eff` 21A verification: `corepack pnpm --filter web typecheck` + browser verify /marketplace tabs, Explorer Knowledge Catalogue panel, PropertyPanel Knowledge Pack Item field, provenance label.
 
 **Gate:** freeze declared, plan active, DoD agreed.
 

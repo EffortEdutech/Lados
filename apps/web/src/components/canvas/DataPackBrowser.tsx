@@ -57,7 +57,7 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
       setInstalled(res.data ?? []);
       setError(null);
     } else {
-      setError(res.error?.message ?? 'Failed to load installed Data Packs');
+      setError(res.error?.message ?? 'Failed to load installed Knowledge Packs');
     }
   }, [organizationId]);
 
@@ -76,7 +76,7 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
       setItems(res.data ?? []);
       setError(null);
     } else {
-      setError(res.error?.message ?? 'Failed to search Data Pack items');
+      setError(res.error?.message ?? 'Failed to search Knowledge Pack items');
     }
     setLoading(false);
   }, [collection, organizationId, query]);
@@ -93,10 +93,10 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
     <aside className="flex h-full flex-col overflow-hidden bg-white">
       <div className="flex-shrink-0 border-b border-gray-100 p-3">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-          Data Packs
+          Knowledge Catalogue
         </p>
         <p className="mt-0.5 text-[10px] leading-snug text-gray-400">
-          Search installed governed datasets and provenance.
+          Search installed Knowledge Packs and provenance.
         </p>
       </div>
 
@@ -131,7 +131,7 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {installed.length === 0 && (
-            <span className="text-[10px] text-gray-400">Install Data Packs from Marketplace.</span>
+            <span className="text-[10px] text-gray-400">Install Knowledge Packs from Marketplace.</span>
           )}
           {installed.slice(0, 6).map((pack) => (
             <span
@@ -146,11 +146,11 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        {loading && <p className="py-5 text-center text-xs text-gray-400">Searching Data Packs...</p>}
+        {loading && <p className="py-5 text-center text-xs text-gray-400">Searching Knowledge Packs...</p>}
 
         {!loading && items.length === 0 && (
           <p className="rounded border border-dashed border-gray-200 px-3 py-5 text-center text-xs leading-5 text-gray-400">
-            No Data Pack items found.
+            No Knowledge Pack Items found.
           </p>
         )}
 

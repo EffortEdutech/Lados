@@ -388,7 +388,7 @@ export default function PropertyPanel({
               {nodeDef.data_pack_deps && nodeDef.data_pack_deps.length > 0 && (
                 <div>
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-                    Requires Data Packs
+                    Requires Knowledge Packs
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {nodeDef.data_pack_deps.map((slug) => <DataPackChip key={slug} slug={slug} />)}

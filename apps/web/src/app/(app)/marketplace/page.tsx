@@ -5,9 +5,9 @@
  *
  * Tabs:
  * - Installed: local compiled/installed packs, enable/disable management.
- * - Browse Registry: verified external pack listings, install to local catalogue.
- * - Data Packs: governed datasets, install state, item preview, and provenance.
- * - Publish Pack: submit .ladosPack bundles for verification.
+ * - Browse Capability Packs: verified external pack listings, install to local catalogue.
+ * - Knowledge Packs: governed knowledge catalogues, install state, item preview, provenance.
+ * - Publish Capability Pack: submit .ladosPack bundles for verification.
  * - Review Queue: owner/admin review gate for pending registry submissions.
  */
 
@@ -139,10 +139,10 @@ interface DataPackVersionDetail {
 type Tab = 'installed' | 'registry' | 'data' | 'publish' | 'review';
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'installed', label: 'Installed' },
-  { id: 'registry', label: 'Browse Registry' },
-  { id: 'data', label: 'Data Packs' },
-  { id: 'publish', label: 'Publish Pack' },
+  { id: 'installed', label: 'Installed Capability Packs' },
+  { id: 'registry', label: 'Browse Capability Packs' },
+  { id: 'data', label: 'Knowledge Packs' },
+  { id: 'publish', label: 'Publish Capability Pack' },
   { id: 'review', label: 'Review Queue' },
 ];
 
@@ -515,7 +515,7 @@ function DataPackDetailModal({
 
         <div className="max-h-[66vh] overflow-y-auto px-5 py-4">
           <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
-            Data Pack values are references until accepted by a human user or confirmed by the project contract.
+            Knowledge Pack values are references until accepted by a human user or confirmed by the project contract.
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-3 text-xs md:grid-cols-3">
@@ -681,7 +681,7 @@ export default function MarketplacePage() {
       setInstalledDataPacks(installedRes.data ?? []);
       setError(null);
     } else {
-      setError(allRes.error?.message ?? installedRes.error?.message ?? 'Failed to load Data Packs');
+      setError(allRes.error?.message ?? installedRes.error?.message ?? 'Failed to load Knowledge Packs');
     }
     setDataPackLoading(false);
   }, [selectedOrgId]);
@@ -816,7 +816,7 @@ export default function MarketplacePage() {
 
   const installDataPack = async (pack: DataPackSummary) => {
     if (!selectedOrgId) {
-      setError('Select an organization before installing a Data Pack.');
+      setError('Select an organization before installing a Knowledge Pack.');
       return;
     }
     setBusyId(pack.slug);
@@ -838,7 +838,7 @@ export default function MarketplacePage() {
 
   const uninstallDataPack = async (pack: DataPackSummary) => {
     if (!selectedOrgId) {
-      setError('Select an organization before disabling a Data Pack.');
+      setError('Select an organization before disabling a Knowledge Pack.');
       return;
     }
     setBusyId(pack.slug);
@@ -1059,9 +1059,9 @@ export default function MarketplacePage() {
             <section className="rounded-lg border border-emerald-100 bg-emerald-50 px-5 py-4">
               <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-emerald-950">Data Packs</h2>
+                  <h2 className="text-base font-bold text-emerald-950">Knowledge Packs</h2>
                   <p className="mt-1 max-w-3xl text-sm leading-6 text-emerald-800">
-                    Data Packs are governed datasets and knowledge packs. They are separate from Capability Packs: they do not execute nodes, but they provide rates, BOQ templates, standards indexes, evidence rules, and reference data that workflows can consume.
+                    Knowledge Packs are governed knowledge catalogues. They are separate from Capability Packs: they do not execute nodes, but they provide rates, BOQ templates, standards indexes, evidence rules, and reference data that workflows can consume.
                   </p>
                 </div>
                 <PackBadge tone="green">Phase 19 live</PackBadge>
@@ -1070,7 +1070,7 @@ export default function MarketplacePage() {
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Organization Data Packs</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Installed Knowledge Packs</h3>
                 <p className="mt-1 text-xs text-gray-500">
                   Installed datasets available to Explorer, node configs, and workflow execution context.
                 </p>
@@ -1084,7 +1084,7 @@ export default function MarketplacePage() {
               </button>
             </div>
 
-            {dataPackLoading && <p className="py-8 text-center text-sm text-gray-400">Loading Data Packs...</p>}
+            {dataPackLoading && <p className="py-8 text-center text-sm text-gray-400">Loading Knowledge Packs...</p>}
 
             {!dataPackLoading && installedDataPacks.length > 0 && (
               <section>
@@ -1108,9 +1108,9 @@ export default function MarketplacePage() {
               <section className="rounded-lg border border-dashed border-gray-200 bg-white px-5 py-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900">No Data Packs installed yet</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">No Knowledge Packs installed yet</h3>
                     <p className="mt-1 text-sm leading-6 text-gray-500">
-                      Install an official Data Pack below to make its items searchable in Explorer.
+                      Install an official Knowledge Pack below to make its items searchable in Explorer.
                     </p>
                   </div>
                   <span className="rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-500">
@@ -1123,9 +1123,9 @@ export default function MarketplacePage() {
             <section>
               <div className="mb-3 flex items-end justify-between gap-3">
                 <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Browse Official Data Packs</h3>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Browse Official Knowledge Packs</h3>
                   <p className="mt-1 text-xs text-gray-500">
-                    Governed datasets for QS, contractor, construction, and commercial-control workflows.
+                    Governed knowledge catalogues for QS, contractor, construction, and commercial-control workflows.
                   </p>
                 </div>
               </div>
@@ -1147,7 +1147,7 @@ export default function MarketplacePage() {
             <section className="rounded-lg border border-amber-100 bg-amber-50 px-5 py-4">
               <h3 className="text-sm font-semibold text-amber-950">QS and commercial guardrail</h3>
               <p className="mt-1 text-sm leading-6 text-amber-800">
-                Rate, productivity, claim, and standards data must carry source, date, region, unit, assumptions, and advisory status. Data Pack values are references until accepted by a human user or confirmed by the project contract.
+                Rate, productivity, claim, and standards data must carry source, date, region, unit, assumptions, and advisory status. Knowledge Pack values are references until accepted by a human user or confirmed by the project contract.
               </p>
             </section>
           </div>
@@ -1203,7 +1203,7 @@ export default function MarketplacePage() {
 
         {tab === 'publish' && (
           <section className="max-w-2xl rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-bold text-gray-900">Publish Pack</h2>
+            <h2 className="text-base font-bold text-gray-900">Publish Capability Pack</h2>
             <p className="mt-1 text-sm leading-6 text-gray-500">
               Submit a .ladosPack bundle for verification. Accepted bundles must contain a manifest.json with pack metadata and node declarations.
             </p>

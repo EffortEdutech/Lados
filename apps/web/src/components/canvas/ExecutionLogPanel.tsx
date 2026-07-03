@@ -172,7 +172,7 @@ function DataPackUsageBlock({ usages }: { usages: DataPackUsage[] }) {
   return (
     <div className="ml-4 mt-2 rounded border border-amber-200 bg-amber-50 px-3 py-2">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-800">
-        Data Pack Provenance
+        Knowledge Pack Provenance
       </p>
       <div className="mt-1.5 space-y-1.5">
         {usages.map((usage) => (

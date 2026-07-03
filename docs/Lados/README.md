@@ -66,9 +66,11 @@ Lados Documentation
 | Phase 18P — Marketplace polish | ✅ Complete |
 | Phase 19 — Data Pack Engine | ✅ Complete |
 | Phase 19C — Runtime provenance logging | Implemented; runtime/browser verification in PD-1 |
-| Phase 20 — Marketplace Knowledge Catalogue documentation | Active |
-| Phase 20B — Professional Pack Bundles | Not started |
-| PD-1 → PD-6 — Production Deployment track | **Active — PD-1 in progress** |
+| Phase 20 — Product contracts (Capability + Knowledge Pack designs, 20A–20E) | ✅ Complete (contract layer) |
+| Phase 20B — Official pack skeletons + SDK validator | ✅ Complete (manifest layer; runtime in Phase 21) |
+| PD-1 → PD-3 — Verification, tests+CI, security hardening | ✅ Complete |
+| PD-4 → PD-6 | Superseded by Phase 21 Master Plan |
+| **Phase 21 — Production Build & Deployment Program (S0–S11)** | **Active — S0 in progress** → [Master Plan](V4/Sprint/Lados_V4_Phase21_Production_Build_and_Deployment_Master_Plan.md) |
 | LEOS / JKR blueprint | Deferred |
 
 ---

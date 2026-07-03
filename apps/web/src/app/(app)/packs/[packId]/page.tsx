@@ -493,7 +493,7 @@ export default function PackDetailPage({ params }: PageProps) {
       {/* Data Pack dependencies */}
       {allDataPackDeps.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">Optional Data Pack dependencies</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-2">Optional Knowledge Pack dependencies</h2>
           <div className="flex flex-wrap gap-2">
             {allDataPackDeps.map((slug) => (
               <span

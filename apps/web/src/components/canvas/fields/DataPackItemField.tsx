@@ -50,7 +50,7 @@ export default function DataPackItemField({
         setItems(res.data ?? []);
         setError(null);
       } else {
-        setError(res.error?.message ?? 'Failed to search Data Pack items');
+        setError(res.error?.message ?? 'Failed to search Knowledge Pack items');
       }
       setLoading(false);
     }, 250);
@@ -62,7 +62,7 @@ export default function DataPackItemField({
     <FieldWrapper field={field}>
       {!organizationId && (
         <p className="rounded border border-amber-100 bg-amber-50 px-2 py-1 text-[11px] text-amber-700">
-          Select an organization before choosing a Data Pack item.
+          Select an organization before choosing a Knowledge Pack Item.
         </p>
       )}
 
@@ -71,7 +71,7 @@ export default function DataPackItemField({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={field.placeholder ?? 'Search installed Data Pack items...'}
+            placeholder={field.placeholder ?? 'Search installed Knowledge Pack Items...'}
             className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs text-gray-700 placeholder-gray-400 focus:border-blue-400 focus:outline-none"
           />
 
@@ -80,7 +80,7 @@ export default function DataPackItemField({
             onChange={(event) => onChange(field.key, event.target.value || undefined)}
             className="w-full rounded border border-gray-200 px-2 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
           >
-            <option value="">{loading ? 'Searching...' : 'Choose Data Pack item'}</option>
+            <option value="">{loading ? 'Searching...' : 'Choose Knowledge Pack Item'}</option>
             {items.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.title}
@@ -92,7 +92,7 @@ export default function DataPackItemField({
 
           {selected && (
             <div className="rounded border border-amber-100 bg-amber-50 px-2 py-1.5 text-[11px] leading-snug text-amber-800">
-              <p className="font-semibold">{selected.pack?.displayName ?? 'Data Pack'} / {selected.collection?.displayName ?? 'Item'}</p>
+              <p className="font-semibold">{selected.pack?.displayName ?? 'Knowledge Pack'} / {selected.collection?.displayName ?? 'Item'}</p>
               <p className="mt-0.5">
                 Source: {selected.sourceName}
                 {selected.sourceDate ? ` · ${selected.sourceDate}` : ''}

@@ -1,8 +1,12 @@
 # Lados V4 Phase 21 Sprint Plan: Knowledge Pack UI Compatibility and Marketplace Foundation
 
+> **ARCHIVED 2026-07-03 — merged into `Sprint/Lados_V4_Phase21_Production_Build_and_Deployment_Master_Plan.md` (§3A).**
+> Workstreams 21A–21E were absorbed (21A → S0, 21B–21E → S9A); 21F is superseded by master plan sprints S1–S6.
+> Detailed tick-items remain live in `Sprint/Lados_V4_Phase21_Checklist.md`. This file is preserved for reference only.
+
 **Document ID:** LADOS-V4-P21-SPRINT  
 **Phase:** 21  
-**Status:** Ready to start  
+**Status:** Archived — merged into master plan  
 **Date:** 2026-07-03  
 **Depends on:** Phase 20 closed at product-contract layer
 
