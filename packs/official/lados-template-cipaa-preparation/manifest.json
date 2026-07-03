@@ -1,0 +1,58 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.template.cipaa-preparation",
+  "version": "0.1.0",
+  "displayName": "CIPAA Preparation Templates",
+  "layer": "L5",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados template pack for CIPAA preparation bundles, chronology, and evidence register workflows.",
+  "ownerBoundary": [
+    "CIPAA preparation workflow templates",
+    "evidence bundle playbooks"
+  ],
+  "mustNotOwn": [
+    "legal advice",
+    "contract determination",
+    "statutory standards content"
+  ],
+  "dependencies": [
+    "lados.contract-admin",
+    "lados.qs-commercial",
+    "lados.document-intelligence",
+    "lados.human-work"
+  ],
+  "capabilities": [
+    "template.cipaa_preparation"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/cipaa-preparation-bundle.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "project contract reference",
+      "claim evidence rules",
+      "notice chronology SOP"
+    ]
+  },
+  "guardrails": [
+    "CIPAA template outputs are preparation aids and must not be represented as legal advice.",
+    "The workflow must preserve source references, dates, evidence provenance, and human review status.",
+    "Template packs must not embed legal, statutory, or contract text content."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "CIPAA Preparation Templates",
+    "icon": "Scale",
+    "color": "#1e40af",
+    "paletteGroup": "Template Packs"
+  }
+}

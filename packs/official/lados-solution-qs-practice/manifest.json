@@ -1,0 +1,66 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.solution.qs-practice",
+  "version": "0.1.0",
+  "displayName": "QS Practice Solution",
+  "layer": "L3",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados solution pack for QS practice templates and operating playbooks.",
+  "ownerBoundary": [
+    "QS practice template bundles",
+    "QS workflow playbooks",
+    "cross-pack QS operating patterns"
+  ],
+  "mustNotOwn": [
+    "low-level QS nodes",
+    "contract administration nodes",
+    "construction site operation nodes",
+    "standards, rate, or measurement-rule content"
+  ],
+  "dependencies": [
+    "lados.qs-commercial",
+    "lados.contract-admin",
+    "lados.construction-operations",
+    "lados.document-intelligence",
+    "lados.human-work"
+  ],
+  "capabilities": [
+    "solution.qs_practice.template.boq_upload_to_cost_summary",
+    "solution.qs_practice.template.variation_notice_to_valuation",
+    "solution.qs_practice.template.final_account_reconciliation"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/boq-upload-to-cost-summary.template.json",
+    "templates/variation-notice-to-valuation.template.json",
+    "templates/final-account-reconciliation.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "QS rate library",
+      "measurement rules",
+      "project contract reference",
+      "claim evidence rules"
+    ]
+  },
+  "guardrails": [
+    "QS solution templates must preserve human review for valuation, certification, and entitlement-sensitive outputs.",
+    "Knowledge sources such as standards, rates, and contract clauses must remain in Knowledge Packs.",
+    "Solution templates should reuse lower-layer official nodes and avoid duplicate node declarations."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "QS Practice Solution",
+    "icon": "Calculator",
+    "color": "#b45309",
+    "paletteGroup": "Solution Packs"
+  }
+}

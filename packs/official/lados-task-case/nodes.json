@@ -1,0 +1,280 @@
+[
+  {
+    "type": "lados.task.create",
+    "displayName": "Create Task",
+    "canonicalCapability": "task.create",
+    "ownerPack": "lados.task-case",
+    "status": "skeleton",
+    "intent": "Create an operational task assigned to a user, role, or team.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "task record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "task",
+          "label": "Task",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "task",
+        "label": "Task",
+        "fields": [
+          "title",
+          "description",
+          "priority"
+        ]
+      },
+      {
+        "id": "assignment",
+        "label": "Assignment",
+        "fields": [
+          "assignee",
+          "role",
+          "dueDate"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "case management SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Creates work for humans; it does not approve the work.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Task and Case",
+    "icon": "ListChecks",
+    "searchKeywords": [
+      "task and case",
+      "create",
+      "task"
+    ]
+  },
+  {
+    "type": "lados.task.update_status",
+    "displayName": "Update Task",
+    "canonicalCapability": "task.status.update",
+    "ownerPack": "lados.task-case",
+    "status": "skeleton",
+    "intent": "Update a task status with actor and evidence metadata.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "updated task record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "task",
+          "label": "Task",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "updated",
+          "label": "Updated",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "status",
+        "label": "Status",
+        "fields": [
+          "status",
+          "reason",
+          "evidence"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "case management SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Records task status only; approval must be modeled separately.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Task and Case",
+    "icon": "ListChecks",
+    "searchKeywords": [
+      "task and case",
+      "update",
+      "task"
+    ]
+  },
+  {
+    "type": "lados.case.open",
+    "displayName": "Open Case",
+    "canonicalCapability": "case.open",
+    "ownerPack": "lados.task-case",
+    "status": "skeleton",
+    "intent": "Open an operational case for tracking related actions, documents, and decisions.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "case record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "source",
+          "label": "Source",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "case",
+          "label": "Case",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "case",
+        "label": "Case",
+        "fields": [
+          "caseType",
+          "title",
+          "ownerRole",
+          "severity"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "case management SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Opens a tracking record only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Task and Case",
+    "icon": "ListChecks",
+    "searchKeywords": [
+      "task and case",
+      "open",
+      "case"
+    ]
+  },
+  {
+    "type": "lados.case.close",
+    "displayName": "Close Case",
+    "canonicalCapability": "case.close",
+    "ownerPack": "lados.task-case",
+    "status": "skeleton",
+    "intent": "Close an operational case with closure reason and evidence metadata.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "closed case record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "case",
+          "label": "Case",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "closed",
+          "label": "Closed",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "closure",
+        "label": "Closure",
+        "fields": [
+          "reason",
+          "closedBy",
+          "evidence"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "case management SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Records closure only; approval or certification must be separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Task and Case",
+    "icon": "ListChecks",
+    "searchKeywords": [
+      "task and case",
+      "close",
+      "case"
+    ]
+  }
+]

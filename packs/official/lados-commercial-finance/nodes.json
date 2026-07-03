@@ -1,0 +1,376 @@
+[
+  {
+    "type": "lados.finance.submit_invoice",
+    "displayName": "Submit Invoice",
+    "canonicalCapability": "finance.invoice.submit",
+    "ownerPack": "lados.commercial-finance",
+    "status": "skeleton",
+    "intent": "Submit an invoice resource for verification or approval workflow.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "invoice submission record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "invoice",
+          "label": "Invoice",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "submission",
+          "label": "Submission",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "invoice",
+        "label": "Invoice",
+        "fields": [
+          "invoiceBinding",
+          "supplier",
+          "amount",
+          "currency"
+        ]
+      },
+      {
+        "id": "references",
+        "label": "References",
+        "fields": [
+          "poReference",
+          "contractReference",
+          "knowledgePackRefs"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "invoice validation rules",
+        "payment terms SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Submits an invoice only. Approval and payment decisions must be separate human-boundary actions.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 132,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "finance.submit_invoice"
+    ],
+    "executorStatus": "not_started",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "submit",
+      "invoice"
+    ]
+  },
+  {
+    "type": "lados.finance.verify_invoice",
+    "displayName": "Verify Invoice",
+    "canonicalCapability": "finance.invoice.verify",
+    "ownerPack": "lados.commercial-finance",
+    "status": "skeleton",
+    "intent": "Check invoice data against configured rules, references, and evidence.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "invoice verification result",
+    "ports": {
+      "inputs": [
+        {
+          "id": "invoice",
+          "label": "Invoice",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "verification",
+          "label": "Check",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "rules",
+        "label": "Rules",
+        "fields": [
+          "invoiceRules",
+          "tolerance",
+          "reviewLowConfidence"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Evidence",
+        "fields": [
+          "poBinding",
+          "deliveryEvidence",
+          "contractReference"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "invoice validation rules",
+        "tax/compliance references"
+      ]
+    },
+    "humanDecisionBoundary": "Verification is advisory/checking only; it does not approve payment.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 132,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "finance.verify_invoice"
+    ],
+    "executorStatus": "not_started",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "verify",
+      "invoice"
+    ]
+  },
+  {
+    "type": "lados.finance.record_invoice_approval",
+    "displayName": "Record Invoice Approval",
+    "canonicalCapability": "finance.invoice.approval_record",
+    "ownerPack": "lados.commercial-finance",
+    "status": "skeleton",
+    "intent": "Record a human invoice approval decision with evidence and actor metadata.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "invoice approval record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "decision",
+          "label": "Decision",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "approval",
+          "label": "Approval",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "approval",
+        "label": "Approval",
+        "fields": [
+          "approvedBy",
+          "approvalDate",
+          "decision",
+          "notes"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "finance approval matrix"
+      ]
+    },
+    "humanDecisionBoundary": "Must record a human decision; system must not decide approval.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 290,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "finance.approve_invoice"
+    ],
+    "executorStatus": "not_started",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "record",
+      "invoice",
+      "approval"
+    ]
+  },
+  {
+    "type": "lados.finance.record_payment",
+    "displayName": "Record Payment",
+    "canonicalCapability": "finance.payment.record",
+    "ownerPack": "lados.commercial-finance",
+    "status": "skeleton",
+    "intent": "Record payment status and reference after payment has been made or confirmed.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "payment record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "payment",
+          "label": "Payment",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "record",
+          "label": "Record",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "payment",
+        "label": "Payment",
+        "fields": [
+          "paidAmount",
+          "paidDate",
+          "reference",
+          "method"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "payment terms SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Records payment only; does not initiate external payment.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "finance.process_payment",
+      "contractor.record_payment"
+    ],
+    "executorStatus": "not_started",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "record",
+      "payment"
+    ]
+  },
+  {
+    "type": "lados.finance.create_purchase_order",
+    "displayName": "Create Purchase Order",
+    "canonicalCapability": "finance.po.create",
+    "ownerPack": "lados.commercial-finance",
+    "status": "skeleton",
+    "intent": "Create a finance-owned purchase order record from an approved request.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "purchase order resource",
+    "ports": {
+      "inputs": [
+        {
+          "id": "request",
+          "label": "Request",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "po",
+          "label": "PO",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "po",
+        "label": "Purchase Order",
+        "fields": [
+          "supplier",
+          "amount",
+          "currency",
+          "approvedRequest"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "finance approval matrix"
+      ]
+    },
+    "humanDecisionBoundary": "Creates a finance PO record; procurement award and approval decisions are separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 280,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "finance.create_purchase_order"
+    ],
+    "executorStatus": "not_started",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "create",
+      "purchase",
+      "order"
+    ]
+  }
+]

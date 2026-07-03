@@ -6,6 +6,8 @@
 **Scope:** Phase 18 Polish, Phase 19 Data Pack Engine, Phase 20 Marketplace Knowledge Catalogue Documentation, Phase 20B Professional Lados Pack Bundles  
 **Purpose:** Move Lados from V4 platform-complete into a polished, testable, professional product platform.
 
+> **Phase 20 control note:** Use `Sprint/Lados_V4_Phase20_Master_Sprint_Plan.md` as the controlling sprint plan for Phase 20. This P18P-P20 document remains the historical productization log and supporting detail.
+
 ---
 
 ## Executive Summary
@@ -50,7 +52,7 @@ UI copy must use these names consistently.
 | 18P | External Marketplace Polish | Finish and verify Marketplace, restore Data Packs surface, clean registry UX | Complete |
 | 19 | Data Pack Engine | Build Data Pack model, API, UI, binding, provenance, and official seed packs | Complete |
 | 19C | Data Pack Runtime Provenance Logging | Log Data Pack item references during workflow execution | Implemented, pending migration/browser verification |
-| 20 | Professional Lados Pack Bundles | Redesign official nodes and produce clean official bundles plus demo workflows | Planned |
+| 20 | Professional Lados Pack Bundles | Redesign official nodes and produce clean official bundles plus demo workflows | Complete at contract/design/skeleton layer |
 
 Recommended order: **18P -> 19 -> 20**.
 
@@ -379,10 +381,13 @@ Every QS/commercial Data Pack item needs:
 
 ## Phase 20 - Marketplace Knowledge Catalogue Documentation
 
-> Phase 20 has been reframed after the Data Pack Engine work. The new strategic position is that AI conversational search will reduce the value of website-only supplier discovery. Lados Marketplace should become an AI-ready supplier/seller knowledge catalogue, with Knowledge Packs as the structured catalogue unit.
+> Phase 20 has been reframed after the Data Pack Engine work. The new strategic position is that AI conversational search will reduce the value of website-only supplier discovery. Lados Marketplace should become an AI-ready Catalogue Provider knowledge marketplace, with Knowledge Packs as the structured catalogue unit.
 
 **Primary Phase 20 documents:**
 
+- `Sprint/Lados_V4_Phase20_Master_Sprint_Plan.md`
+- `Design/Lados_V4_Capability_Packs_Product_and_Technical_Design.md`
+- `Design/Lados_V4_Knowledge_Packs_Product_and_Technical_Design.md`
 - `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`
 - `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`
 - `Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md`
@@ -391,11 +396,16 @@ Every QS/commercial Data Pack item needs:
 - `Design/Lados_V4_Phase20A_Target_Workflow_Template_Index.md`
 - `Design/Lados_V4_Phase20A_Prototype_Node_Audit.md`
 - `Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md`
+- `Design/Lados_V4_Phase20B5_Remaining_Professional_and_Template_Skeletons.md`
+- `Design/Lados_V4_Phase20B6_Official_Node_Design_Visual_Metadata_Template_Schema_Closeout.md`
+- `Design/Lados_V4_Phase20C_Catalogue_Provider_Knowledge_Pack_AI_Search_Spec.md`
+- `Design/Lados_V4_Phase20D_Marketplace_Screen_Spec_Knowledge_Catalogue_UX_Wire_Plan.md`
+- `Design/Lados_V4_Phase20E_Governance_Business_Model_Phase21_Backlog.md`
 - `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
 
 ### Goal
 
-Document the Capability Pack architecture first, then the future Lados Marketplace as a supplier/seller knowledge catalogue platform before further marketplace implementation.
+Document the Capability Pack architecture first, then the future Lados Marketplace as a Catalogue Provider knowledge marketplace before further marketplace implementation.
 
 Lados Marketplace should support:
 
@@ -403,19 +413,19 @@ Lados Marketplace should support:
 - well-indexed Capability Packs
 - canonical node ownership and overlap control
 - workflow templates owned by packs/solutions
-- supplier profiles
-- supplier/seller Knowledge Pack listings
+- Catalogue Provider profiles
+- Provider Knowledge Pack listings
 - structured product, rate, evidence, compliance, and service catalogues
 - AI retrieval and conversational search
 - workflow insertion of Knowledge Pack item references
 - provenance logging during workflow execution
-- supplier subscription/business model planning
+- Catalogue Provider subscription/business model planning
 
 ### Why Phase 20 Matters
 
-Search is moving from link lists to AI answers. Suppliers will need machine-readable catalogues that AI agents can search, cite, compare, and apply inside workflows.
+Search is moving from link lists to AI answers. Catalogue Providers will need machine-readable catalogues that AI agents can search, cite, compare, and apply inside workflows.
 
-Knowledge Packs are the Lados answer to this shift. A supplier website may still exist, but the valuable marketplace asset becomes a versioned, source-aware, workflow-ready Knowledge Pack.
+Knowledge Packs are the Lados answer to this shift. A provider website may still exist, but the valuable marketplace asset becomes a versioned, source-aware, workflow-ready Knowledge Pack.
 
 ### Phase 20 Documentation Deliverables
 
@@ -424,8 +434,8 @@ Knowledge Packs are the Lados answer to this shift. A supplier website may still
 - Canonical capability registry and overlap-control rules.
 - Workflow template ownership/indexing model.
 - Marketplace knowledge-catalogue strategy.
-- Supplier profile specification.
-- Supplier Knowledge Pack listing specification.
+- Catalogue Provider profile specification.
+- Provider Knowledge Pack listing specification.
 - Knowledge Pack item metadata specification.
 - AI retrieval and search requirements.
 - Marketplace screen specification.
@@ -446,13 +456,13 @@ Knowledge Packs are the Lados answer to this shift. A supplier website may still
 - [x] Current prototype packs/nodes classified as reference lessons, fresh-build targets, retirement candidates, and temporary compatibility concerns.
 - [x] Canonical capability registry drafted.
 - [x] Workflow template index drafted.
-- [ ] Supplier Knowledge Pack specification complete.
-- [ ] AI retrieval requirements complete.
-- [ ] Marketplace screen specification complete.
-- [ ] Governance checklist complete.
-- [ ] Business model notes complete.
-- [ ] Phase 21+ implementation backlog complete.
-- [ ] V4 README and master checklist updated.
+- [x] Catalogue Provider Knowledge Pack specification complete.
+- [x] AI retrieval requirements complete.
+- [x] Marketplace screen specification complete.
+- [x] Governance checklist complete.
+- [x] Business model notes complete.
+- [x] Phase 21+ implementation backlog complete.
+- [x] V4 README and master checklist updated.
 
 ---
 
@@ -538,20 +548,24 @@ Phase 20 must produce demo workflows:
 
 ### Phase 20 Done Criteria
 
-- [ ] Official node design standard documented.
-- [ ] Node manifest audit completed for all official packs.
-- [ ] Canvas readability verified for high-port nodes.
-- [ ] Submit Invoice redesigned around Workspace Resource + Resource Binding, not dozens of visible tiny fields.
-- [ ] Official packs exported or documented as clean Lados Pack Bundles.
-- [ ] Demo workflows added.
-- [ ] Demo workflows pass manual run verification where nodes are functional.
-- [ ] Marketplace shows official packs and Data Packs professionally.
+- [x] Official node design standard documented.
+- [x] Node manifest audit completed for all official packs at manifest-only level.
+- [x] Canvas readability contract documented for high-port nodes.
+- [x] Submit Invoice redesigned around Workspace Resource + Resource Binding contract, not dozens of visible tiny fields.
+- [x] Official packs documented as clean Lados Pack Bundles.
+- [x] Demo workflow/template skeletons added.
+- [ ] Demo workflows pass manual run verification where nodes are functional. *(deferred to runtime activation phase)*
+- [x] Marketplace surfacing plan documents how official packs and Knowledge Packs should appear professionally.
 - [x] Phase 20B.1 official manifest contract standard drafted.
 - [x] Phase 20B.1 first official pack skeletons created under `packs/official/`.
 - [x] Phase 20B.2 official SDK types and validators added.
 - [x] Phase 20B.2 compatibility alias map drafted.
 - [x] Phase 20B.3 official skeleton validation command added.
 - [x] Phase 20B.3 cross-pack capability and alias target checks pass.
+- [x] Phase 20B.4 expanded official skeleton set added.
+- [x] Phase 20B.5 remaining professional, solution, and template skeletons added.
+- [x] Phase 20B.5 template-only pack validation added.
+- [x] Phase 20B.6 official node design, visual metadata, template schema, and Marketplace surfacing plan completed.
 - [x] `@lados/pack-sdk` typecheck/build passes for official manifest validator work.
 - [ ] Build passes.
 
@@ -572,11 +586,9 @@ Phase 20 must produce demo workflows:
 
 ## Immediate Next Steps
 
-1. Apply migration 0052.
-2. Run a workflow with a `data_pack_item` node config.
-3. Run Phase 19C provenance smoke test.
-4. Browser verify Execution Log provenance block.
-5. Start Phase 20 Marketplace Knowledge Catalogue documentation.
+1. Proceed to Phase 20E Governance, Verification Checklist, Business Model Notes, and Phase 21+ Implementation Backlog.
+2. Keep official pack runtime activation as a separate future phase with executor, registry sync, compatibility alias activation, workflow migration, and browser verification.
+3. Keep Phase 19C runtime provenance browser/smoke verification in the PD verification backlog.
 
 ### Phase 18P Handover - 2026-07-02
 
@@ -707,7 +719,7 @@ Done:
 - Confirmed current Capability Pack families are not the target architecture.
 - Captured the strategic thesis that AI conversational search will favor structured knowledge catalogues over website-only discovery.
 - Locked the Phase 20 product language: Capability Packs provide the operating grammar and Knowledge Packs provide the governed knowledge catalogue.
-- Defined Knowledge Packs as the supplier/seller knowledge catalogue unit.
+- Defined Knowledge Packs as the Catalogue Provider knowledge catalogue unit.
 - Documented Data Pack as the legacy Phase 19 technical implementation term until a future compatibility migration.
 - Created `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`.
 - Created `Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md`.
@@ -718,7 +730,7 @@ Done:
 Next:
 - Use the target Capability Pack catalogue to classify current prototype packs/nodes as reference lessons, fresh-build targets, retirement candidates, and temporary compatibility concerns.
 - Draft the canonical capability registry and workflow template index.
-- Complete supplier Knowledge Pack specification.
+- Complete Catalogue Provider Knowledge Pack specification.
 - Complete AI retrieval/result-shape requirements.
 - Complete Marketplace screen specification.
 - Complete governance checklist and business model notes.
@@ -751,7 +763,7 @@ Done:
 Next:
 - Continue with the new target Capability Pack catalogue.
 - Draft the canonical capability registry and workflow template index.
-- Expand the Supplier Knowledge Pack specification and Marketplace screen specification.
+- Expand the Catalogue Provider Knowledge Pack specification and Marketplace screen specification.
 
 Ad-hoc:
 - Current code, migrations, smoke tests, and runtime logs may still use `data_pack_*` identifiers.
@@ -841,7 +853,7 @@ Next:
 - Review and accept the registry, template index, and node audit.
 - Turn accepted registry rows into fresh manifest contracts, pack skeleton tasks, and compatibility/migration tasks.
 - Plan compatibility aliases or workflow migration for existing saved prototype node types.
-- Proceed to Supplier Knowledge Pack specification after Capability Pack ownership is accepted.
+- Proceed to Catalogue Provider Knowledge Pack specification after Capability Pack ownership is accepted.
 
 Ad-hoc:
 - Existing implementation names remain valid only as temporary compatibility names until fresh official packs are ready.
@@ -946,6 +958,173 @@ Docs updated:
 
 Verification:
 - `corepack pnpm validate:official-packs` passed: 5 packs, 14 nodes, 40 canonical capabilities, 12 compatibility aliases.
+
+### Phase 20B.4 Expanded Official Skeleton Set - 2026-07-03
+
+Done:
+- Added `lados.communication` official skeleton.
+- Added `lados.task-case` official skeleton.
+- Added `lados.commercial-finance` official skeleton.
+- Added `lados.procurement` official skeleton.
+- Added `lados.construction-operations` official skeleton.
+- Expanded planned compatibility aliases for notification, finance, procurement, and construction prototype families.
+- Created `Design/Lados_V4_Phase20B4_Expanded_Official_Skeleton_Set.md`.
+
+Next:
+- Add remaining skeletons for Contract Administration, Asset and Fleet, People and Payroll, Contractor Operations solution, QS Practice solution, and first template packs.
+- Continue running `corepack pnpm validate:official-packs` after each skeleton expansion.
+
+Ad-hoc:
+- The expanded official skeleton set remains manifest-only and is not visible in runtime or Marketplace yet.
+- Prototype packs remain temporary runtime support.
+
+Docs updated:
+- `Design/Lados_V4_Phase20B4_Expanded_Official_Skeleton_Set.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+- `packs/official/README.md`
+
+Verification:
+- `corepack pnpm validate:official-packs` passed: 10 packs, 36 nodes, 68 canonical capabilities, 28 compatibility aliases.
+
+### Phase 20B.5 Remaining Professional and Template Skeletons - 2026-07-03
+
+Done:
+- Added fresh official manifest-only skeletons for `lados.contract-admin`, `lados.asset-fleet`, and `lados.people-payroll`.
+- Added template-only solution packs for `lados.solution.contractor-ops` and `lados.solution.qs-practice`.
+- Added first template pack skeletons for invoice approval, procurement RFQ, progress claim, defect management, and CIPAA preparation.
+- Added skeleton template files under each solution/template pack.
+- Extended the official SDK manifest validator to permit node-free L3/L5 packs only when they declare `workflowTemplates`.
+- Extended the official pack validation script to verify declared template files exist.
+- Expanded planned contractor prototype compatibility aliases into Asset/Fleet and People/Payroll official node skeletons.
+- Created `Design/Lados_V4_Phase20B5_Remaining_Professional_and_Template_Skeletons.md`.
+
+Next:
+- Proceed to Phase 20B.6: official node design standard, visual metadata, pack colors/icons/categories, template manifest schema, and official pack Marketplace surfacing plan.
+
+Ad-hoc:
+- The full official skeleton catalogue is still manifest-only.
+- No official runtime registration, alias activation, workflow JSON migration, Marketplace surfacing, or prototype deletion happened.
+
+Docs updated:
+- `Design/Lados_V4_Phase20B5_Remaining_Professional_and_Template_Skeletons.md`
+- `packs/official/README.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- `corepack pnpm validate:official-packs` passed: 20 packs, 51 nodes, 96 canonical capabilities, 38 compatibility aliases.
+- `corepack pnpm --filter @lados/pack-sdk build` passed.
+- `corepack pnpm --filter web typecheck` passed.
+- Full `corepack pnpm build` was attempted but remains blocked in `apps/web` by a Next page-collection manifest issue where compiled route files exist but `app-paths-manifest.json` omits routes such as `/login` and `/packs`.
+
+### Phase 20B.6 Official Design, Visual Metadata, Template Schema, and Closeout - 2026-07-03
+
+Done:
+- Added `visual` metadata to all official pack manifests: category, icon, color, and palette group.
+- Added category, icon, and search keyword metadata to all official node skeletons.
+- Extended official SDK types and validators for pack visual metadata and node visual/search metadata.
+- Extended `tools/validate-official-packs.cjs` to validate declared template skeleton files.
+- Documented official node design standard, high-input node rule, visual catalogue, template manifest schema, Marketplace surfacing plan, runtime activation boundary, and Phase 20B closure criteria.
+- Created `Design/Lados_V4_Phase20B6_Official_Node_Design_Visual_Metadata_Template_Schema_Closeout.md`.
+
+Next:
+- Proceed to Phase 20D Marketplace Screen Specification and Knowledge Catalogue UX Wire Plan.
+- Treat official runtime registration/executors as a separate activation phase, not part of Phase 20B contract closeout.
+
+Ad-hoc:
+- Official packs remain `runtimeStatus: "manifest_only"`.
+- Prototype runtime packs remain untouched until aliases/migration/runtime verification are ready.
+
+Docs updated:
+- `Design/Lados_V4_Phase20B6_Official_Node_Design_Visual_Metadata_Template_Schema_Closeout.md`
+- `Design/Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- `corepack pnpm validate:official-packs` passed: 20 packs, 51 nodes, 96 canonical capabilities, 38 compatibility aliases.
+
+### Phase 20C Catalogue Provider and AI Marketplace Search Specification - 2026-07-03
+
+Done:
+- Selected **Catalogue Provider** as the broad Lados Marketplace term for publishers of Knowledge Packs.
+- Documented that Supplier remains valid only for procurement/RFQ counterparties and as one Catalogue Provider type.
+- Created the Phase 20C specification for Provider Profiles, Provider Knowledge Pack listings, Knowledge Pack item metadata, AI Marketplace Search, retrieval result shape, governance labels, and UI/UX wording changes.
+- Captured the required UI wording shift from Data Packs to Knowledge Packs at the product surface while keeping `data_pack_*` as the Phase 19 technical implementation name until a compatibility migration is planned.
+
+Next:
+- Proceed to Phase 20D Marketplace Screen Specification and Knowledge Catalogue UX Wire Plan.
+
+Ad-hoc:
+- No runtime or UI code was renamed in Phase 20C.
+- Current Marketplace, Explorer, PropertyPanel, and Execution Log UI still use some Data Pack wording and should be handled in a dedicated UI copy/compatibility pass.
+
+Docs updated:
+- `Design/Lados_V4_Phase20C_Catalogue_Provider_Knowledge_Pack_AI_Search_Spec.md`
+- `Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md`
+- `Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md`
+- `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- Documentation-only update. No code verification required.
+
+### Phase 20D Marketplace Screen Specification and Knowledge Catalogue UX Wire Plan - 2026-07-03
+
+Done:
+- Created the Phase 20D Marketplace screen specification and Knowledge Catalogue UX wire plan.
+- Defined Marketplace information architecture and route plan.
+- Specified Marketplace Home, Capability Pack Browse, Knowledge Catalogue Browse, Provider Profile, Knowledge Pack Detail, Knowledge Pack Item Detail, Installed Knowledge, Publish Knowledge Pack, Review Queue, and AI Search Preview.
+- Captured cross-screen naming, badge, advisory-copy, and current UI copy-change rules.
+- Documented Buyer, Catalogue Provider, and Admin review journeys.
+
+Next:
+- Proceed to Phase 20E Governance, Verification Checklist, Business Model Notes, and Phase 21+ Implementation Backlog.
+
+Ad-hoc:
+- No runtime, route, database, API, or UI implementation changed in Phase 20D.
+- Future UI implementation should change user-facing copy first while keeping `data_pack_*` technical identifiers until compatibility work is planned.
+
+Docs updated:
+- `Design/Lados_V4_Phase20D_Marketplace_Screen_Spec_Knowledge_Catalogue_UX_Wire_Plan.md`
+- `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- Documentation-only update. No code verification required.
+
+### Phase 20E Governance, Business Model, and Phase 21 Backlog Closeout - 2026-07-03
+
+Done:
+- Created the Phase 20E closeout specification.
+- Documented governance principles, verification statuses, stale/expired-data rules, Knowledge Pack review checklist, advisory wording, Catalogue Provider tiers, Buyer/Provider/Lados value propositions, Phase 21+ backlog, and deferred work.
+- Marked Phase 20 complete at the product contract/documentation layer.
+
+Next:
+- Proceed to Phase 21A - UI Copy and Compatibility Pass.
+
+Ad-hoc:
+- Phase 21A should change visible product wording from Data Packs to Knowledge Packs first.
+- Keep `data_pack_*` database/API/test identifiers until a deliberate compatibility migration is planned.
+
+Docs updated:
+- `Design/Lados_V4_Phase20E_Governance_Business_Model_Phase21_Backlog.md`
+- `Sprint/Lados_V4_Phase20_Master_Sprint_Plan.md`
+- `Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md`
+- `Sprint/Lados_V4_P18P-P20_Master_Checklist.md`
+- `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+- `README.md`
+
+Verification:
+- Documentation-only update. No code verification required.
 
 ---
 

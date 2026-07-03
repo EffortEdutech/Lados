@@ -142,6 +142,18 @@ function validateKnowledgePackRequirements(
   }
 }
 
+function validateOfficialVisual(value: unknown, field: string, issues: PackValidationIssue[]): void {
+  if (!isRecord(value)) {
+    issues.push({ field, message: `${field} is required and must be an object` });
+    return;
+  }
+  for (const key of ['category', 'icon', 'color', 'paletteGroup']) {
+    if (typeof value[key] !== 'string' || value[key].trim() === '') {
+      issues.push({ field: `${field}.${key}`, message: `${key} is required and must be a non-empty string` });
+    }
+  }
+}
+
 export function validateOfficialCapabilityPackManifest(manifest: unknown): PackValidationResult {
   const issues: PackValidationIssue[] = [];
 
@@ -178,18 +190,31 @@ export function validateOfficialCapabilityPackManifest(manifest: unknown): PackV
 
   const capabilities = requireStringArray(manifest, 'capabilities', issues);
   const nodes = requireStringArray(manifest, 'nodes', issues);
+  const workflowTemplates = manifest['workflowTemplates'];
+  const layer = String(manifest['layer']);
   requireStringArray(manifest, 'ownerBoundary', issues);
   requireStringArray(manifest, 'mustNotOwn', issues);
   requireStringArray(manifest, 'dependencies', issues);
   requireStringArray(manifest, 'guardrails', issues);
   requireStringArray(manifest, 'prototypeReferences', issues);
   validateKnowledgePackRequirements(manifest['knowledgePacks'], 'knowledgePacks', issues);
+  validateOfficialVisual(manifest['visual'], 'visual', issues);
+
+  if (workflowTemplates !== undefined && !isStringArray(workflowTemplates)) {
+    issues.push({ field: 'workflowTemplates', message: 'workflowTemplates must be an array of strings when provided' });
+  }
 
   if (capabilities.length === 0) {
     issues.push({ field: 'capabilities', message: 'Official packs must declare at least one capability' });
   }
-  if (nodes.length === 0) {
-    issues.push({ field: 'nodes', message: 'Official packs must declare at least one node' });
+  const canBeTemplateOnly = ['L3', 'L5'].includes(layer)
+    && isStringArray(workflowTemplates)
+    && workflowTemplates.length > 0;
+  if (nodes.length === 0 && !canBeTemplateOnly) {
+    issues.push({
+      field: 'nodes',
+      message: 'Official packs must declare at least one node unless they are L3/L5 template-only packs with workflowTemplates',
+    });
   }
 
   const duplicateCapabilities = capabilities.filter((capability, index) => capabilities.indexOf(capability) !== index);
@@ -253,6 +278,8 @@ export function validateOfficialNodeManifests(
     const capability = requireString(node, 'canonicalCapability', issues);
     const ownerPack = requireString(node, 'ownerPack', issues);
     requireString(node, 'displayName', issues);
+    requireString(node, 'category', issues);
+    requireString(node, 'icon', issues);
     requireString(node, 'intent', issues);
     requireString(node, 'outputPattern', issues);
     requireString(node, 'humanDecisionBoundary', issues);
@@ -322,6 +349,9 @@ export function validateOfficialNodeManifests(
 
     if (!isStringArray(node['compatibilityAliases'])) {
       issues.push({ field: `${prefix}.compatibilityAliases`, message: 'compatibilityAliases must be an array of strings' });
+    }
+    if (node['searchKeywords'] !== undefined && !isStringArray(node['searchKeywords'])) {
+      issues.push({ field: `${prefix}.searchKeywords`, message: 'searchKeywords must be an array of strings when provided' });
     }
 
     if (type) {

@@ -3,7 +3,7 @@
 **Platform:** Lados — Universal Business Workflow Engine  
 **Version:** 4.0  
 **Repository:** `QS-WFUI` (the git repo retains this name; the platform is Lados)  
-**Last Updated:** 2026-07-02
+**Last Updated:** 2026-07-03
 
 > **Note for new team members:** The git repository is called `QS-WFUI`. This is a legacy name from when the platform targeted Quantity Surveying workflows exclusively. The platform is now called **Lados** and supports universal business workflows across all industries. Do not confuse the repo folder name with the product name.
 
@@ -99,20 +99,31 @@ After the V4 architecture phases, the active next track is:
 | File | Purpose |
 |---|---|
 | [Lados_V4_P18P-P20_Master_Checklist.md](Sprint/Lados_V4_P18P-P20_Master_Checklist.md) | Checklist for Phase 18P Marketplace polish, Phase 19 Data Pack Engine, and Phase 20 Marketplace Knowledge Catalogue documentation |
+| [Lados_V4_Phase20_Master_Sprint_Plan.md](Sprint/Lados_V4_Phase20_Master_Sprint_Plan.md) | Controlling Phase 20 sprint plan with objective, non-goals, workstreams, exit gates, stop condition, and Phase 20E closeout target |
+| [Lados_V4_Phase21_Sprint_Plan.md](Sprint/Lados_V4_Phase21_Sprint_Plan.md) | Phase 21 sprint plan for UI copy compatibility, Provider Profiles, Knowledge Pack listings, review queue expansion, AI Search Preview, and official runtime activation planning |
+| [Lados_V4_Phase21_Checklist.md](Sprint/Lados_V4_Phase21_Checklist.md) | Phase 21 implementation checklist, starting with 21A UI Copy and Compatibility Pass |
 | [Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md](Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md) | Detailed sprint plan for turning Lados into a full product platform; Phase 20B keeps the professional bundle work |
 | [Lados_V4_DataPacks_ProfessionalBundles_Tech_Paper.md](Design/Lados_V4_DataPacks_ProfessionalBundles_Tech_Paper.md) | Phase 19 technical paper for the legacy Data Pack Engine, clean official pack bundles, and QS guardrails |
+| [Lados_V4_Capability_Packs_Product_and_Technical_Design.md](Design/Lados_V4_Capability_Packs_Product_and_Technical_Design.md) | Canonical Capability Packs design: official pack architecture, manifests, skeletons, validators, visual metadata, templates, aliases, and runtime activation boundary |
+| [Lados_V4_Knowledge_Packs_Product_and_Technical_Design.md](Design/Lados_V4_Knowledge_Packs_Product_and_Technical_Design.md) | Canonical Knowledge Packs design: former Data Packs, Knowledge Catalogue, Catalogue Providers, AI search, governance, business model, and Phase 21 backlog |
 | [Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md](Design/Lados_V4_Phase20_Naming_Lock_Capability_Packs_Knowledge_Packs.md) | Phase 20 naming lock: Capability Packs are workflow capabilities; Knowledge Packs are governed knowledge catalogues |
 | [Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md](Design/Lados_V4_Phase20A_Fresh_Capability_Build_Decision.md) | Accepted Phase 20A decision to remove prototype packs/nodes/templates from the official product line and build fresh planned Capability Packs |
 | [Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md](Design/Lados_V4_Phase20B1_Official_Pack_Manifest_Contract_Standard.md) | Phase 20B.1 official pack manifest contract standard and fresh skeleton location |
 | [Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md](Design/Lados_V4_Phase20B2_Official_Manifest_SDK_Validator_Compatibility_Alias_Plan.md) | Phase 20B.2 SDK types, validators, and prototype-to-official compatibility alias plan |
 | [Lados_V4_Phase20B3_Official_Skeleton_Validation_and_Capability_Check.md](Design/Lados_V4_Phase20B3_Official_Skeleton_Validation_and_Capability_Check.md) | Phase 20B.3 official skeleton validation script and cross-pack capability checks |
+| [Lados_V4_Phase20B4_Expanded_Official_Skeleton_Set.md](Design/Lados_V4_Phase20B4_Expanded_Official_Skeleton_Set.md) | Phase 20B.4 expanded official manifest-only skeleton set for Communication, Task/Case, Finance, Procurement, and Construction Operations |
+| [Lados_V4_Phase20B5_Remaining_Professional_and_Template_Skeletons.md](Design/Lados_V4_Phase20B5_Remaining_Professional_and_Template_Skeletons.md) | Phase 20B.5 remaining professional skeletons, solution packs, template pack skeletons, and template-only validator contract |
+| [Lados_V4_Phase20B6_Official_Node_Design_Visual_Metadata_Template_Schema_Closeout.md](Design/Lados_V4_Phase20B6_Official_Node_Design_Visual_Metadata_Template_Schema_Closeout.md) | Phase 20B.6 official node design standard, visual metadata, template schema, Marketplace surfacing plan, and Phase 20B contract closeout |
+| [Lados_V4_Phase20C_Catalogue_Provider_Knowledge_Pack_AI_Search_Spec.md](Design/Lados_V4_Phase20C_Catalogue_Provider_Knowledge_Pack_AI_Search_Spec.md) | Phase 20C Catalogue Provider terminology lock, Knowledge Pack specification, AI Marketplace Search requirements, and UI/UX wording change register |
+| [Lados_V4_Phase20D_Marketplace_Screen_Spec_Knowledge_Catalogue_UX_Wire_Plan.md](Design/Lados_V4_Phase20D_Marketplace_Screen_Spec_Knowledge_Catalogue_UX_Wire_Plan.md) | Phase 20D Marketplace information architecture, screen specifications, Knowledge Catalogue UX wire plan, and UI copy change register |
+| [Lados_V4_Phase20E_Governance_Business_Model_Phase21_Backlog.md](Design/Lados_V4_Phase20E_Governance_Business_Model_Phase21_Backlog.md) | Phase 20E governance principles, verification checklist, advisory wording, Catalogue Provider business model notes, and Phase 21+ backlog |
 | [Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md](Design/Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md) | Phase 20A greenfield planning for new Capability Packs, node indexing, overlap control, workflow template ownership, and prototype pack retirement |
 | [Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md](Design/Lados_V4_Phase20A_Target_Capability_Pack_Catalogue.md) | Draft target Capability Pack catalogue: official pack layers, ownership boundaries, dependencies, template families, and prototype mapping |
 | [Lados_V4_Phase20A_Canonical_Capability_Registry.md](Design/Lados_V4_Phase20A_Canonical_Capability_Registry.md) | Canonical capability keys, target owner packs, target node types, and prototype migration decisions |
 | [Lados_V4_Phase20A_Target_Workflow_Template_Index.md](Design/Lados_V4_Phase20A_Target_Workflow_Template_Index.md) | Target workflow template index with owner packs, required Capability Packs, Knowledge Packs, roles, and maturity |
 | [Lados_V4_Phase20A_Prototype_Node_Audit.md](Design/Lados_V4_Phase20A_Prototype_Node_Audit.md) | Audit of current prototype nodes against the target catalogue as reference-only assets, fresh-build targets, and temporary compatibility concerns |
-| [Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md](Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md) | Phase 20 strategy for Marketplace as an AI-ready supplier/seller knowledge catalogue |
-| [Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md](Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md) | Active Phase 20 documentation sprint plan for supplier Knowledge Packs, AI search, governance, and marketplace business model |
+| [Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md](Design/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Strategy.md) | Phase 20 strategy for Marketplace as an AI-ready Catalogue Provider knowledge marketplace |
+| [Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md](Sprint/Lados_V4_Phase20_Marketplace_Knowledge_Catalogue_Documentation.md) | Active Phase 20 documentation sprint plan for Catalogue Provider Knowledge Packs, AI search, governance, and marketplace business model |
 | [Lados_V4_P18P-P20_Verification_Playbook.md](Tests/Lados_V4_P18P-P20_Verification_Playbook.md) | Verification playbook for Marketplace, Phase 19 Data Packs, official bundles, and demo workflows |
 
 ---

@@ -6,23 +6,76 @@
     "ownerPack": "lados.human-work",
     "status": "skeleton",
     "intent": "Pause or route work for a human approval decision.",
-    "inputPattern": ["ports", "inspector", "resource_binding"],
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
     "outputPattern": "approval task reference and pending state",
     "ports": {
-      "inputs": [{ "id": "context", "label": "Context", "dataType": "object" }],
-      "outputs": [{ "id": "approvalTask", "label": "Task", "dataType": "object" }]
+      "inputs": [
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "approvalTask",
+          "label": "Task",
+          "dataType": "object"
+        }
+      ]
     },
     "configGroups": [
-      { "id": "request", "label": "Request", "fields": ["title", "description", "assigneeRole"] },
-      { "id": "deadline", "label": "Deadline", "fields": ["dueDate", "escalationRole"] }
+      {
+        "id": "request",
+        "label": "Request",
+        "fields": [
+          "title",
+          "description",
+          "assigneeRole"
+        ]
+      },
+      {
+        "id": "deadline",
+        "label": "Deadline",
+        "fields": [
+          "dueDate",
+          "escalationRole"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": ["approval matrix"] },
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "approval matrix"
+      ]
+    },
     "humanDecisionBoundary": "Requires a human actor to approve, reject, or request changes.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
-    "compatibilityAliases": ["core.human_approval", "foundation.request_approval"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "core.human_approval",
+      "foundation.request_approval"
+    ],
+    "executorStatus": "not_started",
+    "category": "Human Work",
+    "icon": "UserCheck",
+    "searchKeywords": [
+      "human work",
+      "request",
+      "approval"
+    ]
   },
   {
     "type": "lados.human.record_decision",
@@ -31,22 +84,70 @@
     "ownerPack": "lados.human-work",
     "status": "skeleton",
     "intent": "Record a human decision and its evidence without making the decision automatically.",
-    "inputPattern": ["ports", "inspector", "resource_binding"],
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
     "outputPattern": "decision record",
     "ports": {
-      "inputs": [{ "id": "evidence", "label": "Evidence", "dataType": "object" }],
-      "outputs": [{ "id": "decision", "label": "Decision", "dataType": "object" }]
+      "inputs": [
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "decision",
+          "label": "Decision",
+          "dataType": "object"
+        }
+      ]
     },
     "configGroups": [
-      { "id": "decision", "label": "Decision", "fields": ["decisionType", "decisionBy", "decisionDate"] },
-      { "id": "record", "label": "Record", "fields": ["notes", "attachments"] }
+      {
+        "id": "decision",
+        "label": "Decision",
+        "fields": [
+          "decisionType",
+          "decisionBy",
+          "decisionDate"
+        ]
+      },
+      {
+        "id": "record",
+        "label": "Record",
+        "fields": [
+          "notes",
+          "attachments"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "The value must come from a human actor or existing approval record.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "not_started"
+    "executorStatus": "not_started",
+    "category": "Human Work",
+    "icon": "UserCheck",
+    "searchKeywords": [
+      "human work",
+      "record",
+      "decision"
+    ]
   }
 ]

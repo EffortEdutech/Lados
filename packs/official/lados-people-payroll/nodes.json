@@ -1,0 +1,225 @@
+[
+  {
+    "type": "lados.people_payroll.prepare_payroll_run",
+    "displayName": "Prepare Payroll Run",
+    "canonicalCapability": "people_payroll.payroll.prepare",
+    "ownerPack": "lados.people-payroll",
+    "status": "skeleton",
+    "intent": "Prepare payroll run data from timesheets, expense records, and configured payroll inputs.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "payroll preparation record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "inputs",
+          "label": "Inputs",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "payrollRun",
+          "label": "Payroll",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "payroll",
+        "label": "Payroll",
+        "fields": [
+          "period",
+          "employeeGroup",
+          "timesheetBinding",
+          "expenseBinding"
+        ]
+      },
+      {
+        "id": "review",
+        "label": "Review",
+        "fields": [
+          "requiresReview",
+          "reviewerRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "payroll SOP",
+        "timesheet evidence rules"
+      ]
+    },
+    "humanDecisionBoundary": "Prepares payroll data only; approval and payment require explicit human-boundary records.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 300,
+      "minHeight": 140,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.prepare_payroll_run"
+    ],
+    "executorStatus": "not_started",
+    "category": "People and Payroll",
+    "icon": "UsersRound",
+    "searchKeywords": [
+      "people and payroll",
+      "prepare",
+      "payroll",
+      "run"
+    ]
+  },
+  {
+    "type": "lados.people_payroll.record_payroll_approval",
+    "displayName": "Record Payroll Approval",
+    "canonicalCapability": "people_payroll.payroll.record_approval",
+    "ownerPack": "lados.people-payroll",
+    "status": "skeleton",
+    "intent": "Record a human payroll approval decision with evidence and approval actor metadata.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "payroll approval record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "decision",
+          "label": "Decision",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "approval",
+          "label": "Approval",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "approval",
+        "label": "Approval",
+        "fields": [
+          "approvedBy",
+          "approvalDate",
+          "decision",
+          "notes"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "payroll SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Must record a human approval decision; the system must not approve payroll.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 305,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.approve_payroll"
+    ],
+    "executorStatus": "not_started",
+    "category": "People and Payroll",
+    "icon": "UsersRound",
+    "searchKeywords": [
+      "people and payroll",
+      "record",
+      "payroll",
+      "approval"
+    ]
+  },
+  {
+    "type": "lados.people_payroll.record_expense_approval",
+    "displayName": "Record Expense Approval",
+    "canonicalCapability": "people_payroll.expense.record_approval",
+    "ownerPack": "lados.people-payroll",
+    "status": "skeleton",
+    "intent": "Record a human expense approval decision for reimbursement or payroll handoff.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "expense approval record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "expense",
+          "label": "Expense",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "approval",
+          "label": "Approval",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "approval",
+        "label": "Approval",
+        "fields": [
+          "approvedBy",
+          "approvalDate",
+          "decision",
+          "policyRefs"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "expense policy"
+      ]
+    },
+    "humanDecisionBoundary": "Must record a human approval decision; AI may not approve expenses.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 305,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.approve_expense"
+    ],
+    "executorStatus": "not_started",
+    "category": "People and Payroll",
+    "icon": "UsersRound",
+    "searchKeywords": [
+      "people and payroll",
+      "record",
+      "expense",
+      "approval"
+    ]
+  }
+]

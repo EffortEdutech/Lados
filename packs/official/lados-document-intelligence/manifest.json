@@ -20,7 +20,10 @@
     "supplier pricing authority",
     "final commercial approval"
   ],
-  "dependencies": ["lados.workflow-foundation", "lados.resource-operations"],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations"
+  ],
   "capabilities": [
     "document.file.upload",
     "document.table.read_excel",
@@ -39,17 +42,30 @@
   ],
   "knowledgePacks": {
     "required": [],
-    "recommended": ["document type library", "document control SOP", "evidence rule packs"]
+    "recommended": [
+      "document type library",
+      "document control SOP",
+      "evidence rule packs"
+    ]
   },
   "guardrails": [
     "Extraction outputs must preserve source file references.",
     "AI-assisted extraction is advisory until verified by downstream human or domain nodes."
   ],
-  "prototypeReferences": ["document-pack", "ai-pack"],
+  "prototypeReferences": [
+    "document-pack",
+    "ai-pack"
+  ],
   "verification": {
     "manifest": "draft",
     "runtime": "not_started",
     "canvas": "not_started",
     "templates": "not_started"
+  },
+  "visual": {
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "color": "#0891b2",
+    "paletteGroup": "Business Foundation"
   }
 }

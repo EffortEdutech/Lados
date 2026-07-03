@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.template.defect_management.defect_report_to_notification",
+  "displayName": "Defect Report to Notification",
+  "ownerPack": "lados.template.defect-management",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.construction-operations", "lados.task-case", "lados.communication", "lados.human-work"],
+  "recommendedKnowledgePacks": ["defect classification rules", "site quality SOP"],
+  "summary": "Log a defect, create a task/case, notify responsible parties, track reminders, and record human closeout."
+}

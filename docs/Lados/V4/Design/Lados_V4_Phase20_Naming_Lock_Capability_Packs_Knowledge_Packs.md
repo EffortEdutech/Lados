@@ -15,6 +15,7 @@ Lados V4 now has two locked marketplace/platform package concepts:
 |---|---|---|---|
 | Capability Pack | Package of workflow capabilities | nodes, actions, templates, manifests, config schemas, events, permissions | Yes, through approved Lados runtime boundaries |
 | Knowledge Pack | Package of governed knowledge | standards references, supplier catalogues, SOPs, compliance rules, technical guidelines, rate libraries, evidence rules | No |
+| Catalogue Provider | Marketplace publisher identity for Knowledge Packs | supplier, manufacturer, consultant, publisher, association, organization, Lados official catalogue team | No |
 
 These names should be used in product documentation, UI copy, planning documents, marketplace strategy, and user-facing language.
 
@@ -74,7 +75,7 @@ Knowledge Packs should be typed. Not all knowledge has the same governance, lice
 
 | Knowledge Pack type | Purpose | Examples |
 |---|---|---|
-| Supplier Catalogue Pack | Supplier/seller product and service catalogue | concrete supplier catalogue, plant rental catalogue |
+| Provider Catalogue Pack | Catalogue Provider product and service catalogue | concrete supplier catalogue, plant rental catalogue, manufacturer product system, consultant checklist |
 | Standards Reference Pack | Industry standard references and licensed/allowed metadata | MS references, ISO references, BS/ASTM metadata |
 | Regulatory Compliance Pack | Statutory and regulatory obligations | CIDB, DOSH, Bomba, local authority requirements |
 | Company SOP Pack | Private organization procedures and playbooks | procurement SOP, invoice approval SOP |
@@ -150,7 +151,7 @@ Knowledge Packs
   -> Standards, SOPs, catalogues, regulations, rules, rates
 ```
 
-Supplier/seller marketplace strategy belongs primarily to **Knowledge Packs**, while workflow capability extension belongs to **Capability Packs**.
+Catalogue Provider marketplace strategy belongs primarily to **Knowledge Packs**, while workflow capability extension belongs to **Capability Packs**.
 
 ---
 
@@ -162,7 +163,7 @@ Use these labels:
 |---|---|
 | Marketplace tab for executable/action bundles | Capability Packs |
 | Marketplace tab for knowledge/catalogue/reference bundles | Knowledge Packs |
-| Supplier published catalogue | Supplier Knowledge Pack |
+| Provider published catalogue | Provider Knowledge Pack |
 | Internal company SOP bundle | Organization Knowledge Pack |
 | Installed governed knowledge | Installed Knowledge |
 | Node field selecting governed knowledge | Knowledge Pack Item |
@@ -194,6 +195,8 @@ From Phase 20 onward:
 
 - **Capability Pack** is locked as the package for actions, nodes, templates, and workflow capabilities.
 - **Knowledge Pack** is locked as the package for governed knowledge, catalogues, standards, SOPs, regulations, guidelines, rates, and evidence rules.
+- **Catalogue Provider** is locked as the broad marketplace publisher identity for Knowledge Packs.
+- **Supplier** remains valid only for procurement/RFQ counterparties and as one Catalogue Provider type.
 - **Data Pack** remains only as legacy technical implementation terminology until a future migration replaces or aliases `data_pack_*` identifiers.
 
 This naming lock should be reflected in all new Phase 20+ planning documents.

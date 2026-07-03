@@ -1,0 +1,58 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.template.invoice-approval",
+  "version": "0.1.0",
+  "displayName": "Invoice Approval Templates",
+  "layer": "L5",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados template pack for invoice submission, verification, approval record, and payment handoff workflows.",
+  "ownerBoundary": [
+    "invoice approval workflow templates",
+    "invoice review playbooks"
+  ],
+  "mustNotOwn": [
+    "finance runtime nodes",
+    "payment execution",
+    "invoice rules content"
+  ],
+  "dependencies": [
+    "lados.commercial-finance",
+    "lados.human-work",
+    "lados.communication",
+    "lados.document-intelligence"
+  ],
+  "capabilities": [
+    "template.invoice_approval"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/submit-invoice-to-approval.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "invoice validation rules",
+      "payment terms SOP",
+      "finance approval matrix"
+    ]
+  },
+  "guardrails": [
+    "Template packs must not duplicate lower-layer nodes.",
+    "Invoice approval remains a human-boundary workflow.",
+    "Payment execution is out of scope for this template pack."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "Invoice Approval Templates",
+    "icon": "Receipt",
+    "color": "#b91c1c",
+    "paletteGroup": "Template Packs"
+  }
+}

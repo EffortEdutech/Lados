@@ -101,6 +101,7 @@ export class DataPackItemsController {
     @Query('packSlug') packSlug: string | undefined,
     @Query('region') region: string | undefined,
     @Query('tag') tag: string | undefined,
+    @Query('effectiveOn') effectiveOn: string | undefined,
     @Query('limit') limit: string | undefined,
     @Request() req: AuthenticatedRequest,
   ) {
@@ -113,6 +114,7 @@ export class DataPackItemsController {
       packSlug,
       region,
       tag,
+      effectiveOn,
       limit: limit ? Number(limit) : undefined,
     });
     return { success: true, data };

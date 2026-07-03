@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.template.procurement_rfq.rfq_to_quotation_comparison",
+  "displayName": "RFQ to Quotation Comparison",
+  "ownerPack": "lados.template.procurement-rfq",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.procurement", "lados.document-intelligence", "lados.human-work", "lados.communication"],
+  "recommendedKnowledgePacks": ["supplier catalogues", "procurement SOP", "quotation comparison rules"],
+  "summary": "Create an RFQ, parse quotations, compare compliant offers, route award recommendation for human review, and request PO creation."
+}

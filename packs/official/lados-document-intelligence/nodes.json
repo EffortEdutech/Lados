@@ -6,20 +6,59 @@
     "ownerPack": "lados.document-intelligence",
     "status": "skeleton",
     "intent": "Attach or upload a source file for workflow processing.",
-    "inputPattern": ["inspector"],
+    "inputPattern": [
+      "inspector"
+    ],
     "outputPattern": "file reference with metadata",
     "ports": {
       "inputs": [],
-      "outputs": [{ "id": "file", "label": "File", "dataType": "file" }]
+      "outputs": [
+        {
+          "id": "file",
+          "label": "File",
+          "dataType": "file"
+        }
+      ]
     },
-    "configGroups": [{ "id": "file", "label": "File", "fields": ["fileSource", "documentType", "description"] }],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": ["document type library"] },
+    "configGroups": [
+      {
+        "id": "file",
+        "label": "File",
+        "fields": [
+          "fileSource",
+          "documentType",
+          "description"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "document type library"
+      ]
+    },
     "humanDecisionBoundary": "File intake only; no approval or certification.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 230, "minHeight": 104, "maxVisiblePortsPerSide": 2 },
-    "compatibilityAliases": ["document.upload_file"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "document.upload_file"
+    ],
+    "executorStatus": "not_started",
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "searchKeywords": [
+      "document intelligence",
+      "upload",
+      "file"
+    ]
   },
   {
     "type": "lados.document.read_excel",
@@ -28,20 +67,66 @@
     "ownerPack": "lados.document-intelligence",
     "status": "skeleton",
     "intent": "Read workbook tables into structured workflow data.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "table rows and source metadata",
     "ports": {
-      "inputs": [{ "id": "file", "label": "File", "dataType": "file" }],
-      "outputs": [{ "id": "table", "label": "Table", "dataType": "array" }]
+      "inputs": [
+        {
+          "id": "file",
+          "label": "File",
+          "dataType": "file"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "table",
+          "label": "Table",
+          "dataType": "array"
+        }
+      ]
     },
-    "configGroups": [{ "id": "read", "label": "Read Options", "fields": ["sheetName", "headerRow", "range"] }],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": ["document control SOP"] },
+    "configGroups": [
+      {
+        "id": "read",
+        "label": "Read Options",
+        "fields": [
+          "sheetName",
+          "headerRow",
+          "range"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "document control SOP"
+      ]
+    },
     "humanDecisionBoundary": "Reads data only; downstream review decides whether data is accepted.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 230, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
-    "compatibilityAliases": ["document.read_excel"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "document.read_excel"
+    ],
+    "executorStatus": "not_started",
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "searchKeywords": [
+      "document intelligence",
+      "read",
+      "excel"
+    ]
   },
   {
     "type": "lados.document.extract_table",
@@ -50,19 +135,65 @@
     "ownerPack": "lados.document-intelligence",
     "status": "skeleton",
     "intent": "Extract tabular data from a document with source references.",
-    "inputPattern": ["ports", "inspector", "knowledge_reference"],
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "knowledge_reference"
+    ],
     "outputPattern": "extracted table with confidence and source spans",
     "ports": {
-      "inputs": [{ "id": "document", "label": "Document", "dataType": "file" }],
-      "outputs": [{ "id": "table", "label": "Table", "dataType": "array" }]
+      "inputs": [
+        {
+          "id": "document",
+          "label": "Document",
+          "dataType": "file"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "table",
+          "label": "Table",
+          "dataType": "array"
+        }
+      ]
     },
-    "configGroups": [{ "id": "extraction", "label": "Extraction", "fields": ["targetTable", "expectedColumns", "reviewRequired"] }],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": ["document type library", "evidence rule packs"] },
+    "configGroups": [
+      {
+        "id": "extraction",
+        "label": "Extraction",
+        "fields": [
+          "targetTable",
+          "expectedColumns",
+          "reviewRequired"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "document type library",
+        "evidence rule packs"
+      ]
+    },
     "humanDecisionBoundary": "Extracted values require review before use in commercial decisions.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "not_started"
+    "executorStatus": "not_started",
+    "category": "Document Intelligence",
+    "icon": "FileSearch",
+    "searchKeywords": [
+      "document intelligence",
+      "extract",
+      "table"
+    ]
   }
 ]

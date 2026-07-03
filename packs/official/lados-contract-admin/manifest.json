@@ -1,0 +1,70 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.contract-admin",
+  "version": "0.1.0",
+  "displayName": "Contract Administration",
+  "layer": "L2",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados contract administration pack for instructions, notices, clause references, and correspondence evidence control.",
+  "ownerBoundary": [
+    "instruction register",
+    "contract notice preparation",
+    "notice due date tracking",
+    "clause reference lookup",
+    "correspondence evidence linking"
+  ],
+  "mustNotOwn": [
+    "QS valuation decisions",
+    "legal advice or determination",
+    "payment approval",
+    "standards or contract text content"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.document-intelligence",
+    "lados.communication",
+    "lados.task-case"
+  ],
+  "capabilities": [
+    "contract.instruction.register",
+    "contract.notice.prepare",
+    "contract.notice.track_due_date",
+    "contract.clause.lookup",
+    "contract.correspondence.link_evidence"
+  ],
+  "nodes": [
+    "lados.contract.register_instruction",
+    "lados.contract.prepare_notice",
+    "lados.contract.track_notice_due_date",
+    "lados.contract.lookup_clause_reference",
+    "lados.contract.link_correspondence_evidence"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "project contract reference",
+      "clause reference pack",
+      "correspondence SOP"
+    ]
+  },
+  "guardrails": [
+    "Contract administration nodes support preparation and tracking; they must not give legal advice.",
+    "Notice and clause outputs must preserve source references and human review status.",
+    "Contract text, standards, and statutory materials must come from Knowledge Packs."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Contract Administration",
+    "icon": "FileSignature",
+    "color": "#1d4ed8",
+    "paletteGroup": "QS and Construction"
+  }
+}

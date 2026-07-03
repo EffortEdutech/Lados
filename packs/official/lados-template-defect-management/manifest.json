@@ -1,0 +1,57 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.template.defect-management",
+  "version": "0.1.0",
+  "displayName": "Defect Management Templates",
+  "layer": "L5",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados template pack for defect reporting, assignment, notification, reminders, and closeout workflows.",
+  "ownerBoundary": [
+    "defect management workflow templates",
+    "defect closeout playbooks"
+  ],
+  "mustNotOwn": [
+    "construction runtime nodes",
+    "communication nodes",
+    "defect classification content"
+  ],
+  "dependencies": [
+    "lados.construction-operations",
+    "lados.task-case",
+    "lados.communication",
+    "lados.human-work"
+  ],
+  "capabilities": [
+    "template.defect_management"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/defect-report-to-notification.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "defect classification rules",
+      "site quality SOP"
+    ]
+  },
+  "guardrails": [
+    "Defect workflows can assign and notify; technical acceptance and closeout remain human-controlled.",
+    "Defect classification rules must come from Knowledge Packs.",
+    "Template packs must not duplicate Construction Operations, Task/Case, or Communication nodes."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "Defect Management Templates",
+    "icon": "Bug",
+    "color": "#c2410c",
+    "paletteGroup": "Template Packs"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.contractor_ops.fleet_job_to_invoice",
+  "displayName": "Fleet Job to Invoice",
+  "ownerPack": "lados.solution.contractor-ops",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.asset-fleet", "lados.commercial-finance", "lados.human-work"],
+  "recommendedKnowledgePacks": ["contractor SOP", "finance approval matrix"],
+  "summary": "Create a fleet job, complete operational evidence, submit invoice, verify invoice, and record human approval."
+}

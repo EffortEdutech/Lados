@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.contractor_ops.payroll_prepare_to_approval",
+  "displayName": "Payroll Prepare to Approval",
+  "ownerPack": "lados.solution.contractor-ops",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.people-payroll", "lados.human-work", "lados.communication"],
+  "recommendedKnowledgePacks": ["payroll SOP", "approval matrix"],
+  "summary": "Prepare a payroll run, request human review, record approval, and notify payroll stakeholders."
+}

@@ -1,0 +1,76 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.procurement",
+  "version": "0.1.0",
+  "displayName": "Procurement",
+  "layer": "L1",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados procurement capability pack for RFQ, quotation, award recommendation, and purchase order request workflows.",
+  "ownerBoundary": [
+    "create RFQ",
+    "issue RFQ",
+    "receive quotation",
+    "compare quotations",
+    "recommend award",
+    "generate purchase order request"
+  ],
+  "mustNotOwn": [
+    "finance PO approval",
+    "supplier catalogue knowledge",
+    "QS rate validation",
+    "contract entitlement"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.human-work",
+    "lados.document-intelligence",
+    "lados.communication"
+  ],
+  "capabilities": [
+    "procurement.rfq.create",
+    "procurement.rfq.issue",
+    "procurement.quotation.receive",
+    "procurement.quotation.compare",
+    "procurement.award.recommend",
+    "procurement.po.generate"
+  ],
+  "nodes": [
+    "lados.procurement.create_rfq",
+    "lados.procurement.issue_rfq",
+    "lados.procurement.receive_quotation",
+    "lados.procurement.compare_quotations",
+    "lados.procurement.recommend_award",
+    "lados.procurement.generate_po_request"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "supplier catalogues",
+      "procurement SOP",
+      "quotation comparison rules",
+      "material specification catalogue"
+    ]
+  },
+  "guardrails": [
+    "Award recommendation is advisory and must route through human review.",
+    "Supplier data belongs in Knowledge Packs, not embedded inside Procurement nodes.",
+    "Finance-owned PO creation and approval belong to Commercial Finance."
+  ],
+  "prototypeReferences": [
+    "procurement-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "color": "#9333ea",
+    "paletteGroup": "Business Operations"
+  }
+}

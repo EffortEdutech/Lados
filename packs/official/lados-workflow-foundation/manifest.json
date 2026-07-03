@@ -42,17 +42,27 @@
   ],
   "knowledgePacks": {
     "required": [],
-    "recommended": ["organization workflow SOP"]
+    "recommended": [
+      "organization workflow SOP"
+    ]
   },
   "guardrails": [
     "Workflow controls must not approve, certify, or decide commercial entitlement.",
     "Event publishing must preserve source resource and actor metadata when available."
   ],
-  "prototypeReferences": ["core-pack"],
+  "prototypeReferences": [
+    "core-pack"
+  ],
   "verification": {
     "manifest": "draft",
     "runtime": "not_started",
     "canvas": "not_started",
     "templates": "not_started"
+  },
+  "visual": {
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "color": "GitBranch",
+    "paletteGroup": "#2563eb"
   }
 }

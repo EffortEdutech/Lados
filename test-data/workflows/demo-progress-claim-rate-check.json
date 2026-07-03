@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "workflow": {
+    "name": "Demo: Progress Claim Rate Check (E2E)",
+    "status": "draft",
+    "version": "1.0.0",
+    "createdAt": "2026-07-03T02:00:00.000Z",
+    "updatedAt": "2026-07-03T02:00:00.000Z"
+  },
+  "ui": { "groups": [], "fastGroupBypassers": [] },
+  "nodes": [
+    { "id": "node-start", "mode": "active", "type": "core.start", "label": "Start",
+      "config": {}, "position": { "x": 0, "y": 0 } },
+    { "id": "node-claim-context", "mode": "active", "type": "core.logger", "label": "Load Claim Context",
+      "config": {
+        "message": "Claim PC-2026-001 loaded — rates referenced from QS Rate Library (advisory)",
+        "level": "info",
+        "claimRef": "PC-2026-001",
+        "concreteRateItemId": "b4d09a73-2093-4ece-b8b3-3eb2121c3daa",
+        "rebarRateItemId": "ee603c8e-7c8e-4663-809d-eaacc8cee6d3",
+        "advisory": true
+      },
+      "position": { "x": 280, "y": 0 } },
+    { "id": "node-qs-approval", "mode": "active", "type": "core.human_approval", "label": "QS Review & Approval",
+      "config": {
+        "title": "QS Review: Progress Claim PC-2026-001",
+        "assignee_role": "owner",
+        "description": "Review claim PC-2026-001. Referenced rates are advisory (Grade 30 concrete, HT rebar) from lados.qs-rate-library — human decision required."
+      },
+      "position": { "x": 560, "y": 0 } },
+    { "id": "node-record-approved", "mode": "active", "type": "core.logger", "label": "Record Approved Claim",
+      "config": {
+        "message": "Claim PC-2026-001 approved — Data Pack provenance recorded in execution log",
+        "level": "info"
+      },
+      "position": { "x": 840, "y": 0 } },
+    { "id": "node-end", "mode": "active", "type": "core.end", "label": "End",
+      "config": {}, "position": { "x": 1120, "y": 0 } }
+  ],
+  "connections": [
+    { "id": "e-demo-1", "sourceNodeId": "node-start", "sourcePortId": "out",
+      "targetNodeId": "node-claim-context", "targetPortId": "in" },
+    { "id": "e-demo-2", "sourceNodeId": "node-claim-context", "sourcePortId": "out",
+      "targetNodeId": "node-qs-approval", "targetPortId": "in" },
+    { "id": "e-demo-3", "sourceNodeId": "node-qs-approval", "sourcePortId": "out",
+      "targetNodeId": "node-record-approved", "targetPortId": "in" },
+    { "id": "e-demo-4", "sourceNodeId": "node-record-approved", "sourcePortId": "out",
+      "targetNodeId": "node-end", "targetPortId": "in" }
+  ]
+}

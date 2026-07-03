@@ -1,0 +1,74 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.solution.contractor-ops",
+  "version": "0.1.0",
+  "displayName": "Contractor Operations Solution",
+  "layer": "L3",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados solution pack for contractor operating workflows. This pack owns templates and orchestration plans, not low-level nodes.",
+  "ownerBoundary": [
+    "contractor solution templates",
+    "cross-pack operating playbooks",
+    "contractor dashboard planning"
+  ],
+  "mustNotOwn": [
+    "finance nodes",
+    "fleet nodes",
+    "payroll nodes",
+    "procurement nodes",
+    "Knowledge Pack catalogue content"
+  ],
+  "dependencies": [
+    "lados.asset-fleet",
+    "lados.commercial-finance",
+    "lados.people-payroll",
+    "lados.procurement",
+    "lados.task-case",
+    "lados.communication"
+  ],
+  "capabilities": [
+    "solution.contractor_ops.template.job_to_invoice",
+    "solution.contractor_ops.template.fleet_trip",
+    "solution.contractor_ops.template.fuel_review",
+    "solution.contractor_ops.template.maintenance",
+    "solution.contractor_ops.template.payroll"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/fleet-job-to-invoice.template.json",
+    "templates/trip-dispatch-and-completion.template.json",
+    "templates/fuel-receipt-review.template.json",
+    "templates/fleet-maintenance.template.json",
+    "templates/payroll-prepare-to-approval.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "contractor SOP",
+      "approval matrix",
+      "fleet SOP",
+      "finance approval matrix"
+    ]
+  },
+  "guardrails": [
+    "Solution packs should orchestrate approved lower-layer packs instead of duplicating their nodes.",
+    "Commercial, payroll, and expense approvals must remain human-boundary records.",
+    "Uploaded runtime code is not executed in this phase."
+  ],
+  "prototypeReferences": [
+    "contractor-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "Contractor Operations Solution",
+    "icon": "BriefcaseBusiness",
+    "color": "#0d9488",
+    "paletteGroup": "Solution Packs"
+  }
+}

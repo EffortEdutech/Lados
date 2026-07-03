@@ -48,6 +48,33 @@ function addUnique(map, key, owner, label, issues) {
   map.set(key, owner);
 }
 
+function validateTemplateManifest(template, manifest, templatePath, issues) {
+  if (!template || typeof template !== 'object' || Array.isArray(template)) {
+    issues.push(`${templatePath} root: template manifest must be an object`);
+    return;
+  }
+
+  for (const field of ['templateId', 'displayName', 'ownerPack', 'status', 'maturity', 'summary']) {
+    if (typeof template[field] !== 'string' || template[field].trim() === '') {
+      issues.push(`${templatePath} ${field}: required non-empty string`);
+    }
+  }
+
+  for (const field of ['requiredPacks', 'recommendedKnowledgePacks']) {
+    if (!Array.isArray(template[field]) || template[field].some((entry) => typeof entry !== 'string')) {
+      issues.push(`${templatePath} ${field}: required array of strings`);
+    }
+  }
+
+  if (template.ownerPack && template.ownerPack !== manifest.id) {
+    issues.push(`${templatePath} ownerPack: expected ${manifest.id}, found ${template.ownerPack}`);
+  }
+
+  if (template.templateId && !template.templateId.startsWith(`${manifest.id.replace(/-/g, '_')}.`)) {
+    issues.push(`${templatePath} templateId: should start with owner pack namespace ${manifest.id.replace(/-/g, '_')}.`);
+  }
+}
+
 function main() {
   const sdk = requireSdk();
   const packDirs = getOfficialPackDirs();
@@ -83,6 +110,20 @@ function main() {
     }
 
     const manifest = sdk.assertOfficialCapabilityPackManifest(rawManifest);
+    for (const templatePath of manifest.workflowTemplates ?? []) {
+      const absoluteTemplatePath = path.join(packDir, templatePath);
+      if (!fs.existsSync(absoluteTemplatePath)) {
+        issues.push(`${relativePackDir}/manifest.json workflowTemplates: missing ${templatePath}`);
+      } else {
+        validateTemplateManifest(
+          readJson(absoluteTemplatePath),
+          manifest,
+          `${relativePackDir}/${templatePath}`,
+          issues,
+        );
+      }
+    }
+
     const nodeResult = sdk.validateOfficialNodeManifests(rawNodes, manifest);
     if (!nodeResult.valid) {
       for (const issue of nodeResult.issues) {

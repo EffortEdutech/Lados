@@ -1,0 +1,303 @@
+[
+  {
+    "type": "lados.communication.send_email",
+    "displayName": "Send Email",
+    "canonicalCapability": "communication.email.send",
+    "ownerPack": "lados.communication",
+    "status": "skeleton",
+    "intent": "Send an email message through the configured communication channel.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "delivery status and message reference",
+    "ports": {
+      "inputs": [
+        {
+          "id": "message",
+          "label": "Message",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "delivery",
+          "label": "Delivery",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "recipients",
+        "label": "Recipients",
+        "fields": [
+          "to",
+          "cc",
+          "bcc"
+        ]
+      },
+      {
+        "id": "content",
+        "label": "Content",
+        "fields": [
+          "subject",
+          "template",
+          "body"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "communication templates"
+      ]
+    },
+    "humanDecisionBoundary": "Sends a message only; business approval must be modeled separately.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "notification.send_email"
+    ],
+    "executorStatus": "not_started",
+    "category": "Communication",
+    "icon": "MessagesSquare",
+    "searchKeywords": [
+      "communication",
+      "send",
+      "email"
+    ]
+  },
+  {
+    "type": "lados.communication.send_sms",
+    "displayName": "Send SMS",
+    "canonicalCapability": "communication.sms.send",
+    "ownerPack": "lados.communication",
+    "status": "skeleton",
+    "intent": "Send a short SMS notification to configured recipients.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "delivery status and message reference",
+    "ports": {
+      "inputs": [
+        {
+          "id": "message",
+          "label": "Message",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "delivery",
+          "label": "Delivery",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "sms",
+        "label": "SMS",
+        "fields": [
+          "phoneNumbers",
+          "message",
+          "template"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "communication templates"
+      ]
+    },
+    "humanDecisionBoundary": "Sends a message only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "notification.send_sms"
+    ],
+    "executorStatus": "not_started",
+    "category": "Communication",
+    "icon": "MessagesSquare",
+    "searchKeywords": [
+      "communication",
+      "send",
+      "sms"
+    ]
+  },
+  {
+    "type": "lados.communication.send_in_app",
+    "displayName": "Send In-App",
+    "canonicalCapability": "communication.in_app.send",
+    "ownerPack": "lados.communication",
+    "status": "skeleton",
+    "intent": "Send an in-app message to a user, role, or workflow participant.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "notification record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "notification",
+          "label": "Notice",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "target",
+        "label": "Target",
+        "fields": [
+          "userId",
+          "role",
+          "organizationScope"
+        ]
+      },
+      {
+        "id": "message",
+        "label": "Message",
+        "fields": [
+          "title",
+          "body",
+          "severity"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "escalation SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Informs users only; it does not assign or approve work.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "notification.send_in_app",
+      "foundation.send_notification"
+    ],
+    "executorStatus": "not_started",
+    "category": "Communication",
+    "icon": "MessagesSquare",
+    "searchKeywords": [
+      "communication",
+      "send",
+      "in-app"
+    ]
+  },
+  {
+    "type": "lados.communication.send_reminder",
+    "displayName": "Send Reminder",
+    "canonicalCapability": "communication.reminder.send",
+    "ownerPack": "lados.communication",
+    "status": "skeleton",
+    "intent": "Send a reminder related to a due date, task, approval, or workflow checkpoint.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "reminder delivery record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "target",
+          "label": "Target",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "reminder",
+          "label": "Reminder",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "schedule",
+        "label": "Schedule",
+        "fields": [
+          "dueDate",
+          "offset",
+          "timezone"
+        ]
+      },
+      {
+        "id": "message",
+        "label": "Message",
+        "fields": [
+          "title",
+          "body",
+          "channel"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "escalation SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Reminder delivery does not make the pending decision.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Communication",
+    "icon": "MessagesSquare",
+    "searchKeywords": [
+      "communication",
+      "send",
+      "reminder"
+    ]
+  }
+]

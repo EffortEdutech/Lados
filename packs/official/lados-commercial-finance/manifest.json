@@ -1,0 +1,81 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.commercial-finance",
+  "version": "0.1.0",
+  "displayName": "Commercial Finance",
+  "layer": "L1",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados commercial finance capability pack for invoices, payments, purchase orders, approval records, and retention.",
+  "ownerBoundary": [
+    "invoice submission",
+    "invoice verification",
+    "invoice approval record",
+    "payment record",
+    "purchase order creation",
+    "purchase order approval record",
+    "retention claim and release record"
+  ],
+  "mustNotOwn": [
+    "RFQ or quotation comparison",
+    "BOQ measurement",
+    "progress claim assessment",
+    "payment gateway execution without controlled integration"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.human-work",
+    "lados.document-intelligence"
+  ],
+  "capabilities": [
+    "finance.invoice.submit",
+    "finance.invoice.verify",
+    "finance.invoice.approval_record",
+    "finance.payment.record",
+    "finance.po.create",
+    "finance.po.approval_record",
+    "finance.retention.claim_release",
+    "finance.retention.record_release"
+  ],
+  "nodes": [
+    "lados.finance.submit_invoice",
+    "lados.finance.verify_invoice",
+    "lados.finance.record_invoice_approval",
+    "lados.finance.record_payment",
+    "lados.finance.create_purchase_order",
+    "lados.finance.record_purchase_order_approval",
+    "lados.finance.claim_retention_release",
+    "lados.finance.record_retention_release"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "invoice validation rules",
+      "payment terms SOP",
+      "retention rules",
+      "finance approval matrix"
+    ]
+  },
+  "guardrails": [
+    "Approval nodes must record human approval; they must not autonomously approve commercial obligations.",
+    "Payment nodes record payment unless a controlled integration pack explicitly executes payment.",
+    "Finance outputs must preserve source references, assumptions, and review status."
+  ],
+  "prototypeReferences": [
+    "finance-pack",
+    "contractor-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "color": "#dc2626",
+    "paletteGroup": "Business Operations"
+  }
+}

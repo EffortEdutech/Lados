@@ -125,6 +125,10 @@ Methodology: phase-gate (consistent with V4). Six sprints, PD-1 → PD-6. Each g
 - [ ] Supabase production settings: PITR/backup tier, connection pooler for the API.
 - [ ] **Gate:** staging deploy end-to-end green (login → build workflow → run → approve → audit log).
 
+> **Known issue (found during PD-4 E2E, 2026-07-03):** BullMQ/Upstash queue path has never processed a job — Redis commands hang indefinitely (constructors succeed, commands block; `queue/health` hangs). Suspected stale Upstash credentials post key-rotation. Dev unblocked via in-process fallback (REDIS_URL commented out). PD-6 must: verify/rotate Upstash credentials, add a Redis PING healthcheck at startup that fails loudly, add a command timeout so enqueue falls back instead of hanging, then chaos-drill the queue path.
+>
+> **Also fixed during PD-4 E2E (2026-07-03):** `workflow.service.publish()` set `status: 'active'`, violating `workflows_status_check` — publish had NEVER succeeded (500 since Phase 1). Fixed to `'published'`.
+
 ### Sprint PD-6 — Launch Readiness
 
 - [ ] Load tests: 100 concurrent runs; 1000-node planner (G8).

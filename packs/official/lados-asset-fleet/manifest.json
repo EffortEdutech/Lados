@@ -1,0 +1,78 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.asset-fleet",
+  "version": "0.1.0",
+  "displayName": "Asset and Fleet Operations",
+  "layer": "L2",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados asset and fleet operations pack for jobs, dispatch, trip completion, fuel receipts, and maintenance records.",
+  "ownerBoundary": [
+    "asset/fleet job creation",
+    "trip dispatch",
+    "trip completion",
+    "fuel receipt upload",
+    "fuel receipt extraction",
+    "maintenance record creation",
+    "maintenance clearance"
+  ],
+  "mustNotOwn": [
+    "invoice approval",
+    "payroll approval",
+    "procurement award",
+    "vehicle telematics integration runtime"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.document-intelligence",
+    "lados.task-case"
+  ],
+  "capabilities": [
+    "asset_fleet.job.create",
+    "asset_fleet.trip.dispatch",
+    "asset_fleet.trip.complete",
+    "asset_fleet.fuel_receipt.upload",
+    "asset_fleet.fuel_receipt.extract",
+    "asset_fleet.maintenance.create",
+    "asset_fleet.maintenance.clear"
+  ],
+  "nodes": [
+    "lados.asset_fleet.create_job",
+    "lados.asset_fleet.dispatch_trip",
+    "lados.asset_fleet.complete_trip",
+    "lados.asset_fleet.upload_fuel_receipt",
+    "lados.asset_fleet.extract_fuel_receipt",
+    "lados.asset_fleet.create_maintenance_record",
+    "lados.asset_fleet.clear_maintenance"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "fleet SOP",
+      "asset register rules",
+      "fuel policy",
+      "maintenance checklist"
+    ]
+  },
+  "guardrails": [
+    "Fleet operations records work and evidence; finance and payroll approvals stay in their own packs.",
+    "Fuel extraction is advisory and must preserve source file references and confidence.",
+    "Maintenance clearance must record the responsible human or authorized integration."
+  ],
+  "prototypeReferences": [
+    "contractor-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "color": "#15803d",
+    "paletteGroup": "Operations"
+  }
+}

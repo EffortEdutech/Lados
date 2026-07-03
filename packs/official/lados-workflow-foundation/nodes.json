@@ -6,20 +6,54 @@
     "ownerPack": "lados.workflow-foundation",
     "status": "skeleton",
     "intent": "Start a workflow from a manual operator action.",
-    "inputPattern": ["inspector"],
+    "inputPattern": [
+      "inspector"
+    ],
     "outputPattern": "trigger context object",
     "ports": {
       "inputs": [],
-      "outputs": [{ "id": "trigger", "label": "Trigger", "dataType": "object" }]
+      "outputs": [
+        {
+          "id": "trigger",
+          "label": "Trigger",
+          "dataType": "object"
+        }
+      ]
     },
-    "configGroups": [{ "id": "run", "label": "Run Setup", "fields": ["label", "description"] }],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "configGroups": [
+      {
+        "id": "run",
+        "label": "Run Setup",
+        "fields": [
+          "label",
+          "description"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Starts execution only; does not approve or certify anything.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 220, "minHeight": 96, "maxVisiblePortsPerSide": 3 },
+    "canvasUx": {
+      "minWidth": 220,
+      "minHeight": 96,
+      "maxVisiblePortsPerSide": 3
+    },
     "compatibilityAliases": [],
-    "executorStatus": "not_started"
+    "executorStatus": "not_started",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "manual",
+      "trigger"
+    ]
   },
   {
     "type": "lados.workflow.condition",
@@ -28,23 +62,67 @@
     "ownerPack": "lados.workflow-foundation",
     "status": "skeleton",
     "intent": "Route workflow execution based on an explicit condition.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "true and false route flags",
     "ports": {
-      "inputs": [{ "id": "value", "label": "Value", "dataType": "any" }],
+      "inputs": [
+        {
+          "id": "value",
+          "label": "Value",
+          "dataType": "any"
+        }
+      ],
       "outputs": [
-        { "id": "true", "label": "True", "dataType": "boolean" },
-        { "id": "false", "label": "False", "dataType": "boolean" }
+        {
+          "id": "true",
+          "label": "True",
+          "dataType": "boolean"
+        },
+        {
+          "id": "false",
+          "label": "False",
+          "dataType": "boolean"
+        }
       ]
     },
-    "configGroups": [{ "id": "condition", "label": "Condition", "fields": ["expression", "label"] }],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "configGroups": [
+      {
+        "id": "condition",
+        "label": "Condition",
+        "fields": [
+          "expression",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Evaluates configured logic only; human review should be modeled with Human Work nodes.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 240, "minHeight": 120, "maxVisiblePortsPerSide": 3 },
-    "compatibilityAliases": ["core.condition"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 3
+    },
+    "compatibilityAliases": [
+      "core.condition"
+    ],
+    "executorStatus": "not_started",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "condition"
+    ]
   },
   {
     "type": "lados.workflow.write_log",
@@ -53,19 +131,62 @@
     "ownerPack": "lados.workflow-foundation",
     "status": "skeleton",
     "intent": "Write an explicit checkpoint message to workflow runtime logs.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "log confirmation",
     "ports": {
-      "inputs": [{ "id": "data", "label": "Data", "dataType": "any" }],
-      "outputs": [{ "id": "logged", "label": "Logged", "dataType": "boolean" }]
+      "inputs": [
+        {
+          "id": "data",
+          "label": "Data",
+          "dataType": "any"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "logged",
+          "label": "Logged",
+          "dataType": "boolean"
+        }
+      ]
     },
-    "configGroups": [{ "id": "message", "label": "Message", "fields": ["message", "level"] }],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "configGroups": [
+      {
+        "id": "message",
+        "label": "Message",
+        "fields": [
+          "message",
+          "level"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Logging is informational only.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 220, "minHeight": 104, "maxVisiblePortsPerSide": 2 },
-    "compatibilityAliases": ["core.logger"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 220,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "core.logger"
+    ],
+    "executorStatus": "not_started",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "write",
+      "log"
+    ]
   }
 ]

@@ -6,23 +6,79 @@
     "ownerPack": "lados.qs-commercial",
     "status": "skeleton",
     "intent": "Read BOQ rows from structured document data or an existing Workspace Resource.",
-    "inputPattern": ["ports", "inspector", "resource_binding"],
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
     "outputPattern": "BOQ resource or normalized BOQ rows",
     "ports": {
-      "inputs": [{ "id": "source", "label": "Source", "dataType": "object" }],
-      "outputs": [{ "id": "boq", "label": "BOQ", "dataType": "object" }]
+      "inputs": [
+        {
+          "id": "source",
+          "label": "Source",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "boq",
+          "label": "BOQ",
+          "dataType": "object"
+        }
+      ]
     },
     "configGroups": [
-      { "id": "source", "label": "Source", "fields": ["sourceType", "bindingKey", "sheetOrTable"] },
-      { "id": "mapping", "label": "Column Mapping", "fields": ["itemNo", "description", "unit", "quantity", "rate"] }
+      {
+        "id": "source",
+        "label": "Source",
+        "fields": [
+          "sourceType",
+          "bindingKey",
+          "sheetOrTable"
+        ]
+      },
+      {
+        "id": "mapping",
+        "label": "Column Mapping",
+        "fields": [
+          "itemNo",
+          "description",
+          "unit",
+          "quantity",
+          "rate"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": ["BOQ item library", "measurement rules"] },
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "BOQ item library",
+        "measurement rules"
+      ]
+    },
     "humanDecisionBoundary": "Reads and structures BOQ data only; QS acceptance remains human-reviewed.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
-    "compatibilityAliases": ["qs.read_boq"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "qs.read_boq"
+    ],
+    "executorStatus": "not_started",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "read",
+      "boq"
+    ]
   },
   {
     "type": "lados.qs.classify_trade",
@@ -31,23 +87,75 @@
     "ownerPack": "lados.qs-commercial",
     "status": "skeleton",
     "intent": "Classify BOQ or scope items into trade/work categories with confidence and references.",
-    "inputPattern": ["ports", "inspector", "knowledge_reference"],
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "knowledge_reference"
+    ],
     "outputPattern": "classified items with confidence and review flags",
     "ports": {
-      "inputs": [{ "id": "items", "label": "Items", "dataType": "array" }],
-      "outputs": [{ "id": "classified", "label": "Classified", "dataType": "array" }]
+      "inputs": [
+        {
+          "id": "items",
+          "label": "Items",
+          "dataType": "array"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "classified",
+          "label": "Classified",
+          "dataType": "array"
+        }
+      ]
     },
     "configGroups": [
-      { "id": "classification", "label": "Classification", "fields": ["tradeSystem", "confidenceThreshold", "reviewLowConfidence"] },
-      { "id": "knowledge", "label": "Knowledge", "fields": ["knowledgePackRefs"] }
+      {
+        "id": "classification",
+        "label": "Classification",
+        "fields": [
+          "tradeSystem",
+          "confidenceThreshold",
+          "reviewLowConfidence"
+        ]
+      },
+      {
+        "id": "knowledge",
+        "label": "Knowledge",
+        "fields": [
+          "knowledgePackRefs"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": true, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": ["BOQ item library", "QS rate library"] },
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "BOQ item library",
+        "QS rate library"
+      ]
+    },
     "humanDecisionBoundary": "Classification is advisory when confidence is below threshold or when used for commercial decisions.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 260, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
-    "compatibilityAliases": ["qs.classify_trade"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "qs.classify_trade"
+    ],
+    "executorStatus": "not_started",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "classify",
+      "trade"
+    ]
   },
   {
     "type": "lados.qs.assess_progress_claim",
@@ -56,26 +164,92 @@
     "ownerPack": "lados.qs-commercial",
     "status": "skeleton",
     "intent": "Assess progress claim evidence against declared claim rules and produce a QS review recommendation.",
-    "inputPattern": ["ports", "inspector", "resource_binding", "knowledge_reference"],
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
     "outputPattern": "claim assessment recommendation with evidence references",
     "ports": {
       "inputs": [
-        { "id": "claim", "label": "Claim", "dataType": "object" },
-        { "id": "evidence", "label": "Evidence", "dataType": "array" }
+        {
+          "id": "claim",
+          "label": "Claim",
+          "dataType": "object"
+        },
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "dataType": "array"
+        }
       ],
-      "outputs": [{ "id": "assessment", "label": "Assessment", "dataType": "object" }]
+      "outputs": [
+        {
+          "id": "assessment",
+          "label": "Assessment",
+          "dataType": "object"
+        }
+      ]
     },
     "configGroups": [
-      { "id": "claim", "label": "Claim", "fields": ["claimBinding", "assessmentDate", "reviewRole"] },
-      { "id": "rules", "label": "Rules", "fields": ["claimEvidenceRules", "contractReference", "standardsReferences"] },
-      { "id": "review", "label": "Review", "fields": ["humanReviewRequired", "confidenceThreshold"] }
+      {
+        "id": "claim",
+        "label": "Claim",
+        "fields": [
+          "claimBinding",
+          "assessmentDate",
+          "reviewRole"
+        ]
+      },
+      {
+        "id": "rules",
+        "label": "Rules",
+        "fields": [
+          "claimEvidenceRules",
+          "contractReference",
+          "standardsReferences"
+        ]
+      },
+      {
+        "id": "review",
+        "label": "Review",
+        "fields": [
+          "humanReviewRequired",
+          "confidenceThreshold"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": true, "required": true },
-    "knowledgePackRequirements": { "required": ["claim evidence rules"], "recommended": ["contract clause reference", "standards reference packs"] },
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [
+        "claim evidence rules"
+      ],
+      "recommended": [
+        "contract clause reference",
+        "standards reference packs"
+      ]
+    },
     "humanDecisionBoundary": "Produces a QS assessment recommendation only. Certification/payment approval must be recorded by a human decision node.",
     "aiBoundary": "requires_human_review",
-    "canvasUx": { "minWidth": 290, "minHeight": 148, "maxVisiblePortsPerSide": 3 },
-    "compatibilityAliases": ["construction.assess_progress_claim"],
-    "executorStatus": "not_started"
+    "canvasUx": {
+      "minWidth": 290,
+      "minHeight": 148,
+      "maxVisiblePortsPerSide": 3
+    },
+    "compatibilityAliases": [
+      "construction.assess_progress_claim"
+    ],
+    "executorStatus": "not_started",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "assess",
+      "claim"
+    ]
   }
 ]

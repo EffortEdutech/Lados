@@ -1,0 +1,67 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.communication",
+  "version": "0.1.0",
+  "displayName": "Communication",
+  "layer": "L1",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados communication capability pack for generic email, SMS, in-app, reminder, and notification routing actions.",
+  "ownerBoundary": [
+    "send email",
+    "send SMS",
+    "send in-app message",
+    "send reminder",
+    "route notification by role"
+  ],
+  "mustNotOwn": [
+    "approval decisions",
+    "task assignment ownership",
+    "provider-specific integration behavior",
+    "commercial or statutory notification policy"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations"
+  ],
+  "capabilities": [
+    "communication.email.send",
+    "communication.sms.send",
+    "communication.in_app.send",
+    "communication.reminder.send"
+  ],
+  "nodes": [
+    "lados.communication.send_email",
+    "lados.communication.send_sms",
+    "lados.communication.send_in_app",
+    "lados.communication.send_reminder"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "communication templates",
+      "escalation SOP"
+    ]
+  },
+  "guardrails": [
+    "Communication nodes deliver messages only; they do not approve, certify, or decide business outcomes.",
+    "Provider-specific delivery details belong in integration packs.",
+    "Sensitive notices should preserve template, recipient, sender, and delivery metadata."
+  ],
+  "prototypeReferences": [
+    "notifications-pack",
+    "foundation-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Communication",
+    "icon": "MessagesSquare",
+    "color": "#16a34a",
+    "paletteGroup": "Business Operations"
+  }
+}

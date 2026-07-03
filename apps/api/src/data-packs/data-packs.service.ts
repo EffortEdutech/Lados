@@ -252,6 +252,8 @@ export class DataPacksService {
     packSlug?: string;
     region?: string;
     tag?: string;
+    /** PD-4 — ISO date (YYYY-MM-DD): only items effective on this date */
+    effectiveOn?: string;
     limit?: number;
   }) {
     const { organizationId, userId } = params;
@@ -295,6 +297,18 @@ export class DataPacksService {
     }
     if (params.region?.trim()) query = query.eq('region', params.region.trim());
     if (params.tag?.trim()) query = query.contains('tags', [params.tag.trim()]);
+    // PD-4 — effective-date filter: item is effective when effective_from ≤ date
+    // (or open-ended) AND effective_to ≥ date (or open-ended). Chained .or()
+    // groups are ANDed together by PostgREST.
+    if (params.effectiveOn?.trim()) {
+      const date = params.effectiveOn.trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        throw new BadRequestException('effectiveOn must be an ISO date (YYYY-MM-DD)');
+      }
+      query = query
+        .or(`effective_from.is.null,effective_from.lte.${date}`)
+        .or(`effective_to.is.null,effective_to.gte.${date}`);
+    }
 
     const { data, error } = await query;
     if (error) throw new Error(error.message);

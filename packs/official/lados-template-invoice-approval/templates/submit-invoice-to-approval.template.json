@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.template.invoice_approval.submit_invoice_to_approval",
+  "displayName": "Submit Invoice to Approval",
+  "ownerPack": "lados.template.invoice-approval",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.commercial-finance", "lados.human-work", "lados.communication"],
+  "recommendedKnowledgePacks": ["invoice validation rules", "finance approval matrix"],
+  "summary": "Submit invoice, verify invoice references, request human approval, record decision, and notify finance stakeholders."
+}

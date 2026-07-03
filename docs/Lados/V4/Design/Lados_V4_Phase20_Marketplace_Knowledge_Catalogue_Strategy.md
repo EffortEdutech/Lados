@@ -15,7 +15,7 @@ In that world, a conventional supplier website is no longer enough. The winning 
 
 Lados Knowledge Packs become that catalogue layer.
 
-Lados Marketplace should therefore evolve from a simple pack store into a governed knowledge marketplace where suppliers, sellers, manufacturers, consultants, and service providers publish structured Knowledge Packs that can be discovered by:
+Lados Marketplace should therefore evolve from a simple pack store into a governed knowledge marketplace where **Catalogue Providers** publish structured Knowledge Packs that can be discovered by:
 
 - Lados workflow agents
 - Lados marketplace search
@@ -29,7 +29,7 @@ The marketplace is not only for downloading tools. It is a commercial knowledge 
 
 ## 2. Future Business Position
 
-Lados becomes an agent for supplier/seller knowledge catalogues.
+Lados becomes an agent for Catalogue Provider knowledge catalogues.
 
 The business pattern is close to an Alibaba/AliExpress-style discovery marketplace, but optimized for AI-era procurement and professional workflows:
 
@@ -52,7 +52,7 @@ A Knowledge Pack is a non-executable, versioned knowledge product.
 For Phase 20, the important marketplace unit is not only `.ladosPack`. It is:
 
 ```text
-Supplier / Seller
+Catalogue Provider
   -> Marketplace Profile
   -> Knowledge Pack Listing
   -> Knowledge Pack Version
@@ -61,9 +61,9 @@ Supplier / Seller
   -> Evidence, pricing, compliance, availability, region, source metadata
 ```
 
-Example supplier Knowledge Packs:
+Example Provider Knowledge Packs:
 
-| Supplier type | Knowledge Pack examples |
+| Provider type | Knowledge Pack examples |
 |---|---|
 | Material supplier | Concrete grades, steel bars, waterproofing systems, delivery zones |
 | Plant supplier | Excavators, cranes, rental rates, capacity, location, availability |
@@ -84,7 +84,7 @@ The marketplace must keep these names distinct:
 | Knowledge Pack | Adds structured knowledge, catalogues, rates, rules, product data | No |
 | Workspace Resource | Project-owned file/data uploaded or created inside a workspace | No |
 | Resource Binding | Mapping between workflow/node config and project resources | No |
-| Supplier Profile | Commercial identity that owns or publishes catalogue listings | No |
+| Provider Profile | Marketplace identity that owns or publishes catalogue listings | No |
 | Marketplace Listing | Public/commercial wrapper around a Capability Pack or Knowledge Pack | No |
 
 This naming is important because Lados must not confuse executable capability with supplier knowledge.
@@ -99,7 +99,7 @@ Every marketplace Knowledge Pack should be designed for AI retrieval.
 
 ### 5.1 Required Listing Metadata
 
-- supplier/seller name
+- Catalogue Provider name
 - legal or trading name
 - region/country/city coverage
 - trade/category classification
@@ -152,13 +152,13 @@ The marketplace should support:
 
 ## 6. Marketplace User Journeys
 
-### 6.1 Supplier Publishes Catalogue
+### 6.1 Catalogue Provider Publishes Catalogue
 
-1. Supplier creates marketplace profile.
-2. Supplier uploads or edits a Knowledge Pack.
+1. Catalogue Provider creates marketplace profile.
+2. Catalogue Provider uploads or edits a Knowledge Pack.
 3. Lados validates schema and required fields.
 4. Lados marks missing evidence, stale dates, or unclear assumptions.
-5. Supplier submits for verification.
+5. Catalogue Provider submits for verification.
 6. Admin verifies listing.
 7. Knowledge Pack becomes searchable and installable.
 
@@ -170,7 +170,7 @@ The marketplace should support:
 4. User selects items into workflow or RFQ.
 5. Workflow logs Knowledge Pack provenance.
 
-### 6.3 Workflow Consumes Supplier Knowledge
+### 6.3 Workflow Consumes Provider Knowledge
 
 1. Node config references Knowledge Pack items.
 2. Runtime resolves item metadata.
@@ -188,11 +188,11 @@ Phase 20 documentation should define these future screens before implementation:
 |---|---|
 | Marketplace Home | Search-first entry for Capability Packs and Knowledge Packs |
 | Knowledge Pack Browse | Search supplier and official catalogues |
-| Supplier Profile | Commercial identity, verification, contact/RFQ route |
+| Provider Profile | Catalogue Provider identity, verification, contact/RFQ route |
 | Knowledge Pack Detail | Versioned collections, provenance, install/subscribe |
 | Item Detail | Source-aware product/rate/rule/evidence record |
-| Publish Knowledge Pack | Supplier upload/editor flow |
-| Review Queue | Admin verification of supplier catalogues |
+| Publish Knowledge Pack | Catalogue Provider upload/editor flow |
+| Review Queue | Admin verification of provider catalogues |
 | Installed Knowledge | Organization-installed Knowledge Packs |
 | AI Search Preview | Shows how Lados agent will interpret the catalogue |
 
@@ -200,14 +200,14 @@ Phase 20 documentation should define these future screens before implementation:
 
 ## 8. Commercial Model
 
-Potential supplier/seller subscription tiers:
+Potential Catalogue Provider subscription tiers:
 
 | Tier | Capability |
 |---|---|
-| Free Listing | Supplier profile and limited catalogue visibility |
+| Free Listing | Provider profile and limited catalogue visibility |
 | Catalogue Publisher | Publishes verified Knowledge Packs |
-| Featured Supplier | Boosted marketplace ranking and richer profile |
-| Workflow Integrated Supplier | Items can be inserted into RFQ/procurement workflows |
+| Featured Provider | Boosted marketplace ranking and richer profile |
+| Workflow Integrated Provider | Items can be inserted into RFQ/procurement workflows |
 | Enterprise Catalogue API | Automated catalogue updates through API/import |
 
 Buyer-side value:
@@ -218,7 +218,7 @@ Buyer-side value:
 - reduced manual searching
 - workflow-ready procurement data
 
-Supplier-side value:
+Provider-side value:
 
 - AI-search visibility
 - workflow-level commercial presence
@@ -234,7 +234,7 @@ Knowledge Pack Marketplace must not become a blind advertising surface.
 
 Rules:
 
-- Supplier-provided data is labelled supplier-provided.
+- Provider-provided data is labelled provider-provided.
 - Official/reference data is labelled official/reference.
 - Rates and prices are advisory until confirmed.
 - Every commercial item needs source/date/assumptions.
@@ -260,7 +260,7 @@ Phase 20 is documentation-first and should produce:
 
 1. Marketplace knowledge-catalogue strategy.
 2. Knowledge Pack publisher specification.
-3. Supplier profile and listing specification.
+3. Catalogue Provider profile and listing specification.
 4. AI search and retrieval requirements.
 5. Marketplace screen specification.
 6. Verification and governance checklist.
@@ -275,7 +275,7 @@ After Phase 20 documentation is accepted, implementation can proceed in smaller 
 
 | Future phase | Focus |
 |---|---|
-| 21 | Supplier profile and publisher account model |
+| 21 | Catalogue Provider profile and publisher account model |
 | 22 | Knowledge Pack publish/upload/review flow |
 | 23 | AI catalogue search and retrieval ranking |
 | 24 | RFQ/procurement workflow integration |
@@ -287,7 +287,7 @@ After Phase 20 documentation is accepted, implementation can proceed in smaller 
 
 Phase 20 succeeds when the team can answer:
 
-- What does a supplier publish?
+- What does a Catalogue Provider publish?
 - How does an AI agent search it?
 - How does a buyer trust it?
 - How does a workflow consume it?

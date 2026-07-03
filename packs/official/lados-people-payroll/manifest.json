@@ -1,0 +1,65 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.people-payroll",
+  "version": "0.1.0",
+  "displayName": "People and Payroll Operations",
+  "layer": "L2",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados people and payroll pack for payroll preparation, payroll approval records, and expense approval records.",
+  "ownerBoundary": [
+    "payroll run preparation",
+    "payroll approval record",
+    "expense approval record"
+  ],
+  "mustNotOwn": [
+    "bank payment execution",
+    "statutory payroll advice",
+    "HR disciplinary decision",
+    "fuel receipt extraction"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.human-work",
+    "lados.document-intelligence"
+  ],
+  "capabilities": [
+    "people_payroll.payroll.prepare",
+    "people_payroll.payroll.record_approval",
+    "people_payroll.expense.record_approval"
+  ],
+  "nodes": [
+    "lados.people_payroll.prepare_payroll_run",
+    "lados.people_payroll.record_payroll_approval",
+    "lados.people_payroll.record_expense_approval"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "payroll SOP",
+      "expense policy",
+      "timesheet evidence rules"
+    ]
+  },
+  "guardrails": [
+    "Payroll and expense nodes record preparation or human approval; they must not autonomously approve or pay.",
+    "Statutory, HR, and tax interpretation must come from verified Knowledge Packs and human review.",
+    "Payment execution belongs to future controlled integration packs, not this skeleton."
+  ],
+  "prototypeReferences": [
+    "contractor-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "People and Payroll",
+    "icon": "UsersRound",
+    "color": "#be123c",
+    "paletteGroup": "Operations"
+  }
+}

@@ -266,6 +266,13 @@ export interface OfficialVerificationStatus {
   templates: string;
 }
 
+export interface OfficialPackVisual {
+  category: string;
+  icon: string;
+  color: string;
+  paletteGroup: string;
+}
+
 export interface OfficialCapabilityPackManifest {
   contractVersion: OfficialCapabilityPackContractVersion;
   id: string;
@@ -280,9 +287,11 @@ export interface OfficialCapabilityPackManifest {
   dependencies: string[];
   capabilities: string[];
   nodes: string[];
+  workflowTemplates?: string[];
   knowledgePacks: OfficialKnowledgePackRequirements;
   guardrails: string[];
   prototypeReferences: string[];
+  visual: OfficialPackVisual;
   verification: OfficialVerificationStatus;
 }
 
@@ -320,6 +329,9 @@ export interface OfficialNodeManifest {
   displayName: string;
   canonicalCapability: string;
   ownerPack: string;
+  category: string;
+  icon: string;
+  searchKeywords?: string[];
   status: OfficialCapabilityPackStatus;
   intent: string;
   inputPattern: OfficialInputPattern[];

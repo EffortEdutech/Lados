@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.qs_practice.boq_upload_to_cost_summary",
+  "displayName": "BOQ Upload to Cost Summary",
+  "ownerPack": "lados.solution.qs-practice",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.document-intelligence", "lados.qs-commercial", "lados.human-work"],
+  "recommendedKnowledgePacks": ["QS rate library", "measurement rules"],
+  "summary": "Read a BOQ, classify trades, enrich with approved rate references, and route the cost summary for review."
+}

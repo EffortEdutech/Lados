@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.qs_practice.final_account_reconciliation",
+  "displayName": "Final Account Reconciliation",
+  "ownerPack": "lados.solution.qs-practice",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.qs-commercial", "lados.commercial-finance", "lados.document-intelligence", "lados.human-work"],
+  "recommendedKnowledgePacks": ["claim evidence rules", "retention rules", "QS rate library"],
+  "summary": "Gather contract sums, variations, payments, retention, and evidence into a final account review workflow."
+}

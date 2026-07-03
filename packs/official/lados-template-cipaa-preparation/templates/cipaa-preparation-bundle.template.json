@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.template.cipaa_preparation.cipaa_preparation_bundle",
+  "displayName": "CIPAA Preparation Bundle",
+  "ownerPack": "lados.template.cipaa-preparation",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.contract-admin", "lados.qs-commercial", "lados.document-intelligence", "lados.human-work"],
+  "recommendedKnowledgePacks": ["project contract reference", "claim evidence rules", "notice chronology SOP"],
+  "summary": "Prepare chronology, evidence register, notice references, claim summaries, and review checkpoints for a CIPAA preparation bundle."
+}

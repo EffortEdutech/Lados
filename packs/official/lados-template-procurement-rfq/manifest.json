@@ -1,0 +1,58 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.template.procurement-rfq",
+  "version": "0.1.0",
+  "displayName": "Procurement RFQ Templates",
+  "layer": "L5",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados template pack for RFQ issue, quotation comparison, recommendation, and PO request workflows.",
+  "ownerBoundary": [
+    "RFQ workflow templates",
+    "quotation comparison playbooks"
+  ],
+  "mustNotOwn": [
+    "procurement runtime nodes",
+    "supplier catalogue content",
+    "award approval decision"
+  ],
+  "dependencies": [
+    "lados.procurement",
+    "lados.document-intelligence",
+    "lados.human-work",
+    "lados.communication"
+  ],
+  "capabilities": [
+    "template.procurement_rfq"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/rfq-to-quotation-comparison.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "supplier catalogues",
+      "procurement SOP",
+      "quotation comparison rules"
+    ]
+  },
+  "guardrails": [
+    "Award recommendations are advisory until a human decision is recorded.",
+    "Supplier and pricing knowledge must remain in Knowledge Packs.",
+    "Template packs must not duplicate Procurement nodes."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "Procurement RFQ Templates",
+    "icon": "ClipboardList",
+    "color": "#7e22ce",
+    "paletteGroup": "Template Packs"
+  }
+}

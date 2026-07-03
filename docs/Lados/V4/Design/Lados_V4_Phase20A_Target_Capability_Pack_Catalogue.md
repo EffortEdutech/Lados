@@ -692,7 +692,7 @@ Purpose:
 | Generic AI extraction/classification | AI Operations | document, QS, finance | advisory; must expose confidence |
 | Submit invoice | Commercial Finance | contractor solution, SME solution | not owned by contractor pack |
 | Create RFQ | Procurement | contractor solution, QS practice | not owned by finance |
-| Compare quotations | Procurement | contractor solution | uses Supplier Knowledge Packs |
+| Compare quotations | Procurement | contractor solution | uses supplier catalogue Knowledge Packs |
 | Read/normalize BOQ | QS Commercial | QS practice, contractor solution | document pack only reads file |
 | Assess claim evidence | QS Commercial | contractor solution | uses Evidence Rule Knowledge Packs |
 | Log defect | Construction Operations | contractor solution | can create task/notification through dependencies |

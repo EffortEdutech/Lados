@@ -1,0 +1,58 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.template.progress-claim",
+  "version": "0.1.0",
+  "displayName": "Progress Claim Templates",
+  "layer": "L5",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados template pack for progress claim evidence checking and QS review workflows.",
+  "ownerBoundary": [
+    "progress claim evidence templates",
+    "QS claim review playbooks"
+  ],
+  "mustNotOwn": [
+    "QS runtime nodes",
+    "construction operation nodes",
+    "claim evidence rule content"
+  ],
+  "dependencies": [
+    "lados.qs-commercial",
+    "lados.construction-operations",
+    "lados.document-intelligence",
+    "lados.human-work"
+  ],
+  "capabilities": [
+    "template.progress_claim"
+  ],
+  "nodes": [],
+  "workflowTemplates": [
+    "templates/progress-claim-evidence-check.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "claim evidence rules",
+      "measurement rules",
+      "QS rate library"
+    ]
+  },
+  "guardrails": [
+    "Claim assessment outputs are advisory until reviewed by the responsible QS or commercial approver.",
+    "Measurement, rate, and evidence rules must come from Knowledge Packs.",
+    "Template packs must not duplicate QS or Construction Operations nodes."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "draft"
+  },
+  "visual": {
+    "category": "Progress Claim Templates",
+    "icon": "Landmark",
+    "color": "#a16207",
+    "paletteGroup": "Template Packs"
+  }
+}

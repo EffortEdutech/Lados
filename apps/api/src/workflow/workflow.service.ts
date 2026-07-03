@@ -408,7 +408,9 @@ export class WorkflowService {
         published_version_id: version.id,
         published_at:         new Date().toISOString(),
         published_by:         userId,
-        status:               'active',
+        // PD-4 fix: was 'active', which violates workflows_status_check
+        // ('draft'|'published'|'archived') — publish 500ed since Phase 1.
+        status:               'published',
       })
       .eq('id', workflowId)
       .select('id, name, status, published_version_id, published_at')

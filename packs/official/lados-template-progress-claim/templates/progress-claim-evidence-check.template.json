@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.template.progress_claim.progress_claim_evidence_check",
+  "displayName": "Progress Claim Evidence Check",
+  "ownerPack": "lados.template.progress-claim",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.qs-commercial", "lados.construction-operations", "lados.document-intelligence", "lados.human-work"],
+  "recommendedKnowledgePacks": ["claim evidence rules", "measurement rules", "QS rate library"],
+  "summary": "Collect site evidence, assess claim references, flag missing evidence, and route QS review before certification."
+}

@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.contractor_ops.fuel_receipt_review",
+  "displayName": "Fuel Receipt Review",
+  "ownerPack": "lados.solution.contractor-ops",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.asset-fleet", "lados.document-intelligence", "lados.people-payroll", "lados.human-work"],
+  "recommendedKnowledgePacks": ["fuel policy", "expense policy"],
+  "summary": "Upload a fuel receipt, extract receipt data, route low-confidence or policy-sensitive claims for human expense approval."
+}

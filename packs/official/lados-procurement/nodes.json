@@ -1,0 +1,298 @@
+[
+  {
+    "type": "lados.procurement.create_rfq",
+    "displayName": "Create RFQ",
+    "canonicalCapability": "procurement.rfq.create",
+    "ownerPack": "lados.procurement",
+    "status": "skeleton",
+    "intent": "Create an RFQ record from scope, item, supplier, and due-date details.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "RFQ resource",
+    "ports": {
+      "inputs": [
+        {
+          "id": "scope",
+          "label": "Scope",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "rfq",
+          "label": "RFQ",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "rfq",
+        "label": "RFQ",
+        "fields": [
+          "title",
+          "dueDate",
+          "currency",
+          "deliveryLocation"
+        ]
+      },
+      {
+        "id": "suppliers",
+        "label": "Suppliers",
+        "fields": [
+          "supplierRefs",
+          "knowledgePackRefs"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "supplier catalogues",
+        "procurement SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Creates an RFQ record only; issue/award decisions are separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "procurement.generate_rfq"
+    ],
+    "executorStatus": "not_started",
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "searchKeywords": [
+      "procurement",
+      "create",
+      "rfq"
+    ]
+  },
+  {
+    "type": "lados.procurement.compare_quotations",
+    "displayName": "Compare Quotations",
+    "canonicalCapability": "procurement.quotation.compare",
+    "ownerPack": "lados.procurement",
+    "status": "skeleton",
+    "intent": "Compare quotations against declared criteria and produce a review-ready comparison.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "quotation comparison with assumptions and review flags",
+    "ports": {
+      "inputs": [
+        {
+          "id": "quotations",
+          "label": "Quotes",
+          "dataType": "array"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "comparison",
+          "label": "Compare",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "criteria",
+        "label": "Criteria",
+        "fields": [
+          "criteria",
+          "weighting",
+          "normalization"
+        ]
+      },
+      {
+        "id": "knowledge",
+        "label": "Knowledge",
+        "fields": [
+          "supplierCatalogueRefs",
+          "comparisonRules"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "quotation comparison rules",
+        "supplier catalogues"
+      ]
+    },
+    "humanDecisionBoundary": "Comparison is advisory and must be reviewed before award.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 280,
+      "minHeight": 132,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "searchKeywords": [
+      "procurement",
+      "compare",
+      "quotations"
+    ]
+  },
+  {
+    "type": "lados.procurement.recommend_award",
+    "displayName": "Recommend Award",
+    "canonicalCapability": "procurement.award.recommend",
+    "ownerPack": "lados.procurement",
+    "status": "skeleton",
+    "intent": "Prepare a procurement award recommendation for human review.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "knowledge_reference"
+    ],
+    "outputPattern": "award recommendation record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "comparison",
+          "label": "Compare",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "recommendation",
+          "label": "Recommend",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "review",
+        "label": "Review",
+        "fields": [
+          "recommendedSupplier",
+          "reason",
+          "reviewRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "procurement SOP",
+        "approval matrix"
+      ]
+    },
+    "humanDecisionBoundary": "Recommendation only; award approval is a human decision.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 290,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "searchKeywords": [
+      "procurement",
+      "recommend",
+      "award"
+    ]
+  },
+  {
+    "type": "lados.procurement.generate_po_request",
+    "displayName": "Generate PO Request",
+    "canonicalCapability": "procurement.po.generate",
+    "ownerPack": "lados.procurement",
+    "status": "skeleton",
+    "intent": "Generate a purchase order request for Commercial Finance handoff.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "PO request record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "award",
+          "label": "Award",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "request",
+          "label": "Request",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "request",
+        "label": "PO Request",
+        "fields": [
+          "supplier",
+          "amount",
+          "items",
+          "financeReviewRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "procurement SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Generates a request only; finance PO creation/approval remains separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 280,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "procurement.generate_po"
+    ],
+    "executorStatus": "not_started",
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "searchKeywords": [
+      "procurement",
+      "generate",
+      "po",
+      "request"
+    ]
+  }
+]

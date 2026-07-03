@@ -17,7 +17,9 @@
     "document extraction logic",
     "external system synchronization"
   ],
-  "dependencies": ["lados.workflow-foundation"],
+  "dependencies": [
+    "lados.workflow-foundation"
+  ],
   "capabilities": [
     "resource.create",
     "resource.read",
@@ -39,17 +41,28 @@
   ],
   "knowledgePacks": {
     "required": [],
-    "recommended": ["resource naming SOP"]
+    "recommended": [
+      "resource naming SOP"
+    ]
   },
   "guardrails": [
     "Resource nodes must expose Resource Binding support where practical.",
     "Resource transition nodes must not bypass human approval rules declared by domain packs."
   ],
-  "prototypeReferences": ["core-pack", "foundation-pack"],
+  "prototypeReferences": [
+    "core-pack",
+    "foundation-pack"
+  ],
   "verification": {
     "manifest": "draft",
     "runtime": "not_started",
     "canvas": "not_started",
     "templates": "not_started"
+  },
+  "visual": {
+    "category": "Resource Operations",
+    "icon": "Database",
+    "color": "#0f766e",
+    "paletteGroup": "Platform Foundation"
   }
 }

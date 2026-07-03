@@ -1,0 +1,77 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.construction-operations",
+  "version": "0.1.0",
+  "displayName": "Construction Operations",
+  "layer": "L2",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados construction operations capability pack for site projects, inspections, defects, site diary, and handover actions.",
+  "ownerBoundary": [
+    "create project or site operation resource",
+    "create site inspection",
+    "submit inspection report",
+    "log defect",
+    "create site diary",
+    "run handover checklist"
+  ],
+  "mustNotOwn": [
+    "QS valuation",
+    "payment certification",
+    "procurement sourcing",
+    "contract entitlement decision"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.human-work",
+    "lados.document-intelligence",
+    "lados.task-case",
+    "lados.communication"
+  ],
+  "capabilities": [
+    "construction.project.create",
+    "construction.inspection.create",
+    "construction.inspection.submit_report",
+    "construction.defect.log",
+    "construction.site_diary.create",
+    "construction.handover.checklist"
+  ],
+  "nodes": [
+    "lados.construction.create_project",
+    "lados.construction.create_site_inspection",
+    "lados.construction.submit_inspection_report",
+    "lados.construction.log_defect",
+    "lados.construction.create_site_diary",
+    "lados.construction.run_handover_checklist"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "inspection checklist packs",
+      "defect classification rules",
+      "construction standards index",
+      "handover SOP"
+    ]
+  },
+  "guardrails": [
+    "Construction Operations nodes capture site records and evidence; QS valuation belongs to QS Commercial.",
+    "Defect and inspection outputs must preserve actor, date, location, photos/documents, and source references.",
+    "Standards and checklist knowledge belongs in Knowledge Packs."
+  ],
+  "prototypeReferences": [
+    "construction-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "color": "#ea580c",
+    "paletteGroup": "QS and Construction"
+  }
+}

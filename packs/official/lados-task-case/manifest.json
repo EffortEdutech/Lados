@@ -1,0 +1,67 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.task-case",
+  "version": "0.1.0",
+  "displayName": "Task and Case Management",
+  "layer": "L1",
+  "status": "skeleton",
+  "runtimeStatus": "manifest_only",
+  "description": "Official Lados task, case, checklist, and operational follow-up capability pack.",
+  "ownerBoundary": [
+    "create task",
+    "update task status",
+    "open case",
+    "close case",
+    "track checklist items"
+  ],
+  "mustNotOwn": [
+    "human approval gates",
+    "domain-specific claim or RFQ logic",
+    "commercial valuation",
+    "communication provider delivery"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.resource-operations",
+    "lados.human-work",
+    "lados.communication"
+  ],
+  "capabilities": [
+    "task.create",
+    "task.status.update",
+    "case.open",
+    "case.close"
+  ],
+  "nodes": [
+    "lados.task.create",
+    "lados.task.update_status",
+    "lados.case.open",
+    "lados.case.close"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "case management SOP",
+      "checklist SOP"
+    ]
+  },
+  "guardrails": [
+    "Task and Case nodes create operational records; approval gates belong to Human Work.",
+    "Case status updates must preserve actor, date, and evidence references."
+  ],
+  "prototypeReferences": [
+    "foundation-pack"
+  ],
+  "verification": {
+    "manifest": "draft",
+    "runtime": "not_started",
+    "canvas": "not_started",
+    "templates": "not_started"
+  },
+  "visual": {
+    "category": "Task and Case",
+    "icon": "ListChecks",
+    "color": "#475569",
+    "paletteGroup": "Business Operations"
+  }
+}

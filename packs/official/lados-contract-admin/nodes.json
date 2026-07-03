@@ -1,0 +1,357 @@
+[
+  {
+    "type": "lados.contract.register_instruction",
+    "displayName": "Register Instruction",
+    "canonicalCapability": "contract.instruction.register",
+    "ownerPack": "lados.contract-admin",
+    "status": "skeleton",
+    "intent": "Register a contract instruction with source, date, parties, and evidence references.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "instruction register entry",
+    "ports": {
+      "inputs": [
+        {
+          "id": "instruction",
+          "label": "Instruction",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "entry",
+          "label": "Entry",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "instruction",
+        "label": "Instruction",
+        "fields": [
+          "instructionDate",
+          "issuer",
+          "reference",
+          "summary"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "project contract reference"
+      ]
+    },
+    "humanDecisionBoundary": "Registers a record only; it does not determine entitlement or valuation.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 285,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Contract Administration",
+    "icon": "FileSignature",
+    "searchKeywords": [
+      "contract administration",
+      "register",
+      "instruction"
+    ]
+  },
+  {
+    "type": "lados.contract.prepare_notice",
+    "displayName": "Prepare Notice",
+    "canonicalCapability": "contract.notice.prepare",
+    "ownerPack": "lados.contract-admin",
+    "status": "skeleton",
+    "intent": "Prepare a draft contract notice using selected clause references, event facts, and correspondence evidence.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "draft notice",
+    "ports": {
+      "inputs": [
+        {
+          "id": "event",
+          "label": "Event",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "notice",
+          "label": "Notice",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "notice",
+        "label": "Notice",
+        "fields": [
+          "noticeType",
+          "recipient",
+          "issueDate",
+          "clauseRefs"
+        ]
+      },
+      {
+        "id": "review",
+        "label": "Review",
+        "fields": [
+          "requiresContractAdminReview",
+          "reviewerRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "project contract reference",
+        "clause reference pack"
+      ]
+    },
+    "humanDecisionBoundary": "Produces a draft notice for human review; it must not issue legal or contractual determinations.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 300,
+      "minHeight": 140,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Contract Administration",
+    "icon": "FileSignature",
+    "searchKeywords": [
+      "contract administration",
+      "prepare",
+      "notice"
+    ]
+  },
+  {
+    "type": "lados.contract.track_notice_due_date",
+    "displayName": "Track Notice Due Date",
+    "canonicalCapability": "contract.notice.track_due_date",
+    "ownerPack": "lados.contract-admin",
+    "status": "skeleton",
+    "intent": "Track notice response, submission, or expiry dates and create reminder-ready outputs.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "notice due date tracking record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "notice",
+          "label": "Notice",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "tracking",
+          "label": "Tracking",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "dates",
+        "label": "Dates",
+        "fields": [
+          "baseDate",
+          "dueDateRule",
+          "reminderOffsetDays"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "project contract reference",
+        "correspondence SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Tracks dates and reminders only; disputed date interpretation requires human review.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 300,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Contract Administration",
+    "icon": "FileSignature",
+    "searchKeywords": [
+      "contract administration",
+      "track",
+      "notice",
+      "due",
+      "date"
+    ]
+  },
+  {
+    "type": "lados.contract.lookup_clause_reference",
+    "displayName": "Lookup Clause Reference",
+    "canonicalCapability": "contract.clause.lookup",
+    "ownerPack": "lados.contract-admin",
+    "status": "skeleton",
+    "intent": "Lookup relevant clause references from approved Knowledge Packs for drafting or review.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "knowledge_reference"
+    ],
+    "outputPattern": "clause reference set",
+    "ports": {
+      "inputs": [
+        {
+          "id": "query",
+          "label": "Query",
+          "dataType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "clauses",
+          "label": "Clauses",
+          "dataType": "array"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "lookup",
+        "label": "Lookup",
+        "fields": [
+          "contractPack",
+          "query",
+          "maxResults"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [
+        "project contract reference"
+      ],
+      "recommended": [
+        "clause reference pack"
+      ]
+    },
+    "humanDecisionBoundary": "Returns references only; interpretation and legal effect require human review.",
+    "aiBoundary": "advisory",
+    "canvasUx": {
+      "minWidth": 295,
+      "minHeight": 122,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Contract Administration",
+    "icon": "FileSignature",
+    "searchKeywords": [
+      "contract administration",
+      "lookup",
+      "clause",
+      "reference"
+    ]
+  },
+  {
+    "type": "lados.contract.link_correspondence_evidence",
+    "displayName": "Link Correspondence Evidence",
+    "canonicalCapability": "contract.correspondence.link_evidence",
+    "ownerPack": "lados.contract-admin",
+    "status": "skeleton",
+    "intent": "Link correspondence, attachments, and references to a contract administration record.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "evidence link record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "link",
+          "label": "Link",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "evidence",
+        "label": "Evidence",
+        "fields": [
+          "resourceBinding",
+          "documentRefs",
+          "correspondenceRefs"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "correspondence SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Links evidence only; it does not judge whether evidence is sufficient.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 315,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Contract Administration",
+    "icon": "FileSignature",
+    "searchKeywords": [
+      "contract administration",
+      "link",
+      "correspondence",
+      "evidence"
+    ]
+  }
+]

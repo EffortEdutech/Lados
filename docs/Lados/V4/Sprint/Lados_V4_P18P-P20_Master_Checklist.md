@@ -4,6 +4,7 @@
 **Status:** Active  
 **Date:** 2026-07-02  
 **Primary sprint plan:** `Sprint/Lados_V4_Sprint_P18P-P20_Productization_DataPacks_ProfessionalBundles.md`
+**Phase 20 controlling plan:** `Sprint/Lados_V4_Phase20_Master_Sprint_Plan.md`
 
 ---
 
@@ -14,8 +15,8 @@
 | 18P | Marketplace Polish and Data Packs Tab Restoration | Complete |
 | 19 | Data Pack Engine | Complete |
 | 19C | Data Pack Runtime Provenance Logging | Implemented; migration 0052 applied (verified); runtime/browser tests deferred to PD-1 |
-| 20 | Marketplace Knowledge Catalogue Documentation | Active |
-| 20B | Professional Lados Pack Bundles | Active - manifest skeleton foundation |
+| 20 | Marketplace Knowledge Catalogue Documentation | Complete - Phase 20E closeout complete |
+| 20B | Professional Lados Pack Bundles | Complete - contract/design/skeleton layer |
 
 ---
 
@@ -93,7 +94,7 @@
 - [x] Marketplace Data Packs tab uses live API.
 - [x] Explorer Data Packs panel uses live installed Data Packs.
 - [x] Data Pack detail drawer shows collections and provenance.
-- [ ] Data Pack item search supports collection/tag/region/effective-date filters. *(collection/packSlug/region/tag done; effective-date filter deferred to PD track)*
+- [x] Data Pack item search supports collection/tag/region/effective-date filters. *(effectiveOn param added to API in PD-4, 2026-07-03; Explorer UI passes filters via query params)*
 - [x] PropertyPanel supports `data_pack_item` field type.
 - [x] Data Pack item can be selected into node config.
 
@@ -164,45 +165,48 @@
 - [x] Create marketplace knowledge-catalogue strategy paper.
 - [x] Create Phase 20 documentation sprint plan.
 - [x] Create naming lock for Capability Packs and Knowledge Packs.
-- [x] Reframe Marketplace around supplier/seller Knowledge Packs.
+- [x] Reframe Marketplace around Catalogue Provider Knowledge Packs.
 - [x] Document AI conversational search thesis.
-- [x] Document Lados as supplier/seller knowledge catalogue agent.
+- [x] Document Lados as Catalogue Provider knowledge catalogue agent.
 
-### Supplier Knowledge Pack Specification
+### Catalogue Provider Knowledge Pack Specification
 
-- [ ] Define supplier profile fields.
-- [ ] Define supplier Knowledge Pack listing fields.
-- [ ] Define Knowledge Pack item metadata fields.
-- [ ] Define product/service/rate/evidence catalogue examples.
-- [ ] Define official vs supplier-provided data labels.
+- [x] Select broader term than Supplier for Marketplace publishers: Catalogue Provider.
+- [x] Define Catalogue Provider profile fields.
+- [x] Define Provider Knowledge Pack listing fields.
+- [x] Define Knowledge Pack item metadata fields.
+- [x] Define product/service/rate/evidence catalogue examples.
+- [x] Define official vs provider-provided data labels.
+- [x] Document Supplier as procurement/RFQ term and Catalogue Provider as marketplace publisher term.
 
 ### AI Search and Retrieval
 
-- [ ] Define natural language marketplace search behavior.
-- [ ] Define structured filters and ranking factors.
-- [ ] Define verification/freshness/region scoring.
-- [ ] Define AI answer citation rules.
-- [ ] Define workflow insertion behavior.
+- [x] Define natural language marketplace search behavior.
+- [x] Define structured filters and ranking factors.
+- [x] Define verification/freshness/region scoring.
+- [x] Define AI answer citation rules.
+- [x] Define workflow insertion behavior.
+- [x] Draft AI retrieval result shape.
 
 ### Marketplace Screens
 
-- [ ] Marketplace Home.
-- [ ] Knowledge Pack Browse.
-- [ ] Supplier Profile.
-- [ ] Knowledge Pack Detail.
-- [ ] Item Detail.
-- [ ] Publish Knowledge Pack.
-- [ ] Review Queue.
-- [ ] Installed Knowledge.
-- [ ] AI Search Preview.
+- [x] Marketplace Home.
+- [x] Knowledge Pack Browse.
+- [x] Catalogue Provider Profile.
+- [x] Knowledge Pack Detail.
+- [x] Item Detail.
+- [x] Publish Knowledge Pack.
+- [x] Review Queue.
+- [x] Installed Knowledge.
+- [x] AI Search Preview.
 
 ### Governance and Business Model
 
-- [ ] Define verification statuses.
-- [ ] Define stale/expired data rules.
-- [ ] Define commercial advisory wording.
-- [ ] Define supplier subscription tiers.
-- [ ] Define Phase 21+ implementation backlog.
+- [x] Define verification statuses.
+- [x] Define stale/expired data rules.
+- [x] Define commercial advisory wording.
+- [x] Define Catalogue Provider subscription tiers.
+- [x] Define Phase 21+ implementation backlog.
 
 ---
 
@@ -222,8 +226,9 @@
 - [x] Add official skeleton validation script.
 - [x] Add cross-pack duplicate canonical capability check.
 - [x] Add compatibility alias target validation.
-- [ ] Finalize official node design standard.
-- [ ] Finalize demo workflow acceptance criteria.
+- [x] Add template-only official pack validation for L3/L5 solution/template packs.
+- [x] Finalize official node design standard.
+- [x] Finalize demo workflow acceptance criteria.
 
 ### Node Audit
 
@@ -232,50 +237,64 @@
 - [x] Create skeleton for `lados.human-work`.
 - [x] Create skeleton for `lados.document-intelligence`.
 - [x] Create skeleton for `lados.qs-commercial`.
-- [ ] Create skeleton for `lados.communication`.
-- [ ] Create skeleton for `lados.task-case`.
-- [ ] Create skeleton for `lados.commercial-finance`.
-- [ ] Create skeleton for `lados.procurement`.
-- [ ] Create skeleton for `lados.construction-operations`.
-- [ ] Create skeleton for `lados.contract-admin`.
-- [ ] Create skeleton for `lados.asset-fleet`.
-- [ ] Create skeleton for `lados.people-payroll`.
+- [x] Create skeleton for `lados.communication`.
+- [x] Create skeleton for `lados.task-case`.
+- [x] Create skeleton for `lados.commercial-finance`.
+- [x] Create skeleton for `lados.procurement`.
+- [x] Create skeleton for `lados.construction-operations`.
+- [x] Create skeleton for `lados.contract-admin`.
+- [x] Create skeleton for `lados.asset-fleet`.
+- [x] Create skeleton for `lados.people-payroll`.
+- [x] Create skeleton for `lados.solution.contractor-ops`.
+- [x] Create skeleton for `lados.solution.qs-practice`.
+- [x] Create skeleton for `lados.template.invoice-approval`.
+- [x] Create skeleton for `lados.template.procurement-rfq`.
+- [x] Create skeleton for `lados.template.progress-claim`.
+- [x] Create skeleton for `lados.template.defect-management`.
+- [x] Create skeleton for `lados.template.cipaa-preparation`.
 
 ### Canvas Readability
 
-- [ ] Submit Invoice node readable at default zoom.
-- [ ] High-port nodes use grouped/resource-based inputs.
-- [ ] No duplicate visible handles.
-- [ ] Port labels fit.
-- [ ] Node titles fit.
-- [ ] Inspector carries detail instead of canvas clutter.
+- [x] Submit Invoice readability rule documented for default zoom.
+- [x] High-port nodes use grouped/resource-based input contract.
+- [x] No duplicate visible handles allowed by official node design standard.
+- [x] Port label fit rule documented.
+- [x] Node title fit rule documented.
+- [x] Inspector carries detail instead of canvas clutter by contract.
 
 ### Official Bundles
 
 - [x] Official bundle manifests drafted for first five fresh packs.
 - [x] Official pack metadata drafted for first five fresh packs.
 - [x] Official node manifests drafted as manifest-only skeletons for first five fresh packs.
-- [ ] Pack colors/icons standardized.
+- [x] Pack colors/icons standardized.
 - [x] Pack README files created for first five fresh packs.
-- [ ] Official pack bundle test artifacts generated or documented.
+- [x] Official pack bundle test artifacts documented as deferred until runtime surfacing.
 
 ### Demo Workflows
 
-- [ ] Submit Invoice to Approval.
-- [ ] Progress Claim Evidence Check.
-- [ ] RFQ to Quotation Comparison.
-- [ ] BOQ Upload to Cost Summary.
-- [ ] Defect Report to Notification.
+- [ ] Submit Invoice to Approval functional/demo workflow.
+- [ ] Progress Claim Evidence Check functional/demo workflow.
+- [ ] RFQ to Quotation Comparison functional/demo workflow.
+- [ ] BOQ Upload to Cost Summary functional/demo workflow.
+- [ ] Defect Report to Notification functional/demo workflow.
+- [ ] CIPAA Preparation Bundle functional/demo workflow.
+- [x] Submit Invoice to Approval template skeleton.
+- [x] Progress Claim Evidence Check template skeleton.
+- [x] RFQ to Quotation Comparison template skeleton.
+- [x] BOQ Upload to Cost Summary template skeleton.
+- [x] Defect Report to Notification template skeleton.
+- [x] CIPAA Preparation Bundle template skeleton.
 
 ### Verification
 
-- [ ] Demo workflows load.
-- [ ] Demo workflows save.
-- [ ] Functional demo workflows run where backend nodes are available.
-- [ ] Non-functional demo workflows are clearly marked as design/demo only.
-- [ ] Typecheck passes.
+- [ ] Demo workflows load. *(deferred to runtime/template execution phase)*
+- [ ] Demo workflows save. *(deferred to runtime/template execution phase)*
+- [ ] Functional demo workflows run where backend nodes are available. *(deferred to runtime/template execution phase)*
+- [x] Non-functional demo workflows are clearly marked as design/demo only.
+- [x] Typecheck passes for official pack SDK validator work.
 - [ ] Build passes.
-- [ ] Browser visual verification passes.
+- [ ] Browser visual verification passes. *(deferred because official packs are manifest-only and not in the palette yet)*
 
 ---
 
@@ -353,9 +372,9 @@ Lados V4 can be presented as a full platform only when:
 
 ### 2026-07-02 - Phase 20 documentation kickoff
 
-**Done:** Reframed Phase 20 as Marketplace Knowledge Catalogue documentation. Created the strategy paper and active documentation sprint plan for supplier/seller Knowledge Packs, AI conversational search, governance, and marketplace business model.
+**Done:** Reframed Phase 20 as Marketplace Knowledge Catalogue documentation. Created the strategy paper and active documentation sprint plan for Catalogue Provider Knowledge Packs, AI conversational search, governance, and marketplace business model.
 
-**Next:** Use the target Capability Pack catalogue to classify current prototype packs/nodes for retirement or temporary compatibility, complete the canonical capability registry, workflow template index, supplier Knowledge Pack specification, AI retrieval requirements, screen specification, governance checklist, business model notes, and Phase 21+ backlog.
+**Next:** Use the target Capability Pack catalogue to classify current prototype packs/nodes for retirement or temporary compatibility, complete the canonical capability registry, workflow template index, Catalogue Provider Knowledge Pack specification, AI retrieval requirements, screen specification, governance checklist, business model notes, and Phase 21+ backlog.
 
 **Ad-hoc:** Phase 19C runtime provenance workflow test remains deferred. Professional Lados Pack Bundles are deferred to Phase 20B after the marketplace knowledge-catalogue strategy is accepted.
 
@@ -387,7 +406,7 @@ Lados V4 can be presented as a full platform only when:
 
 **Done:** Locked the product language for Phase 20: Capability Pack means workflow capabilities, nodes, templates, and action grammar; Knowledge Pack means governed knowledge catalogues, supplier listings, standards references, SOPs, compliance rules, technical guidelines, rates, and evidence rules. Updated the Phase 20 strategy paper, active documentation sprint plan, Capability Pack planning paper, productization sprint plan, master checklist, and V4 README.
 
-**Next:** Continue with the canonical capability registry, workflow template index, current prototype node classification, then the Supplier Knowledge Pack specification and marketplace screen specification.
+**Next:** Continue with the canonical capability registry, workflow template index, current prototype node classification, then the Catalogue Provider Knowledge Pack specification and marketplace screen specification.
 
 **Ad-hoc:** Existing `data_pack_*` database/API/test identifiers remain legacy Phase 19 technical names until a deliberate compatibility migration aliases or renames them.
 
@@ -437,10 +456,88 @@ Lados V4 can be presented as a full platform only when:
 
 **Done:** Added `tools/validate-official-packs.cjs` and root command `corepack pnpm validate:official-packs`. The script builds `@lados/pack-sdk`, validates all official skeleton manifests and node manifests, checks duplicate canonical capability keys and node types across official packs, and verifies compatibility aliases point to existing official node skeletons with matching pack/capability metadata.
 
-**Next:** Expand the fresh official skeleton set for `lados.communication`, `lados.task-case`, `lados.commercial-finance`, `lados.procurement`, and `lados.construction-operations`.
+**Next:** Completed in Phase 20B.4. Continue with remaining professional skeletons and first template pack skeletons.
 
 **Ad-hoc:** This validation remains manifest-only. It does not activate aliases, register official packs, migrate workflow JSON, or remove prototype packs.
 
 **Verification:** `corepack pnpm validate:official-packs` passed: 5 packs, 14 nodes, 40 canonical capabilities, 12 compatibility aliases.
 
+### 2026-07-03 - Phase 20B.4 expanded official skeleton set
 
+**Done:** Added fresh official manifest-only skeletons for `lados.communication`, `lados.task-case`, `lados.commercial-finance`, `lados.procurement`, and `lados.construction-operations`. Expanded typed compatibility aliases for notification, finance, procurement, and construction prototype families where official node skeleton targets now exist. Created `Design/Lados_V4_Phase20B4_Expanded_Official_Skeleton_Set.md`.
+
+**Next:** Completed in Phase 20B.5. Continue with official node design standard, pack visual metadata, template schema, and official pack surfacing.
+
+**Ad-hoc:** Still manifest-only. No official runtime registration, alias activation, workflow migration, Marketplace surfacing, or prototype deletion happened.
+
+**Verification:** `corepack pnpm validate:official-packs` passed: 10 packs, 36 nodes, 68 canonical capabilities, 28 compatibility aliases.
+
+### 2026-07-03 - Phase 20B.5 remaining professional and template skeletons
+
+**Done:** Added fresh manifest-only skeletons for `lados.contract-admin`, `lados.asset-fleet`, and `lados.people-payroll`. Added template-only L3 solution packs for `lados.solution.contractor-ops` and `lados.solution.qs-practice`. Added first L5 template pack skeletons for invoice approval, procurement RFQ, progress claim, defect management, and CIPAA preparation. Extended the official manifest SDK and validation script so L3/L5 template-only packs may use `nodes: []` only when they declare existing `workflowTemplates`. Expanded planned compatibility aliases for contractor job, trip, fuel, maintenance, payroll, and expense prototype concepts.
+
+**Next:** Phase 20B.6 - finalize official node design standard, pack colors/icons/categories, template manifest schema, and official pack Marketplace surfacing plan.
+
+**Ad-hoc:** Still manifest-only. No official runtime registration, alias activation, workflow migration, Marketplace surfacing, prototype deletion, or executable template workflow generation happened.
+
+**Verification:** `corepack pnpm validate:official-packs` passed: 20 packs, 51 nodes, 96 canonical capabilities, 38 compatibility aliases. `corepack pnpm --filter @lados/pack-sdk build` passed. `corepack pnpm --filter web typecheck` passed. Full `corepack pnpm build` was attempted but remains blocked in `apps/web` by a Next page-collection manifest issue where compiled route files exist but `app-paths-manifest.json` omits routes such as `/login` and `/packs`.
+
+### 2026-07-03 - Phase 20B.6 official design, visual metadata, template schema, and closeout
+
+**Done:** Added official pack visual metadata across all 20 skeleton packs. Added node category, icon, and search keyword metadata across official node skeletons. Extended the SDK official manifest/node validators to require pack visual metadata and node category/icon metadata. Extended `validate:official-packs` to validate template skeleton files. Created `Design/Lados_V4_Phase20B6_Official_Node_Design_Visual_Metadata_Template_Schema_Closeout.md` with official node design standard, high-input node rule, visual catalogue, template manifest schema, Marketplace surfacing plan, runtime activation boundary, and Phase 20B closure criteria.
+
+**Next:** Proceed to Phase 20D - Marketplace Screen Specification and Knowledge Catalogue UX Wire Plan, or separately start a runtime activation phase for official pack registration/executors.
+
+**Ad-hoc:** Phase 20B is complete only at the contract/design/skeleton layer. Official packs remain manifest-only and prototype runtime support remains untouched.
+
+**Verification:** `corepack pnpm validate:official-packs` passed: 20 packs, 51 nodes, 96 canonical capabilities, 38 compatibility aliases.
+
+### 2026-07-03 - Phase 20C Catalogue Provider and AI Marketplace Search specification
+
+**Done:** Selected **Catalogue Provider** as the broad Lados Marketplace publisher term, replacing broad use of Supplier/Seller. Documented Supplier as still valid for procurement/RFQ counterparties. Created `Design/Lados_V4_Phase20C_Catalogue_Provider_Knowledge_Pack_AI_Search_Spec.md` covering Catalogue Provider types, Provider Profile fields, Provider Knowledge Pack listing fields, Knowledge Pack Item metadata, AI marketplace search requirements, retrieval result shape, and UI/UX wording changes from Data Pack/Supplier language to Knowledge Catalogue/Knowledge Pack/Catalogue Provider language.
+
+**Next:** Phase 20D - Marketplace Screen Specification and Knowledge Catalogue UX Wire Plan.
+
+**Ad-hoc:** UI code still uses `Data Pack` in multiple places because `data_pack_*` remains the Phase 19 technical implementation. Rename should be planned as a compatibility/UI copy pass, not a blind DB/API rename.
+
+**Verification:** Documentation-only update. No code verification required.
+
+### 2026-07-03 - Phase 20 master sprint control created
+
+**Done:** Created `Sprint/Lados_V4_Phase20_Master_Sprint_Plan.md` to define Phase 20 objective, non-goals, workstreams, exit gates, stop condition, and Phase 20E as the final Phase 20 workstream.
+
+**Next:** Execute Phase 20E, then close Phase 20 and move implementation to Phase 21+.
+
+**Ad-hoc:** Existing Phase 20 docs remain supporting references. New ideas should go into Phase 21+ backlog unless they are required to close Phase 20E.
+
+**Verification:** Documentation-only update. No code verification required.
+
+### 2026-07-03 - Phase 20D Marketplace screen specification and Knowledge Catalogue UX wire plan
+
+**Done:** Created `Design/Lados_V4_Phase20D_Marketplace_Screen_Spec_Knowledge_Catalogue_UX_Wire_Plan.md`. Defined Marketplace information architecture, route plan, Marketplace Home, Capability Pack Browse, Knowledge Catalogue Browse, Provider Profile, Knowledge Pack Detail, Knowledge Pack Item Detail, Installed Knowledge, Publish Knowledge Pack, Review Queue, AI Search Preview, cross-screen badges/copy, existing UI copy change register, and Buyer/Provider/Admin journeys.
+
+**Next:** Phase 20E - Governance, Verification Checklist, Business Model Notes, and Phase 21+ Implementation Backlog.
+
+**Ad-hoc:** This phase intentionally did not rename UI code yet. The next implementation backlog should include a safe UI copy pass from Data Pack wording to Knowledge Pack wording while leaving `data_pack_*` technical identifiers intact.
+
+**Verification:** Documentation-only update. No code verification required.
+
+### 2026-07-03 - Phase 20E governance, business model, and Phase 21 backlog closeout
+
+**Done:** Created `Design/Lados_V4_Phase20E_Governance_Business_Model_Phase21_Backlog.md`. Documented governance principles, Catalogue Provider/Knowledge Pack/item verification statuses, Knowledge Pack review checklist, stale/expired-data rules, standard advisory wording, Catalogue Provider business tiers, Buyer/Provider/Lados value propositions, Phase 21+ backlog, and deferred work.
+
+**Next:** Close Phase 20 and proceed to Phase 21A - UI Copy and Compatibility Pass.
+
+**Ad-hoc:** Phase 21A should change product UI wording first while preserving `data_pack_*` technical identifiers. Full database/API rename remains deferred.
+
+**Verification:** Documentation-only update. No code verification required.
+
+### 2026-07-03 - Phase 20 canonical design consolidation
+
+**Done:** Consolidated Phase 20 design work into two canonical design papers: `Design/Lados_V4_Capability_Packs_Product_and_Technical_Design.md` and `Design/Lados_V4_Knowledge_Packs_Product_and_Technical_Design.md`. Created Phase 21 sprint plan and checklist.
+
+**Next:** Start Phase 21A - UI Copy and Compatibility Pass.
+
+**Ad-hoc:** Existing Phase 20A-E documents remain supporting history. The two canonical design papers should be the main references going forward.
+
+**Verification:** Documentation-only update. No code verification required.

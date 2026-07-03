@@ -1,0 +1,372 @@
+[
+  {
+    "type": "lados.construction.create_project",
+    "displayName": "Create Project",
+    "canonicalCapability": "construction.project.create",
+    "ownerPack": "lados.construction-operations",
+    "status": "skeleton",
+    "intent": "Create a construction project or site operation resource.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "project resource",
+    "ports": {
+      "inputs": [
+        {
+          "id": "project",
+          "label": "Project",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "resource",
+          "label": "Resource",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "project",
+        "label": "Project",
+        "fields": [
+          "projectName",
+          "site",
+          "client",
+          "startDate"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Creates a site/project record only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "construction.create_project"
+    ],
+    "executorStatus": "not_started",
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "searchKeywords": [
+      "construction operations",
+      "create",
+      "project"
+    ]
+  },
+  {
+    "type": "lados.construction.create_site_inspection",
+    "displayName": "Create Inspection",
+    "canonicalCapability": "construction.inspection.create",
+    "ownerPack": "lados.construction-operations",
+    "status": "skeleton",
+    "intent": "Create a site inspection record with checklist and location context.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "inspection record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "site",
+          "label": "Site",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "inspection",
+          "label": "Inspection",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "inspection",
+        "label": "Inspection",
+        "fields": [
+          "inspectionType",
+          "location",
+          "inspector",
+          "inspectionDate"
+        ]
+      },
+      {
+        "id": "checklist",
+        "label": "Checklist",
+        "fields": [
+          "checklistRefs",
+          "standardsRefs"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "inspection checklist packs",
+        "construction standards index"
+      ]
+    },
+    "humanDecisionBoundary": "Creates inspection work; acceptance/signoff must be separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 280,
+      "minHeight": 132,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "construction.create_site_inspection"
+    ],
+    "executorStatus": "not_started",
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "searchKeywords": [
+      "construction operations",
+      "create",
+      "inspection"
+    ]
+  },
+  {
+    "type": "lados.construction.submit_inspection_report",
+    "displayName": "Submit Inspection Report",
+    "canonicalCapability": "construction.inspection.submit_report",
+    "ownerPack": "lados.construction-operations",
+    "status": "skeleton",
+    "intent": "Submit a completed inspection report with evidence and review status.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "inspection report record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "inspection",
+          "label": "Inspection",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "report",
+          "label": "Report",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "report",
+        "label": "Report",
+        "fields": [
+          "findings",
+          "photos",
+          "submittedBy",
+          "reviewRequired"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "inspection checklist packs"
+      ]
+    },
+    "humanDecisionBoundary": "Submission does not certify acceptance unless a human decision record is attached.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 300,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "construction.submit_inspection_report"
+    ],
+    "executorStatus": "not_started",
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "searchKeywords": [
+      "construction operations",
+      "submit",
+      "inspection",
+      "report"
+    ]
+  },
+  {
+    "type": "lados.construction.log_defect",
+    "displayName": "Log Defect",
+    "canonicalCapability": "construction.defect.log",
+    "ownerPack": "lados.construction-operations",
+    "status": "skeleton",
+    "intent": "Log a construction defect with location, classification, photos, and responsible party.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "defect record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "defect",
+          "label": "Defect",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "defect",
+        "label": "Defect",
+        "fields": [
+          "location",
+          "description",
+          "severity",
+          "responsibleParty"
+        ]
+      },
+      {
+        "id": "classification",
+        "label": "Classification",
+        "fields": [
+          "defectRules",
+          "standardsRefs",
+          "reviewRequired"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "defect classification rules",
+        "construction standards index"
+      ]
+    },
+    "humanDecisionBoundary": "Logs a defect only; acceptance/closeout must be human-reviewed where required.",
+    "aiBoundary": "advisory",
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 132,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "construction.log_defect"
+    ],
+    "executorStatus": "not_started",
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "searchKeywords": [
+      "construction operations",
+      "log",
+      "defect"
+    ]
+  },
+  {
+    "type": "lados.construction.create_site_diary",
+    "displayName": "Create Site Diary",
+    "canonicalCapability": "construction.site_diary.create",
+    "ownerPack": "lados.construction-operations",
+    "status": "skeleton",
+    "intent": "Create a site diary record for daily progress, labour, plant, weather, and events.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "site diary record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "entry",
+          "label": "Entry",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "diary",
+          "label": "Diary",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "diary",
+        "label": "Diary",
+        "fields": [
+          "date",
+          "weather",
+          "labour",
+          "plant",
+          "events"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "site diary SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Records site facts and notes; claim use requires later QS review.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "not_started",
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "searchKeywords": [
+      "construction operations",
+      "create",
+      "site",
+      "diary"
+    ]
+  }
+]

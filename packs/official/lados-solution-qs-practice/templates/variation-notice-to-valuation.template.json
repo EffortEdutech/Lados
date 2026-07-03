@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.qs_practice.variation_notice_to_valuation",
+  "displayName": "Variation Notice to Valuation",
+  "ownerPack": "lados.solution.qs-practice",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.contract-admin", "lados.qs-commercial", "lados.document-intelligence", "lados.human-work"],
+  "recommendedKnowledgePacks": ["project contract reference", "measurement rules", "QS rate library"],
+  "summary": "Register notice evidence, link contract references, prepare QS valuation checks, and preserve human commercial review."
+}

@@ -52,7 +52,9 @@
     "lados.qs.reconcile_final_account"
   ],
   "knowledgePacks": {
-    "required": ["claim evidence rules for claim templates"],
+    "required": [
+      "claim evidence rules for claim templates"
+    ],
     "recommended": [
       "BOQ item library",
       "QS rate library",
@@ -66,11 +68,21 @@
     "QS nodes do not certify payment, approve entitlement, or provide legal advice.",
     "Claim, variation, and final account outputs must preserve assumptions, source references, and review status."
   ],
-  "prototypeReferences": ["qs-pack", "construction-pack", "finance-pack"],
+  "prototypeReferences": [
+    "qs-pack",
+    "construction-pack",
+    "finance-pack"
+  ],
   "verification": {
     "manifest": "draft",
     "runtime": "not_started",
     "canvas": "not_started",
     "templates": "not_started"
+  },
+  "visual": {
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "color": "#ca8a04",
+    "paletteGroup": "QS and Construction"
   }
 }

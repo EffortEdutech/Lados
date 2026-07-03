@@ -176,19 +176,15 @@ Prototype runtime support must not be removed until:
 - [x] Prototype packs remain temporary compatibility/runtime references.
 - [x] Manifest validator updated for official contract fields.
 - [x] Compatibility alias plan created in SDK.
-- [ ] Official pack skeletons reviewed in product/design pass.
-- [ ] Runtime registration plan drafted.
-- [ ] Compatibility alias/migration plan drafted.
-- [ ] First official template manifest drafted.
+- [x] Official pack skeletons reviewed in product/design pass.
+- [x] Runtime registration boundary drafted.
+- [x] Compatibility alias/migration plan drafted.
+- [x] First official template manifest drafted.
 
 ---
 
 ## 10. Next Work
 
-Phase 20B.2 completed the SDK type and validator foundation. Phase 20B.3 should make validation easy to run across the repository:
+Phase 20B.2 through Phase 20B.6 completed the official manifest SDK, validation command, first skeleton catalogue, template-only pack rule, visual metadata contract, template manifest schema, and Marketplace surfacing plan.
 
-1. Add a workspace script that validates every `packs/official/*/manifest.json` and `nodes.json`.
-2. Check duplicate canonical capability keys across official packs.
-3. Check compatibility aliases point to existing official node skeletons.
-4. Create stub executors only after the manifests are accepted.
-5. Update Marketplace/Explorer planning so official packs are shown separately from prototype packs.
+Next work should move to Phase 20C Marketplace Knowledge Pack specification or a later runtime activation phase. Stub executors should be created only after the official manifests are accepted for runtime implementation.

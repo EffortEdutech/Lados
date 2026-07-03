@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.contractor_ops.fleet_maintenance",
+  "displayName": "Fleet Maintenance",
+  "ownerPack": "lados.solution.contractor-ops",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.asset-fleet", "lados.task-case", "lados.procurement"],
+  "recommendedKnowledgePacks": ["maintenance checklist", "procurement SOP"],
+  "summary": "Create a maintenance record, assign follow-up work, request procurement where needed, and record clearance."
+}

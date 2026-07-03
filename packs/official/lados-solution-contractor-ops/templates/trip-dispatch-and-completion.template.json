@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.solution.contractor_ops.trip_dispatch_and_completion",
+  "displayName": "Trip Dispatch and Completion",
+  "ownerPack": "lados.solution.contractor-ops",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.asset-fleet", "lados.task-case"],
+  "recommendedKnowledgePacks": ["fleet SOP"],
+  "summary": "Dispatch a trip, record completion, capture exceptions, and create follow-up tasks where required."
+}

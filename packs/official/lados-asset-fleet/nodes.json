@@ -1,0 +1,496 @@
+[
+  {
+    "type": "lados.asset_fleet.create_job",
+    "displayName": "Create Fleet Job",
+    "canonicalCapability": "asset_fleet.job.create",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Create a fleet or asset job record for dispatch, tracking, and billing handoff.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "fleet job resource",
+    "ports": {
+      "inputs": [
+        {
+          "id": "request",
+          "label": "Request",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "job",
+          "label": "Job",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "job",
+        "label": "Job",
+        "fields": [
+          "customer",
+          "asset",
+          "jobDate",
+          "scope"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "fleet SOP",
+        "asset register rules"
+      ]
+    },
+    "humanDecisionBoundary": "Creates an operational job record only; commercial approval is separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 280,
+      "minHeight": 122,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.create_job"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "create",
+      "fleet",
+      "job"
+    ]
+  },
+  {
+    "type": "lados.asset_fleet.dispatch_trip",
+    "displayName": "Dispatch Trip",
+    "canonicalCapability": "asset_fleet.trip.dispatch",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Record trip dispatch details for a vehicle, asset, operator, destination, and planned work.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "trip dispatch record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "job",
+          "label": "Job",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "dispatch",
+          "label": "Dispatch",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "dispatch",
+        "label": "Dispatch",
+        "fields": [
+          "vehicle",
+          "driver",
+          "destination",
+          "dispatchTime"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "fleet SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Records dispatch; it does not certify work completion.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.dispatch_trip"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "dispatch",
+      "trip"
+    ]
+  },
+  {
+    "type": "lados.asset_fleet.complete_trip",
+    "displayName": "Complete Trip",
+    "canonicalCapability": "asset_fleet.trip.complete",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Record trip completion details, mileage, delivery notes, and exceptions.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "trip completion record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "dispatch",
+          "label": "Dispatch",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "completion",
+          "label": "Completion",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "completion",
+        "label": "Completion",
+        "fields": [
+          "completionTime",
+          "mileage",
+          "deliveryNoteRefs",
+          "exceptions"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "fleet SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Records completion evidence only; billing and payment approval are separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 275,
+      "minHeight": 122,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.complete_trip"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "complete",
+      "trip"
+    ]
+  },
+  {
+    "type": "lados.asset_fleet.upload_fuel_receipt",
+    "displayName": "Upload Fuel Receipt",
+    "canonicalCapability": "asset_fleet.fuel_receipt.upload",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Upload and register a fuel receipt file against a vehicle, trip, or expense record.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "fuel receipt file record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "file",
+          "label": "File",
+          "dataType": "file"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "receipt",
+          "label": "Receipt",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "receipt",
+        "label": "Receipt",
+        "fields": [
+          "vehicle",
+          "trip",
+          "receiptDate",
+          "fileRef"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "fuel policy"
+      ]
+    },
+    "humanDecisionBoundary": "Registers uploaded evidence only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 285,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.upload_fuel_receipt"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "upload",
+      "fuel",
+      "receipt"
+    ]
+  },
+  {
+    "type": "lados.asset_fleet.extract_fuel_receipt",
+    "displayName": "Extract Fuel Receipt",
+    "canonicalCapability": "asset_fleet.fuel_receipt.extract",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Extract fuel receipt fields with confidence and source references for human review.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "fuel receipt extraction result",
+    "ports": {
+      "inputs": [
+        {
+          "id": "receipt",
+          "label": "Receipt",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "extraction",
+          "label": "Extraction",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "extraction",
+        "label": "Extraction",
+        "fields": [
+          "requiredFields",
+          "confidenceThreshold",
+          "reviewLowConfidence"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "fuel policy"
+      ]
+    },
+    "humanDecisionBoundary": "Extraction is advisory; expense or payroll approval remains human-controlled.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 295,
+      "minHeight": 126,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.extract_fuel_data"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "extract",
+      "fuel",
+      "receipt"
+    ]
+  },
+  {
+    "type": "lados.asset_fleet.create_maintenance_record",
+    "displayName": "Create Maintenance Record",
+    "canonicalCapability": "asset_fleet.maintenance.create",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Create a maintenance issue, service, or repair record for a vehicle or asset.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "maintenance record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "issue",
+          "label": "Issue",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "maintenance",
+          "label": "Maintenance",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "maintenance",
+        "label": "Maintenance",
+        "fields": [
+          "asset",
+          "issueType",
+          "priority",
+          "reportedBy"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "maintenance checklist"
+      ]
+    },
+    "humanDecisionBoundary": "Creates a maintenance record only; procurement and payment actions are separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 315,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.create_maintenance_record"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "create",
+      "maintenance",
+      "record"
+    ]
+  },
+  {
+    "type": "lados.asset_fleet.clear_maintenance",
+    "displayName": "Clear Maintenance",
+    "canonicalCapability": "asset_fleet.maintenance.clear",
+    "ownerPack": "lados.asset-fleet",
+    "status": "skeleton",
+    "intent": "Record maintenance clearance with evidence, responsible person, and return-to-service status.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "maintenance clearance record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "maintenance",
+          "label": "Maintenance",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "clearance",
+        "label": "Clearance",
+        "fields": [
+          "clearedBy",
+          "clearanceDate",
+          "evidenceRefs",
+          "returnToService"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "maintenance checklist"
+      ]
+    },
+    "humanDecisionBoundary": "Must record the responsible human or authorized integration that cleared the maintenance record.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 300,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "contractor.clear_maintenance"
+    ],
+    "executorStatus": "not_started",
+    "category": "Asset and Fleet",
+    "icon": "Truck",
+    "searchKeywords": [
+      "asset and fleet",
+      "clear",
+      "maintenance"
+    ]
+  }
+]
