@@ -789,12 +789,17 @@ function ResourcesPageInner() {
   const [loading,     setLoading]     = useState(false);
   const [search,      setSearch]      = useState('');
   const [stateFilter, setStateFilter] = useState('');
-  const [viewMode,    setViewMode]    = useState<'tile' | 'table'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('lados_resource_view') as 'tile' | 'table') ?? 'tile';
-    }
-    return 'tile';
-  });
+  // Plain default on both server and first client render to avoid a
+  // hydration mismatch; the persisted preference is applied client-only
+  // in the effect below (Phase 21 S9.2 — this pattern previously read
+  // localStorage inside the useState initializer, which differs between
+  // SSR (no window) and the client's first render).
+  const [viewMode,    setViewMode]    = useState<'tile' | 'table'>('tile');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('lados_resource_view');
+    if (stored === 'tile' || stored === 'table') setViewMode(stored);
+  }, []);
 
   // ── Action state ───────────────────────────────────────────────────────────
   const [actionBusy,       setActionBusy]       = useState<string | null>(null);
@@ -1008,14 +1013,14 @@ function ResourcesPageInner() {
         <div className="max-w-5xl mx-auto flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-gray-900">
-              {isDriverMode ? 'My Trips' : 'Resources'}
+              {isDriverMode ? 'My Trips' : 'Assets'}
             </h1>
             <p className="mt-0.5 text-sm text-gray-500">
               {isDriverMode
                 ? 'Your assigned trips for today'
                 : activeConfig
                   ? `${activeConfig.displayNamePlural ?? activeConfig.displayName} managed by ${activeConfig.packId}`
-                  : 'All resource types across installed packs'}
+                  : 'All asset types across installed packs'}
             </p>
           </div>
 

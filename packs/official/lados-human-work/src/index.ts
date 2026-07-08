@@ -14,12 +14,14 @@
 import type { NodeContext, NodeExecuteResult } from '@lados/execution-engine';
 
 import { requestApproval } from './nodes/request-approval';
+import { requestInput } from './nodes/request-input';
 import { assignUser } from './nodes/assign-user';
 import { recordDecision } from './nodes/record-decision';
 import { reviewCheckpoint } from './nodes/review-checkpoint';
 
-export { requestApproval, assignUser, recordDecision, reviewCheckpoint };
+export { requestApproval, requestInput, assignUser, recordDecision, reviewCheckpoint };
 export { type IApprovalTaskService, type INotificationService } from './nodes/request-approval';
+export { type InputFieldSpec } from './nodes/request-input';
 export { type IAssignableResourceService } from './nodes/assign-user';
 
 export const PACK_ID = 'lados.human-work' as const;
@@ -51,6 +53,12 @@ export function resolveNode(
     'lados.human.request_approval': (ctx) =>
       approvalTaskService
         ? requestApproval(ctx, approvalTaskService, notificationService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ApprovalTaskService not injected')),
+
+    // Phase 22 S22.2 (§4.4) — generic structured-input node.
+    'lados.human.request_input': (ctx) =>
+      approvalTaskService
+        ? requestInput(ctx, approvalTaskService, notificationService)
         : Promise.resolve(NO_SERVICE('NO_SERVICE', 'ApprovalTaskService not injected')),
 
     'lados.human.assign_user': (ctx) =>

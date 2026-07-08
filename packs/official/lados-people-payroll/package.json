@@ -1,0 +1,21 @@
+{
+  "name": "@lados/official-people-payroll",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Lados official Capability Pack (L2) — payroll run preparation, payroll approval record, expense approval record",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lados/execution-engine": "workspace:*",
+    "@lados/node-sdk": "workspace:*",
+    "@lados/pack-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -20,6 +20,8 @@ export interface PackRecord {
   installed_at:     string;
   created_at:       string;
   updated_at:       string;
+  /** L0-L5 official Capability Pack layer (S7.1) — null/undefined for non-official/legacy packs. */
+  layer?:           string | null;
 }
 
 export interface PackWithStats extends PackRecord {

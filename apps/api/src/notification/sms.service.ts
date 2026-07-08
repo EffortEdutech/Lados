@@ -6,11 +6,15 @@
  *   - Twilio: set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM
  *   - MSG91:  set MSG91_API_KEY, MSG91_SENDER_ID
  *
- * Satisfies ISmsService from @lados/notifications-pack via duck typing.
+ * Satisfies ISmsService from @lados/official-communication via duck typing.
+ * (Phase 21 S9 prototype-pack removal: switched from the archived
+ * notifications-pack's identical SmsPayload/SmsResult shape to the
+ * official pack's own copy — this service never needed the prototype
+ * pack itself, just its type shape.)
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import type { SmsPayload, SmsResult } from '@lados/notifications-pack';
+import type { SmsPayload, SmsResult } from '@lados/official-communication';
 
 @Injectable()
 export class SmsService {

@@ -263,6 +263,29 @@ export class ExecutionService implements OnModuleInit {
 
     await this.assertMembership(project.organization_id as string, userId);
 
+    // Phase 22 S22.1 — idempotency check. If the caller supplied an
+    // idempotencyKey and a non-failed run already exists for this
+    // (workflowId, idempotencyKey) pair, return that run instead of starting
+    // a duplicate — cheap short-circuit before the heavier snapshot
+    // resolution/binding work below. Primarily guards webhook/scheduled
+    // triggers against retries or duplicate delivery; manual UI triggers
+    // typically don't pass a key, so are unaffected.
+    // Note: only 'failed' is excluded (matches the Phase 22 plan as written);
+    // whether a 'cancelled' run should also be excluded (i.e. allow retrying
+    // a cancelled run under the same key) hasn't come up yet — revisit if it
+    // does.
+    if (dto.idempotencyKey) {
+      const { data: existingRun } = await this.supabase.admin
+        .from('execution_runs')
+        .select('*')
+        .eq('workflow_id', workflowId)
+        .eq('idempotency_key', dto.idempotencyKey)
+        .neq('status', 'failed')
+        .maybeSingle();
+
+      if (existingRun) return existingRun;
+    }
+
     // Phase 1 immutability guard: run from the published snapshot, not the live draft.
     // If no published version exists, block execution so stale drafts are never run in production.
     let definition = workflow.definition as QSWorkflowDefinition;
@@ -297,11 +320,29 @@ export class ExecutionService implements OnModuleInit {
         status: 'running',
         trigger_type: 'manual',
         inputs: dto.inputs ?? {},
+        idempotency_key: dto.idempotencyKey ?? null,
         started_by: userId,
         started_at: new Date().toISOString(),
       })
       .select('id')
       .single();
+
+    // Phase 22 S22.1 — race guard: two near-simultaneous callers with the
+    // same idempotencyKey (e.g. a webhook double-delivery) can both pass the
+    // pre-check above before either commits. The partial unique index on
+    // (workflow_id, idempotency_key) then rejects the loser with a unique
+    // violation (Postgres code 23505) instead of silently creating a
+    // duplicate — catch that specific case and return the winner's run
+    // instead of surfacing a 500.
+    if (runErr?.code === '23505' && dto.idempotencyKey) {
+      const { data: winner } = await this.supabase.admin
+        .from('execution_runs')
+        .select('*')
+        .eq('workflow_id', workflowId)
+        .eq('idempotency_key', dto.idempotencyKey)
+        .maybeSingle();
+      if (winner) return winner;
+    }
 
     if (runErr ?? !run) throw new Error(runErr?.message ?? 'Failed to create run record');
 
@@ -429,13 +470,8 @@ export class ExecutionService implements OnModuleInit {
 
   // ── Resume a paused run after human approval ────────────────────────────
 
-  async resumeRun(
-    runId: string,
-    approvalTaskId: string,
-    approved: boolean,
-    comments: string,
-    userId: string,
-  ) {
+  /** Shared fetch/validation for both resumeRun (decision) and resumeRunWithInput (data). */
+  private async _loadPausedTask(runId: string, approvalTaskId: string, userId: string) {
     const { data: run, error: runErr } = await this.supabase.admin
       .from('execution_runs')
       .select('*')
@@ -459,14 +495,27 @@ export class ExecutionService implements OnModuleInit {
     if (taskErr || !task) throw new NotFoundException(`Approval task ${approvalTaskId} not found for run ${runId}`);
     if (task['status'] !== 'pending') throw new BadRequestException(`Approval task already ${task['status']}`);
 
-    // Record the decision
-    await this.supabase.admin.from('approval_tasks').update({
-      status:      approved ? 'approved' : 'rejected',
-      decided_by:  userId,
-      decision_at: new Date().toISOString(),
-      comments:    comments || (approved ? 'Approved' : 'Rejected'),
-    }).eq('id', approvalTaskId);
+    return { run, task };
+  }
 
+  /**
+   * Shared re-enqueue tail for both resume paths — everything after the
+   * approval_tasks row itself has been updated with the decision/submission.
+   */
+  private async _continueRun(
+    runId: string,
+    run: Record<string, unknown>,
+    approvalTaskId: string,
+    approvalResult: {
+      approved: boolean;
+      rejected: boolean;
+      comments: string;
+      approvalTaskId: string;
+      decidedBy: string;
+      submittedData?: Record<string, unknown>;
+    },
+    userId: string,
+  ) {
     // Mark run as running again
     await this.supabase.admin.from('execution_runs').update({ status: 'running' }).eq('id', runId);
 
@@ -487,13 +536,7 @@ export class ExecutionService implements OnModuleInit {
     const resumeFromCheckpoint = {
       pausedAtNodeId:    run['paused_at_node_id'] as string,
       checkpointOutputs: (run['checkpoint_outputs'] ?? {}) as Record<string, Record<string, unknown>>,
-      approvalResult: {
-        approved,
-        rejected:        !approved,
-        comments:        comments || (approved ? 'Approved' : 'Rejected'),
-        approvalTaskId,
-        decidedBy:       userId,
-      },
+      approvalResult,
     };
 
     // Phase 12: re-enqueue via BullMQ (falls back to in-process if Redis not available)
@@ -521,6 +564,66 @@ export class ExecutionService implements OnModuleInit {
     });
 
     return { runId, status: 'running', resumed: true };
+  }
+
+  async resumeRun(
+    runId: string,
+    approvalTaskId: string,
+    approved: boolean,
+    comments: string,
+    userId: string,
+  ) {
+    const { run } = await this._loadPausedTask(runId, approvalTaskId, userId);
+
+    // Record the decision
+    await this.supabase.admin.from('approval_tasks').update({
+      status:      approved ? 'approved' : 'rejected',
+      decided_by:  userId,
+      decision_at: new Date().toISOString(),
+      comments:    comments || (approved ? 'Approved' : 'Rejected'),
+    }).eq('id', approvalTaskId);
+
+    return this._continueRun(runId, run, approvalTaskId, {
+      approved,
+      rejected:  !approved,
+      comments:  comments || (approved ? 'Approved' : 'Rejected'),
+      approvalTaskId,
+      decidedBy: userId,
+    }, userId);
+  }
+
+  /**
+   * Phase 22 S22.2 (§4.4) — resume a run paused at a lados.human.request_input
+   * node. No approve/reject concept; the submitted data becomes that node's
+   * output (`{ submittedData }`) for downstream nodes to consume.
+   */
+  async resumeRunWithInput(
+    runId: string,
+    approvalTaskId: string,
+    data: Record<string, unknown>,
+    userId: string,
+  ) {
+    const { run, task } = await this._loadPausedTask(runId, approvalTaskId, userId);
+
+    if (task['task_type'] !== 'input') {
+      throw new BadRequestException(`Approval task ${approvalTaskId} is not an input task (task_type: ${task['task_type']})`);
+    }
+
+    await this.supabase.admin.from('approval_tasks').update({
+      status:         'submitted',
+      decided_by:     userId,
+      decision_at:    new Date().toISOString(),
+      submitted_data: data,
+    }).eq('id', approvalTaskId);
+
+    return this._continueRun(runId, run, approvalTaskId, {
+      approved:  true,
+      rejected:  false,
+      comments:  '',
+      approvalTaskId,
+      decidedBy: userId,
+      submittedData: data,
+    }, userId);
   }
 
   // ── Internal: run workflow and persist results ───────────────────────────

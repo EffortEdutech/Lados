@@ -4,7 +4,7 @@
     "displayName": "Read BOQ",
     "canonicalCapability": "qs.boq.read",
     "ownerPack": "lados.qs-commercial",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Read BOQ rows from structured document data or an existing Workspace Resource.",
     "inputPattern": [
       "ports",
@@ -71,7 +71,7 @@
     "compatibilityAliases": [
       "qs.read_boq"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "QS Commercial",
     "icon": "Ruler",
     "searchKeywords": [
@@ -81,11 +81,91 @@
     ]
   },
   {
+    "type": "lados.qs.normalize_boq",
+    "displayName": "Normalize BOQ",
+    "canonicalCapability": "qs.boq.normalize",
+    "ownerPack": "lados.qs-commercial",
+    "status": "draft",
+    "intent": "Clean and validate BOQ rows (dedupe item numbers, coerce numeric fields, flag missing data) and optionally persist a normalized BOQ Workspace Resource.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "normalized BOQ rows with validation issues",
+    "ports": {
+      "inputs": [
+        {
+          "id": "items",
+          "label": "Items",
+          "dataType": "array"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "normalized",
+          "label": "Normalized",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "validation",
+        "label": "Validation",
+        "fields": [
+          "dedupeItemNo",
+          "requireRate",
+          "requireQuantity"
+        ]
+      },
+      {
+        "id": "persistence",
+        "label": "Persistence",
+        "fields": [
+          "persist",
+          "boqName"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "BOQ item library",
+        "measurement rules"
+      ]
+    },
+    "humanDecisionBoundary": "Cleans and validates BOQ data only; does not certify accuracy — human review remains required before commercial use.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 132,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "qs.normalize_boq"
+    ],
+    "executorStatus": "implemented",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "normalize",
+      "boq",
+      "clean",
+      "validate"
+    ]
+  },
+  {
     "type": "lados.qs.classify_trade",
     "displayName": "Classify Trade",
     "canonicalCapability": "qs.trade.classify",
     "ownerPack": "lados.qs-commercial",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Classify BOQ or scope items into trade/work categories with confidence and references.",
     "inputPattern": [
       "ports",
@@ -148,7 +228,7 @@
     "compatibilityAliases": [
       "qs.classify_trade"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "QS Commercial",
     "icon": "Ruler",
     "searchKeywords": [
@@ -158,11 +238,155 @@
     ]
   },
   {
+    "type": "lados.qs.split_work_packages",
+    "displayName": "Split Work Packages",
+    "canonicalCapability": "qs.work_package.split",
+    "ownerPack": "lados.qs-commercial",
+    "status": "draft",
+    "intent": "Group classified BOQ items into work packages by trade (or a configurable grouping key).",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "work packages grouped by trade with totals",
+    "ports": {
+      "inputs": [
+        {
+          "id": "items",
+          "label": "Items",
+          "dataType": "array"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "workPackages",
+          "label": "Work Packages",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "grouping",
+        "label": "Grouping",
+        "fields": [
+          "groupByField",
+          "minPackageSize"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "BOQ item library"
+      ]
+    },
+    "humanDecisionBoundary": "Groups items into packages only; does not itself approve or price the split.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 128,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "split",
+      "work package"
+    ]
+  },
+  {
+    "type": "lados.qs.value_variation",
+    "displayName": "Value Variation",
+    "canonicalCapability": "qs.variation.value",
+    "ownerPack": "lados.qs-commercial",
+    "status": "draft",
+    "intent": "Value a contract variation against provided or referenced rates, flagging unresolved items for review.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding",
+      "knowledge_reference"
+    ],
+    "outputPattern": "variation valuation with unresolved-rate flags",
+    "ports": {
+      "inputs": [
+        {
+          "id": "variation",
+          "label": "Variation",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "valuation",
+          "label": "Valuation",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "variation",
+        "label": "Variation",
+        "fields": [
+          "resourceId",
+          "currency"
+        ]
+      },
+      {
+        "id": "rates",
+        "label": "Rates",
+        "fields": [
+          "rateLibraryRefs",
+          "defaultMarkupPercent"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "QS rate library",
+        "contract clause reference"
+      ]
+    },
+    "humanDecisionBoundary": "Valuation is advisory; approval/record of variation value must be a separate human decision.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 280,
+      "minHeight": 136,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "construction.value_variation"
+    ],
+    "executorStatus": "implemented",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "value",
+      "variation",
+      "rate"
+    ]
+  },
+  {
     "type": "lados.qs.assess_progress_claim",
     "displayName": "Assess Claim",
     "canonicalCapability": "qs.claim.assess",
     "ownerPack": "lados.qs-commercial",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Assess progress claim evidence against declared claim rules and produce a QS review recommendation.",
     "inputPattern": [
       "ports",
@@ -243,13 +467,81 @@
     "compatibilityAliases": [
       "construction.assess_progress_claim"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "QS Commercial",
     "icon": "Ruler",
     "searchKeywords": [
       "qs commercial",
       "assess",
       "claim"
+    ]
+  },
+  {
+    "type": "lados.qs.reconcile_final_account",
+    "displayName": "Reconcile Final Account",
+    "canonicalCapability": "qs.final_account.reconcile",
+    "ownerPack": "lados.qs-commercial",
+    "status": "draft",
+    "intent": "Aggregate work package and variation values into a final cost summary, comparing against a budget/target and flagging variance.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "knowledge_reference"
+    ],
+    "outputPattern": "advisory cost summary with variance flags",
+    "ports": {
+      "inputs": [
+        {
+          "id": "summary",
+          "label": "Summary Inputs",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "costSummary",
+          "label": "Cost Summary",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "summary",
+        "label": "Summary",
+        "fields": [
+          "tolerancePercent",
+          "currency"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "QS rate library",
+        "contract clause reference"
+      ]
+    },
+    "humanDecisionBoundary": "Produces an advisory cost summary only; final account acceptance requires a separate human decision/approval.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": {
+      "minWidth": 290,
+      "minHeight": 140,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "QS Commercial",
+    "icon": "Ruler",
+    "searchKeywords": [
+      "qs commercial",
+      "reconcile",
+      "final account",
+      "cost summary"
     ]
   }
 ]

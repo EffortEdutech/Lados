@@ -28,7 +28,8 @@
     "resource.transition",
     "resource.binding.resolve",
     "artifact.write",
-    "artifact.read"
+    "artifact.read",
+    "resource.assign"
   ],
   "nodes": [
     "lados.resource.create",
@@ -38,7 +39,8 @@
     "lados.resource.transition",
     "lados.resource.resolve_binding",
     "lados.artifact.write",
-    "lados.artifact.read"
+    "lados.artifact.read",
+    "lados.resource.assign"
   ],
   "knowledgePacks": {
     "required": [],
@@ -55,8 +57,8 @@
     "foundation-pack"
   ],
   "verification": {
-    "manifest": "verified — S4 fix: the skeleton declared capability \"resource.transition\" with no corresponding node in `nodes`; added lados.resource.transition to close the gap",
-    "runtime": "implemented — all 8 nodes implemented",
+    "manifest": "verified — S4 fix: the skeleton declared capability \"resource.transition\" with no corresponding node in `nodes`; added lados.resource.transition to close the gap. S9.1 fix: added \"resource.assign\" capability + lados.resource.assign node — successor to the prototype foundation.assign_user, generic across resource types.",
+    "runtime": "implemented — all 9 nodes implemented",
     "canvas": "not_started",
     "templates": "not_started"
   },

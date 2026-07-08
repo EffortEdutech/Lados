@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.commercial-finance",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Commercial Finance",
   "layer": "L1",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados commercial finance capability pack for invoices, payments, purchase orders, approval records, and retention.",
   "ownerBoundary": [
     "invoice submission",
@@ -67,8 +67,8 @@
     "contractor-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S5 fix: nodes.json only defined 5 of the 8 nodes manifest.json declared (record_purchase_order_approval, claim_retention_release, record_retention_release were missing); added all 3",
+    "runtime": "implemented — all 8 nodes implemented. No new resource types needed: reuses finance_invoice/purchase_order/retention_release from migration 0043",
     "canvas": "not_started",
     "templates": "not_started"
   },
@@ -77,5 +77,42 @@
     "icon": "ReceiptText",
     "color": "#dc2626",
     "paletteGroup": "Business Operations"
-  }
+  },
+  "resourceViews": [
+    {
+      "type": "invoice",
+      "displayName": "Invoice",
+      "displayNamePlural": "Invoices",
+      "icon": "🧾",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.total",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Submit for Approval", "node": "state.change", "visibleInStates": ["draft"], "icon": "📤" },
+          { "label": "Record Payment", "node": "lados.finance.record_payment", "visibleInStates": ["approved"], "icon": "💳", "requiresConfirm": true }
+        ]
+      }
+    },
+    {
+      "type": "payment",
+      "displayName": "Payment",
+      "displayNamePlural": "Payments",
+      "icon": "💳",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.amount",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Reconcile", "node": "state.change", "visibleInStates": ["recorded"], "icon": "✅", "requiresConfirm": true }
+        ]
+      }
+    }
+  ]
 }

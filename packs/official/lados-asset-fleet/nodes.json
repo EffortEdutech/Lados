@@ -4,7 +4,7 @@
     "displayName": "Create Fleet Job",
     "canonicalCapability": "asset_fleet.job.create",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a fleet or asset job record for dispatch, tracking, and billing handoff.",
     "inputPattern": [
       "ports",
@@ -61,7 +61,7 @@
     "compatibilityAliases": [
       "contractor.create_job"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [
@@ -76,7 +76,7 @@
     "displayName": "Dispatch Trip",
     "canonicalCapability": "asset_fleet.trip.dispatch",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record trip dispatch details for a vehicle, asset, operator, destination, and planned work.",
     "inputPattern": [
       "ports",
@@ -132,7 +132,7 @@
     "compatibilityAliases": [
       "contractor.dispatch_trip"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [
@@ -146,7 +146,7 @@
     "displayName": "Complete Trip",
     "canonicalCapability": "asset_fleet.trip.complete",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record trip completion details, mileage, delivery notes, and exceptions.",
     "inputPattern": [
       "ports",
@@ -202,7 +202,7 @@
     "compatibilityAliases": [
       "contractor.complete_trip"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [
@@ -216,7 +216,7 @@
     "displayName": "Upload Fuel Receipt",
     "canonicalCapability": "asset_fleet.fuel_receipt.upload",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Upload and register a fuel receipt file against a vehicle, trip, or expense record.",
     "inputPattern": [
       "ports",
@@ -272,7 +272,7 @@
     "compatibilityAliases": [
       "contractor.upload_fuel_receipt"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [
@@ -287,7 +287,7 @@
     "displayName": "Extract Fuel Receipt",
     "canonicalCapability": "asset_fleet.fuel_receipt.extract",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Extract fuel receipt fields with confidence and source references for human review.",
     "inputPattern": [
       "ports",
@@ -342,7 +342,7 @@
     "compatibilityAliases": [
       "contractor.extract_fuel_data"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [
@@ -357,7 +357,7 @@
     "displayName": "Create Maintenance Record",
     "canonicalCapability": "asset_fleet.maintenance.create",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a maintenance issue, service, or repair record for a vehicle or asset.",
     "inputPattern": [
       "ports",
@@ -413,7 +413,7 @@
     "compatibilityAliases": [
       "contractor.create_maintenance_record"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [
@@ -428,7 +428,7 @@
     "displayName": "Clear Maintenance",
     "canonicalCapability": "asset_fleet.maintenance.clear",
     "ownerPack": "lados.asset-fleet",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record maintenance clearance with evidence, responsible person, and return-to-service status.",
     "inputPattern": [
       "ports",
@@ -484,7 +484,7 @@
     "compatibilityAliases": [
       "contractor.clear_maintenance"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Asset and Fleet",
     "icon": "Truck",
     "searchKeywords": [

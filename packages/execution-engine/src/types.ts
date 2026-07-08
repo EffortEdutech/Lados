@@ -21,6 +21,18 @@ export type NodeRunStatus =
 
 // ── Execution plan ────────────────────────────────────────────────────────────
 
+/**
+ * Phase 21 (S9 chaining fix) — one incoming connection into this step,
+ * carrying the real port ids so the runner can extract the specific
+ * upstream output value a node actually asked for, instead of blindly
+ * merging every key of every upstream node's entire output object.
+ */
+export interface InputBinding {
+  sourceNodeId: string;
+  sourcePortId: string;
+  targetPortId: string;
+}
+
 export interface ExecutionStep {
   nodeId: string;
   nodeType: string;
@@ -29,6 +41,12 @@ export interface ExecutionStep {
   mode?: SkillMode;
   /** IDs of steps that must complete before this one */
   dependsOn: string[];
+  /**
+   * Phase 21 (S9 chaining fix): per-connection source/target port ids
+   * feeding into this step, built directly from the workflow definition's
+   * `connections`. See InputBinding and _resolveInputs in runner.ts.
+   */
+  inputBindings: InputBinding[];
   /**
    * Phase 6: BFS wave index (0-based).
    * All steps at the same level have no dependencies on each other
@@ -110,6 +128,15 @@ export interface ResumeCheckpoint {
     comments: string;
     approvalTaskId: string;
     decidedBy: string;
+    /**
+     * Phase 22 S22.2 — set instead of the approve/reject fields when the
+     * paused node is `lados.human.request_input` and a human has submitted
+     * structured data via POST /approvals/:taskId/submit-input. When
+     * present, the runner injects `{ submittedData, approval_task_id }` as
+     * the paused node's output instead of the approve/reject shape —
+     * request_input has no approved/rejected concept, only submitted data.
+     */
+    submittedData?: Record<string, unknown>;
   };
 }
 

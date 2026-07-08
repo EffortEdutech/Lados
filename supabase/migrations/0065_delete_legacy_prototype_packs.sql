@@ -1,0 +1,65 @@
+-- ============================================================
+-- Migration 0065: Hard-delete legacy prototype packs (supersedes 0063's soft-archive)
+-- Phase 21 S9 (prototype-pack removal — eff's request, 2026-07-04)
+-- ============================================================
+--
+-- Context: migration 0063 soft-archived (is_enabled=false, status='disabled')
+-- the 10 legacy prototype packs keyed off installed_from = 'startup-sync'.
+-- eff has now asked to go further: these packs must not exist in the Lados
+-- platform at all (DB or code), only as archived source on disk. This
+-- migration hard-deletes the 10 packs rows; the previous soft-archive is
+-- superseded, not layered on top of.
+--
+-- The 10 packs deleted here: lados.ai-pack, lados.construction-pack,
+-- lados.contractor-pack, lados.core-pack, lados.document-pack,
+-- lados.finance-pack, lados.foundation-pack, lados.notifications-pack,
+-- lados.procurement-pack, lados.qs-pack.
+--
+-- Safety, confirmed via live information_schema query on 2026-07-04:
+--   registered_nodes.pack_id  -> packs.id   ON DELETE CASCADE
+--   pack_node_overrides.pack_id -> packs.id ON DELETE CASCADE
+-- No other table has an FK to packs.id. Deleting these 10 packs rows
+-- automatically deletes their registered_nodes rows (already is_enabled=false
+-- since 0063) and any pack_node_overrides rows for them — no manual
+-- pre-deletion or ordering needed.
+--
+-- Confirmed via live query on 2026-07-04 that zero workflows/workflow_templates
+-- reference any node type from these 10 packs (migration 0064 already removed
+-- the only rows that did). The 21 genuine official packs (installed_from =
+-- 'official-skeleton-sync') and the 1 marketplace demo pack (installed_from =
+-- 'registry') are untouched.
+--
+-- Code-side companion changes (same session, not part of this migration):
+--   - The 10 prototype pack source packages were moved from packs/<name> to
+--     archived/packs/<name> — preserved on disk, outside every pnpm workspace
+--     glob in pnpm-workspace.yaml, so they are never built, typechecked, or
+--     importable as @lados/<name> again.
+--   - apps/api/src/pack/pack-installer.service.ts no longer imports or
+--     registers any of the 10 packs (COMPILED_PACKS is now empty of them) —
+--     this also removes a resurrection risk: syncNodeManifests() previously
+--     unconditionally re-enabled (is_enabled: true) every registered_nodes
+--     row for these packs on every API restart, which would have undone
+--     0063's soft-archive on the very next deploy. With the imports gone,
+--     there is nothing left to resurrect even before this migration runs.
+--   - apps/api/src/execution/real-nodes/index.ts no longer wires any of the
+--     9 legacy resolvers (core/foundation/qs/document/procurement/
+--     contractor/construction/finance/notifications-pack) into the real
+--     node resolver chain — every node type they covered has a canonical
+--     official-pack successor already wired ahead of them.
+--   - apps/api/src/notification/email.service.ts and sms.service.ts now
+--     import EmailPayload/EmailResult/SmsPayload/SmsResult from
+--     @lados/official-communication (an independent, identically-shaped
+--     type declaration) instead of @lados/notifications-pack — these
+--     services never depended on the prototype pack's code, only its types.
+--   - apps/api/package.json and apps/web/next.config.mjs no longer declare
+--     the 10 (9 for api; contractor-pack for web) packs as workspace
+--     dependencies / transpilePackages.
+--   - apps/api/test/pack-manifests.spec.ts (which exclusively tested these
+--     9 packs' manifests) was retired.
+--
+-- Environment-specific: all pack ids here only exist in this one Supabase
+-- project. Running this against an environment that doesn't have them is a
+-- safe no-op (0 rows affected).
+
+DELETE FROM packs
+WHERE installed_from = 'startup-sync';

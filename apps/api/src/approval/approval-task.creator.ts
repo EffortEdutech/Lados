@@ -11,7 +11,9 @@
  * Both ApprovalService and buildRealNodeResolver inject this instead.
  *
  * This is the NestJS concrete implementation of IApprovalTaskService
- * defined in @lados/foundation-pack.
+ * defined in what was @lados/foundation-pack (now archived — the
+ * approval_tasks table/contract itself is unaffected, defined by migration,
+ * not by any pack source).
  */
 
 import { Injectable } from '@nestjs/common';
@@ -32,6 +34,14 @@ export class ApprovalTaskCreator {
     description?:  string;
     assigneeRole?: string;
     data?:         Record<string, unknown>;
+    /** Phase 22 S22.2 — named-user assignment, alongside/instead of assigneeRole (§4.1). */
+    assigneeUserId?: string;
+    /** Phase 22 S22.2 — 'input' for lados.human.request_input; defaults to 'approval' (§4.4). */
+    taskType?: 'approval' | 'input';
+    /** Phase 22 S22.2 — escalation window in minutes, polled by ApprovalWatchdogService (§4.3). */
+    escalateAfterMinutes?: number;
+    /** Phase 22 S22.2 — who to reassign to on escalation, if configured (§4.3). */
+    escalatedToUserId?: string;
   }): Promise<{ taskId: string }> {
     const { data: task, error } = await this.supabase.admin
       .from('approval_tasks')
@@ -46,6 +56,18 @@ export class ApprovalTaskCreator {
         data:          params.data ?? {},
         status:        'pending',
         assignee_role: params.assigneeRole ?? 'owner',
+        // `|| null` (not `??`), deliberately — assignee_user_id/
+        // escalated_to_user_id are uuid columns; the canvas inspector's
+        // generic TextField (deriveConfigSchema(), S7.3 — every declared
+        // config field renders as plain text with no per-field type) saves
+        // an unfilled field as `""`, not undefined. `?? null` only replaces
+        // null/undefined, so `""` would pass straight through into a uuid
+        // column and fail with "invalid input syntax for type uuid: ''" —
+        // found via eff's first live request_input run, 2026-07-06.
+        assignee_user_id:       params.assigneeUserId || null,
+        task_type:              params.taskType ?? 'approval',
+        escalate_after_minutes: params.escalateAfterMinutes ?? null,
+        escalated_to_user_id:   params.escalatedToUserId || null,
       })
       .select('id')
       .single();

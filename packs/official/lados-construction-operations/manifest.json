@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.construction-operations",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Construction Operations",
   "layer": "L2",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados construction operations capability pack for site projects, inspections, defects, site diary, and handover actions.",
   "ownerBoundary": [
     "create project or site operation resource",
@@ -63,8 +63,8 @@
     "construction-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S6 fix: nodes.json only defined 5 of the 6 nodes manifest.json declared (run_handover_checklist was missing); added it",
+    "runtime": "implemented — all 6 nodes implemented. New migration 0059_construction_site_diary_resource_type.sql adds site_diary; construction_project/site_inspection/defect reuse migration 0041. run_handover_checklist is deliberately stateless (no resource persisted) — handover sign-off happens via a separate lados.human.record_decision node in the composing template",
     "canvas": "not_started",
     "templates": "not_started"
   },

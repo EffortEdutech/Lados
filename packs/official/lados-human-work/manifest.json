@@ -25,12 +25,14 @@
   ],
   "capabilities": [
     "human.approval.request",
+    "human.input.request",
     "human.assignment.assign",
     "human.decision.record",
     "human.review.checkpoint"
   ],
   "nodes": [
     "lados.human.request_approval",
+    "lados.human.request_input",
     "lados.human.assign_user",
     "lados.human.record_decision",
     "lados.human.review_checkpoint"

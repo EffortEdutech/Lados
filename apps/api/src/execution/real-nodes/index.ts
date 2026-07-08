@@ -39,183 +39,40 @@ import { resolveNode as officialResourceOperationsResolve } from '@lados/officia
 import { resolveNode as officialTaskCaseResolve }           from '@lados/official-task-case';
 import { resolveNode as officialCommunicationResolve }      from '@lados/official-communication';
 
-import { resolveNode as coreResolve }         from '@lados/core-pack';
-import { resolveNode as documentResolve }     from '@lados/document-pack';
-import { resolveNode as qsResolve }           from '@lados/qs-pack';
-import { resolveNode as procurementResolve }  from '@lados/procurement-pack';
-import { resolveNode as foundationResolve }   from '@lados/foundation-pack';
-import { resolveNode as contractorResolve }   from '@lados/contractor-pack';
-import { resolveNode as constructionResolve } from '@lados/construction-pack';  // Phase 7
-import { resolveNode as financeResolve }        from '@lados/finance-pack';           // Phase 9
-import { resolveNode as notificationsResolve } from '@lados/notifications-pack';     // Phase 10
-import type {
-  IResourceService,
-  IResourceUpdateService,
-  IInvoiceResourceService,
-  IPaymentResourceService,
-  IExpenseApprovalService,
-  IMaintenanceCreateService,
-  IMaintenanceClearService,
-  IPayrollCreateService,
-  IPayrollApprovalService,
-  IFuelExtractResourceService,
-} from '@lados/contractor-pack';
-import type {
-  IConstructionResourceService,
-  IConstructionAiService,
-} from '@lados/construction-pack';  // Phase 7
-import type {
-  IFinanceResourceService,
-} from '@lados/finance-pack';         // Phase 9
+// Phase 21 S5 (Wave 3) — official Capability Pack executors.
+import { resolveNode as officialCommercialFinanceResolve } from '@lados/official-commercial-finance';
+import { resolveNode as officialProcurementResolve }       from '@lados/official-procurement';
 
-type FullContractorAdapter =
-  IResourceService &
-  IResourceUpdateService &
-  IInvoiceResourceService &
-  IPaymentResourceService &
-  IExpenseApprovalService &
-  IMaintenanceCreateService &
-  IMaintenanceClearService &
-  IPayrollCreateService &
-  IPayrollApprovalService &
-  IFuelExtractResourceService;
+// Phase 21 S6 (Wave 4) — official Capability Pack executors.
+import { resolveNode as officialQsCommercialResolve }           from '@lados/official-qs-commercial';
+import { resolveNode as officialConstructionOperationsResolve } from '@lados/official-construction-operations';
+
+// Phase 21 S6.1 (remaining Wave 4, pulled forward from Phase 22 deferral) —
+// official Capability Pack executors.
+import { resolveNode as officialContractAdminResolve } from '@lados/official-contract-admin';
+import { resolveNode as officialAssetFleetResolve }     from '@lados/official-asset-fleet';
+import { resolveNode as officialPeoplePayrollResolve }  from '@lados/official-people-payroll';
+
+// New official Capability Pack — Content Production line of business
+// (built outside the Phase 21 QS/construction/procurement Wave program).
+// Orchestrates and validates the Claude + Remotion motion-graphics
+// production workflow; render_scenes is a stub (no render backend wired).
+import { resolveNode as officialVideoProductionResolve } from '@lados/official-video-production';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
-// ── Contractor-pack adapter ────────────────────────────────────────────────────
-//
-// contractor-pack defines domain-focused interface names (create, list, findById).
-// ResourceService uses different method names (createResource, listResources, getResource).
-// This adapter bridges both without coupling the pack to NestJS.
-
-function makeContractorResourceAdapter(
-  svc: ResourceService | undefined,
-): FullContractorAdapter | undefined {
-  if (!svc) return undefined;
-  return {
-    async create(params) {
-      // Cast to widest create-params shape — parentId is optional across all interfaces
-      const p = params as {
-        orgId: string; type: string; name: string;
-        data?: Record<string, unknown>; parentId?: string; createdBy?: string;
-      };
-      return svc.createResource({
-        orgId:     p.orgId,
-        type:      p.type as Parameters<ResourceService['createResource']>[0]['type'],
-        name:      p.name,
-        data:      p.data,
-        parentId:  p.parentId,
-        createdBy: p.createdBy ?? 'system',
-      });
-    },
-    async updateResource(id, orgId, updates, updatedBy) {
-      return svc.updateResource(id, orgId, updates, updatedBy ?? 'system');
-    },
-    async transitionState(id, orgId, toState, actorId) {
-      return svc.transitionState(id, orgId, toState, actorId ?? 'system');
-    },
-    async list(params) {
-      return svc.listResources(params.orgId, {
-        type:     params.type as NonNullable<Parameters<ResourceService['listResources']>[1]>['type'],
-        state:    params.state,
-        parentId: params.parentId,
-      });
-    },
-    async findById(id, orgId) {
-      try { return await svc.getResource(id, orgId); }
-      catch { return null; }
-    },
-    async getResource(id, orgId) {
-      return svc.getResource(id, orgId);
-    },
-  };
-}
-
-// ── Construction-pack adapters — Phase 7 ─────────────────────────────────────
-//
-// IConstructionResourceService expects: create, findById, updateResource, transitionState.
-// ResourceService exposes: createResource, getResource, updateResource, transitionState.
-// This adapter bridges the naming differences without coupling the pack to NestJS.
-//
-// IConstructionAiService.complete({ systemPrompt, userPrompt, maxTokens })
-// AiService.complete(systemPrompt, userPrompt, options?) — positional args.
-// Adapter maps the single-object form to the positional-arg form.
-
-function makeConstructionAiAdapter(
-  aiSvc: AiService | undefined,
-): IConstructionAiService | undefined {
-  if (!aiSvc) return undefined;
-  return {
-    complete: ({ systemPrompt, userPrompt, maxTokens }) =>
-      aiSvc.complete(systemPrompt, userPrompt, maxTokens ? { maxTokens } : {}),
-  };
-}
-
-function makeConstructionResourceAdapter(
-  svc: ResourceService | undefined,
-): IConstructionResourceService | undefined {
-  if (!svc) return undefined;
-  return {
-    async create(params) {
-      return svc.createResource({
-        orgId:     params.orgId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type:      params.type as any,
-        name:      params.name,
-        data:      params.data,
-        parentId:  params.parentId,
-        createdBy: params.createdBy ?? 'system',
-      });
-    },
-    async findById(id, orgId) {
-      try { return await svc.getResource(id, orgId); }
-      catch { return null; }
-    },
-    async updateResource(id, orgId, updates, updatedBy) {
-      return svc.updateResource(id, orgId, updates, updatedBy);
-    },
-    async transitionState(id, orgId, toState, actorId) {
-      return svc.transitionState(id, orgId, toState, actorId);
-    },
-  };
-}
-
-// ── Finance-pack adapter — Phase 9 ───────────────────────────────────────────
-//
-// IFinanceResourceService expects: create, findById, updateResource, transitionState.
-// ResourceService exposes: createResource, getResource, updateResource, transitionState.
-// Identical shape to construction adapter — separate function for clarity.
-
-function makeFinanceResourceAdapter(
-  svc: ResourceService | undefined,
-): IFinanceResourceService | undefined {
-  if (!svc) return undefined;
-  return {
-    async create(params) {
-      return svc.createResource({
-        orgId:     params.orgId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type:      params.type as any,
-        name:      params.name,
-        data:      params.data,
-        parentId:  params.parentId,
-        createdBy: params.createdBy ?? 'system',
-      });
-    },
-    async findById(id, orgId) {
-      try { return await svc.getResource(id, orgId); }
-      catch { return null; }
-    },
-    async updateResource(id, orgId, updates, updatedBy) {
-      return svc.updateResource(id, orgId, updates, updatedBy);
-    },
-    async transitionState(id, orgId, toState, actorId) {
-      return svc.transitionState(id, orgId, toState, actorId);
-    },
-  };
-}
-
 // ── Main resolver factory ─────────────────────────────────────────────────────
+//
+// Phase 21 S9 (prototype-pack removal, 2026-07-04): the legacy prototype
+// resolvers (core/foundation/qs/document/procurement/contractor/construction/
+// finance/notifications-pack) and their adapter functions were removed here.
+// Every node type they resolved has a canonical official-pack successor
+// already wired above (per the compatibility alias map,
+// packages/@lados/pack-sdk/src/compatibility-aliases.ts), and zero live
+// workflows/templates reference any prototype node type as of migration
+// 0064 (confirmed via live query). The prototype pack SOURCE is preserved,
+// unbuilt, under archived/packs/ — see docs/Lados/V4/Sprint/
+// Lados_V4_Phase21_Checklist.md Handover 2026-07-04 (8).
 
 /**
  * Build the real node resolver, injecting NestJS services.
@@ -238,16 +95,6 @@ export function buildRealNodeResolver(
   emailService?: EmailService,        // Phase 10
   smsService?: SmsService,            // Phase 10
 ): (nodeType: string) => NodeExecutor | null {
-  const contractorAdapter    = makeContractorResourceAdapter(resourceService);
-  const constructionAdapter  = makeConstructionResourceAdapter(resourceService);  // Phase 7
-  const constructionAiAdapt = makeConstructionAiAdapter(aiService);              // Phase 7
-  const financeAdapter       = makeFinanceResourceAdapter(resourceService);       // Phase 9
-
-  // Phase 10 — notifications-pack adapters
-  // EmailService / SmsService already satisfy IEmailService / ISmsService via duck typing.
-  // NotificationService already satisfies IInAppNotificationService via duck typing.
-  // No adapter needed — pass through directly.
-
   // ArtifactService satisfies both IArtifactWriteService and IArtifactReadService structurally
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const artifactAdapter = artifactService as any;
@@ -258,7 +105,9 @@ export function buildRealNodeResolver(
     // Foundation Pack (per the compatibility alias map: core.human_approval
     // and foundation.request_approval both merge into
     // lados.human.request_approval, etc.).
-    officialWorkflowFoundationResolve(),
+    // Phase 21 S9.1 (gap closure) — lados.workflow.publish_event needs
+    // EventBusService; every other node in this pack is self-contained.
+    officialWorkflowFoundationResolve({ eventBusService }),
     officialHumanWorkResolve({
       approvalTaskService: approvalService,
       notificationService,
@@ -288,6 +137,9 @@ export function buildRealNodeResolver(
       transitionService: resourceService,
       artifactWriteService: artifactService,
       artifactReadService: artifactService,
+      // Phase 21 S9.1 (gap closure) — lados.resource.assign reuses the same
+      // ResourceService.updateResource() call as lados.resource.update.
+      assignService: resourceService,
     }),
     // Phase 21 S4 (Wave 2) — Task/Case Management (L1). Tasks/Cases are
     // Workspace Resources (type "task"/"case") — same ResourceService.
@@ -305,39 +157,89 @@ export function buildRealNodeResolver(
       smsService,
       notificationService,
     }),
-    // Foundation Pack — canonical nodes take priority over core-pack equivalents
-    foundationResolve({
-      notificationService,
-      approvalTaskService: approvalService,
-      resourceService,
+    // Phase 21 S5 (Wave 3) — Commercial Finance (L1). Invoices, purchase
+    // orders, and retention releases are Workspace Resources — same
+    // ResourceService as Resource Operations/Task-Case above.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialCommercialFinanceResolve({
+      createService: resourceService as any,
+      readService: resourceService,
+      updateService: resourceService,
+      transitionService: resourceService,
     }),
-    // Contractor Pack — domain nodes for Contractor Edition
-    // aiService passed for contractor.extract_fuel_data (GPT-4o vision)
-    contractorResolve({
-      resourceService: contractorAdapter,
+    // Phase 21 S5 (Wave 3) — Procurement (L1). RFQs, quotations, and PO
+    // requests are Workspace Resources (migration
+    // 0058_procurement_resource_types.sql). compare_quotations and
+    // recommend_award are pure computations — no service needed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialProcurementResolve({
+      createService: resourceService as any,
+      transitionService: resourceService,
+    }),
+    // Phase 21 S6 (Wave 4) — QS Commercial (L2). BOQs, progress claims,
+    // and variations are Workspace Resources reusing migration
+    // 0041_construction_resources.sql's boq/progress_claim/variation
+    // types. split_work_packages/value_variation/reconcile_final_account/
+    // classify_trade are deterministic advisory computations — no AI
+    // service needed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialQsCommercialResolve({
+      createService: resourceService as any,
+      readService: resourceService,
+    }),
+    // Phase 21 S6 (Wave 4) — Construction Operations (L2). Projects, site
+    // inspections, and defects reuse migration
+    // 0041_construction_resources.sql's types; site diaries use the new
+    // site_diary type (migration
+    // 0059_construction_site_diary_resource_type.sql). run_handover_checklist
+    // is a pure computation — no service needed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialConstructionOperationsResolve({
+      createService: resourceService as any,
+      updateService: resourceService,
+      transitionService: resourceService,
+    }),
+    // Phase 21 S6.1 (remaining Wave 4) — Contract Admin (L2). Instructions
+    // and notices use the new contract_instruction/contract_notice types
+    // (migration 0060_contract_admin_resource_types.sql).
+    // lookup_clause_reference is a deterministic keyword match — no
+    // service needed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialContractAdminResolve({
+      createService: resourceService as any,
+      updateService: resourceService,
+    }),
+    // Phase 21 S6.1 (remaining Wave 4) — Asset and Fleet (L2). Jobs,
+    // trips, fuel receipts, and maintenance records reuse migration
+    // 0032_phase9_contractor_edition.sql's types (same as Contractor
+    // Edition). extract_fuel_receipt reuses the real, already-integrated
+    // AiService.isConfigured/runVision (same capability contractor-pack's
+    // real contractor.extract_fuel_data node uses) — honest reuse, not a
+    // new capability.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    officialAssetFleetResolve({
+      createService: resourceService as any,
+      readService: resourceService,
+      updateService: resourceService,
+      transitionService: resourceService,
       aiService,
     }),
-    // Construction Pack — Phase 7: Projects, Claims, Variations, Defects, BOQ, Inspections
-    // aiService passed for construction.generate_boq (optional AI line-item generation)
-    constructionResolve({
-      resourceService: constructionAdapter,
-      aiService:       constructionAiAdapt,
-    }),
-    // Finance Pack — Phase 9: Invoice, Purchase Orders, Retention Release (CIPAA / PAM / JKR)
-    financeResolve({ resourceService: financeAdapter }),
-    // Notifications Pack — Phase 10: send_email, send_sms, send_in_app
-    notificationsResolve({
-      emailService,
-      smsService,
-      notificationService,
-    }),
-    // Cast needed: core-pack's IResourceService has a narrower ResourceType compiled before
-    // contractor types were added. The runtime shape is compatible — only the TS union differs.
+    // Phase 21 S6.1 (remaining Wave 4) — People and Payroll (L2). Payroll
+    // runs and expenses reuse migrations 0032/0034's types. Both approval
+    // nodes enforce the MISSING_HUMAN_DECISION contract on approvedBy.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    coreResolve({ notificationService, resourceService: resourceService as any, eventBusService, stateEngineService, artifactService: artifactAdapter }),
-    documentResolve({ fileService, libraryService, documentService }),
-    qsResolve({ aiService }),
-    procurementResolve({ libraryService }),
+    officialPeoplePayrollResolve({
+      createService: resourceService as any,
+      readService: resourceService,
+      updateService: resourceService,
+    }),
+    // Video Production (L2) — Content Production line of business. Reuses
+    // the existing FileService for read_script/insert_images; renderService
+    // is intentionally left unpassed (undefined) since no NestJS service
+    // implements it yet — render_scenes degrades to an honest
+    // RENDER_BACKEND_NOT_CONFIGURED failure, same pattern as
+    // document-intelligence's unpassed storageService above.
+    officialVideoProductionResolve({ fileService }),
   ];
 
   return (nodeType: string) => {

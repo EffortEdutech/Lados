@@ -38,6 +38,14 @@ export interface IApprovalTaskService {
     description?: string;
     assigneeRole?: string;
     data?: Record<string, unknown>;
+    /** Phase 22 S22.2 — named-user assignment (§4.1). */
+    assigneeUserId?: string;
+    /** Phase 22 S22.2 — 'input' for request_input; defaults to 'approval' (§4.4). */
+    taskType?: 'approval' | 'input';
+    /** Phase 22 S22.2 — escalation window in minutes (§4.3). */
+    escalateAfterMinutes?: number;
+    /** Phase 22 S22.2 — who to reassign to on escalation, if configured (§4.3). */
+    escalatedToUserId?: string;
   }): Promise<{ taskId: string }>;
 }
 
@@ -62,10 +70,25 @@ export async function requestApproval(
     return { status: 'failure', outputs: {}, error: { code: 'NO_SERVICE', message: 'ApprovalTaskService not injected' } };
   }
 
-  const title = (ctx.inputs['title'] ?? ctx.config['title']) as string | undefined;
-  const description = (ctx.inputs['description'] ?? ctx.config['description']) as string | undefined;
-  const assigneeRole = ((ctx.inputs['assigneeRole'] ?? ctx.config['assigneeRole'] ?? 'owner') as string);
-  const notifyUserId = (ctx.inputs['notifyUserId'] ?? ctx.config['notifyUserId'] ?? ctx.userId) as string | undefined;
+  // `||` (not `??`) throughout this block, deliberately — the canvas
+  // inspector's generic TextField saves an unfilled optional field as `""`,
+  // not undefined, and `""` must not survive as a "set" value (an
+  // empty-string assigneeUserId/escalatedToUserId hits the DB's uuid
+  // column and fails — found via request_input's first live run,
+  // 2026-07-06; fixed here too for consistency since this node declares
+  // the same optional fields).
+  const title = (ctx.inputs['title'] || ctx.config['title']) as string | undefined;
+  const description = (ctx.inputs['description'] || ctx.config['description']) as string | undefined;
+  const assigneeRole = ((ctx.inputs['assigneeRole'] || ctx.config['assigneeRole'] || 'owner') as string);
+  const notifyUserId = (ctx.inputs['notifyUserId'] || ctx.config['notifyUserId'] || ctx.userId) as string | undefined;
+  // Phase 22 S22.2 — optional named-user assignment/escalation config, all
+  // backward compatible (unset = today's role-only behavior unchanged).
+  const assigneeUserId = (ctx.inputs['assigneeUserId'] || ctx.config['assigneeUserId'] || undefined) as string | undefined;
+  const escalateAfterMinutesRaw = (ctx.inputs['escalateAfterMinutes'] || ctx.config['escalateAfterMinutes']) as unknown;
+  const escalateAfterMinutes = typeof escalateAfterMinutesRaw === 'string'
+    ? (Number.isFinite(Number(escalateAfterMinutesRaw)) ? Number(escalateAfterMinutesRaw) : undefined)
+    : (escalateAfterMinutesRaw as number | undefined);
+  const escalatedToUserId = (ctx.inputs['escalatedToUserId'] || ctx.config['escalatedToUserId'] || undefined) as string | undefined;
 
   if (!title) {
     return { status: 'failure', outputs: {}, error: { code: 'MISSING_INPUT', message: 'title is required' } };
@@ -84,6 +107,9 @@ export async function requestApproval(
     description: description ?? `Review required by ${assigneeRole}`,
     assigneeRole,
     data: ctx.inputs,
+    assigneeUserId,
+    escalateAfterMinutes,
+    escalatedToUserId,
   });
 
   ctx.logger.info(`Approval task created: ${taskId} — pausing workflow`);

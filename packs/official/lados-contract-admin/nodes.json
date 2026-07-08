@@ -4,7 +4,7 @@
     "displayName": "Register Instruction",
     "canonicalCapability": "contract.instruction.register",
     "ownerPack": "lados.contract-admin",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Register a contract instruction with source, date, parties, and evidence references.",
     "inputPattern": [
       "ports",
@@ -58,7 +58,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Contract Administration",
     "icon": "FileSignature",
     "searchKeywords": [
@@ -72,7 +72,7 @@
     "displayName": "Prepare Notice",
     "canonicalCapability": "contract.notice.prepare",
     "ownerPack": "lados.contract-admin",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Prepare a draft contract notice using selected clause references, event facts, and correspondence evidence.",
     "inputPattern": [
       "ports",
@@ -136,7 +136,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Contract Administration",
     "icon": "FileSignature",
     "searchKeywords": [
@@ -150,7 +150,7 @@
     "displayName": "Track Notice Due Date",
     "canonicalCapability": "contract.notice.track_due_date",
     "ownerPack": "lados.contract-admin",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Track notice response, submission, or expiry dates and create reminder-ready outputs.",
     "inputPattern": [
       "ports",
@@ -205,7 +205,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Contract Administration",
     "icon": "FileSignature",
     "searchKeywords": [
@@ -221,7 +221,7 @@
     "displayName": "Lookup Clause Reference",
     "canonicalCapability": "contract.clause.lookup",
     "ownerPack": "lados.contract-admin",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Lookup relevant clause references from approved Knowledge Packs for drafting or review.",
     "inputPattern": [
       "ports",
@@ -276,7 +276,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Contract Administration",
     "icon": "FileSignature",
     "searchKeywords": [
@@ -291,7 +291,7 @@
     "displayName": "Link Correspondence Evidence",
     "canonicalCapability": "contract.correspondence.link_evidence",
     "ownerPack": "lados.contract-admin",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Link correspondence, attachments, and references to a contract administration record.",
     "inputPattern": [
       "ports",
@@ -344,7 +344,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Contract Administration",
     "icon": "FileSignature",
     "searchKeywords": [

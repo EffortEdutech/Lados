@@ -2,9 +2,10 @@
  * Resource DTOs — Phase 3
  */
 import {
-  IsString, IsOptional, IsIn, IsObject, IsUUID,
+  IsString, IsOptional, IsIn, IsObject,
   MinLength, MaxLength,
 } from 'class-validator';
+import { IsUuidLike } from '../common/validators/is-uuid-like.validator';
 
 const RESOURCE_TYPES = [
   // Core types (Phase 3)
@@ -32,11 +33,11 @@ export class CreateResourceDto {
   type!: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   projectId?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   parentId?: string;
 
   @IsOptional()
@@ -56,11 +57,11 @@ export class UpdateResourceDto {
   data?: Record<string, unknown>;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   projectId?: string | null;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   parentId?: string | null;
 }
 
@@ -86,10 +87,10 @@ export class ListResourcesDto {
   state?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   projectId?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsUuidLike()
   parentId?: string;
 }

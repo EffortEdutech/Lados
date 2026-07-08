@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "1.0",
+  "workflow": {
+    "id": "lados.video-production.script-to-scene-plan",
+    "name": "Script to Scene Plan",
+    "description": "Sample workflow chaining all 8 lados.video-production nodes: reads a script, drafts a numbered scene plan, locks a creative-direction batch, and requests a render — plus three ad-hoc example nodes (revise layout, chroma-key validation, image insertion) with pre-filled config, shown standalone because their single-scene shape doesn't chain off the bulk scenes array (see README.md in this folder).",
+    "version": "0.1.0",
+    "status": "draft",
+    "tags": ["video-production", "remotion", "sample"],
+    "createdAt": "2026-07-04T00:00:00.000Z",
+    "updatedAt": "2026-07-04T00:00:00.000Z",
+    "createdBy": "lados.video-production"
+  },
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "type": "lados.workflow.trigger_manual",
+      "label": "Start Video Production Run",
+      "position": { "x": 80, "y": 280 },
+      "config": { "label": "Start video production run" }
+    },
+    {
+      "id": "scaffold-1",
+      "type": "lados.video.scaffold_project",
+      "label": "Scaffold Project",
+      "position": { "x": 80, "y": 80 },
+      "config": {
+        "projectName": "Learn V1",
+        "template": "adaptive",
+        "folderPath": "00 Remotion/Learn V1"
+      }
+    },
+    {
+      "id": "read-script-1",
+      "type": "lados.video.read_script",
+      "label": "Read Script",
+      "position": { "x": 80, "y": 480 },
+      "config": {
+        "title": "Learn V1 Script",
+        "scriptText": "Creators waste hours trying to organize their editing workflow.\n\nA clean dashboard replaces the chaos — everything snaps into alignment.\n\nNow a full motion-graphics pass ships in under an hour."
+      }
+    },
+    {
+      "id": "draft-scenes-1",
+      "type": "lados.video.draft_scenes",
+      "label": "Draft Scenes",
+      "position": { "x": 360, "y": 480 },
+      "config": { "splitStrategy": "paragraph" }
+    },
+    {
+      "id": "batch-1",
+      "type": "lados.video.generate_scene_batch",
+      "label": "Lock Batch 1 Creative Direction",
+      "position": { "x": 640, "y": 360 },
+      "config": {
+        "batchIndex": 1,
+        "batchSize": 5,
+        "creativeDirection": "Creative direction locked: clean glass UI panels, orange gradient highlights, floating cards. Think premium SaaS dashboard energy — nothing cluttered, nothing literal."
+      }
+    },
+    {
+      "id": "render-1",
+      "type": "lados.video.render_scenes",
+      "label": "Render Scenes (stub)",
+      "position": { "x": 640, "y": 600 },
+      "config": { "resolution": "1080p", "outDir": "out" }
+    },
+    {
+      "id": "log-1",
+      "type": "lados.workflow.write_log",
+      "label": "Log Render Result",
+      "position": { "x": 920, "y": 600 },
+      "config": { "message": "Batch 1 render requested", "level": "info" }
+    },
+    {
+      "id": "revise-1",
+      "type": "lados.video.revise_scene_layout",
+      "label": "Example: Revise Scene 1 for Webcam",
+      "position": { "x": 360, "y": 80 },
+      "config": {
+        "scene": { "sceneNumber": 1, "sceneTitle": "Opening Hook", "currentVersion": 1 },
+        "targetZone": "left35"
+      }
+    },
+    {
+      "id": "chroma-1",
+      "type": "lados.video.remove_background",
+      "label": "Example: Validate Chroma Key for Scene 1",
+      "position": { "x": 640, "y": 80 },
+      "config": {
+        "scene": { "sceneNumber": 1 },
+        "backgroundColor": "#00FF00",
+        "allowGradient": false
+      }
+    },
+    {
+      "id": "images-1",
+      "type": "lados.video.insert_images",
+      "label": "Example: Insert Phone Screen Images",
+      "position": { "x": 920, "y": 80 },
+      "config": {
+        "images": [
+          { "fileId": null, "label": "thumbnail-1" },
+          { "fileId": null, "label": "thumbnail-2" }
+        ],
+        "targetElement": "phone",
+        "sceneNumbers": [1, 2, 3]
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn-1",
+      "sourceNodeId": "read-script-1",
+      "sourcePortId": "script",
+      "targetNodeId": "draft-scenes-1",
+      "targetPortId": "script"
+    },
+    {
+      "id": "conn-2",
+      "sourceNodeId": "draft-scenes-1",
+      "sourcePortId": "scenes",
+      "targetNodeId": "batch-1",
+      "targetPortId": "scenes"
+    },
+    {
+      "id": "conn-3",
+      "sourceNodeId": "draft-scenes-1",
+      "sourcePortId": "scenes",
+      "targetNodeId": "render-1",
+      "targetPortId": "scenes"
+    },
+    {
+      "id": "conn-4",
+      "sourceNodeId": "render-1",
+      "sourcePortId": "render",
+      "targetNodeId": "log-1",
+      "targetPortId": "data"
+    }
+  ],
+  "metadata": {
+    "packId": "lados.video-production",
+    "author": "lados.video-production"
+  }
+}

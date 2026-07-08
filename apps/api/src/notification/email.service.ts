@@ -13,11 +13,15 @@
  *   SMTP_FROM      — default sender address  e.g. "Lados <noreply@lados.app>"
  *   SMTP_SECURE    — 'true' for TLS port 465 (default false = STARTTLS)
  *
- * Satisfies IEmailService from @lados/notifications-pack via duck typing.
+ * Satisfies IEmailService from @lados/official-communication via duck typing.
+ * (Phase 21 S9 prototype-pack removal: switched from the archived
+ * notifications-pack's identical EmailPayload/EmailResult shape to the
+ * official pack's own copy — this service never needed the prototype
+ * pack itself, just its type shape.)
  */
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import type { EmailPayload, EmailResult } from '@lados/notifications-pack';
+import type { EmailPayload, EmailResult } from '@lados/official-communication';
 
 @Injectable()
 export class EmailService implements OnModuleInit {

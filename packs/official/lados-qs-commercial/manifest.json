@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.qs-commercial",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "QS Commercial",
   "layer": "L2",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados quantity surveying and commercial management capability pack.",
   "ownerBoundary": [
     "BOQ reading and normalization",
@@ -74,8 +74,8 @@
     "finance-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S6 fix: nodes.json only defined 3 of the 7 nodes manifest.json declared (normalize_boq, split_work_packages, value_variation, reconcile_final_account were missing); added all 4. 5 further manifest capabilities (qs.boq.generate_draft, qs.claim.submit, qs.claim.record_certification, qs.variation.submit, qs.variation.record_approval) have no corresponding node in manifest.json's own `nodes` list either — deferred as a known gap, same class as S2's workflow-foundation deferral, not blocking since all 7 *declared nodes* are implemented",
+    "runtime": "implemented — all 7 nodes implemented. classify_trade/value_variation/reconcile_final_account/assess_progress_claim are deterministic rules-based advisory computations, not real AI/LLM calls. No new resource types needed: reuses boq/progress_claim/variation from migration 0041. split_work_packages and reconcile_final_account are deliberately stateless (no resource persisted) — human acceptance happens via a separate lados.human.request_approval node in the composing template",
     "canvas": "not_started",
     "templates": "not_started"
   },

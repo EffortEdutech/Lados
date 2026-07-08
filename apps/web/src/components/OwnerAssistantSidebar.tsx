@@ -19,6 +19,7 @@
 
 import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import { apiClient } from '@/lib/api/client';
+import { useFloatingDockPosition } from '@/lib/useFloatingDockPosition';
 import type { ApiResponse } from '@lados/shared-types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -192,6 +193,15 @@ export default function OwnerAssistantSidebar({ orgId: propOrgId }: OwnerAssista
   const inputRef  = useRef<HTMLTextAreaElement>(null);
   const panelId   = useId();
 
+  // Docked, draggable trigger position — stacked just below the AI Workflow
+  // Trigger button along the right edge (sidebar-style), clear of React
+  // Flow's MiniMap/Controls/attribution and the canvas's paused/error
+  // banners. Remembers where the user drags it to (per-browser).
+  const dock = useFloatingDockPosition('lados:ownerAssistant:dockPos', () => ({
+    x: window.innerWidth - 56,
+    y: Math.max(140, window.innerHeight / 2 + 4),
+  }));
+
   // ── Init: load org + AI status ────────────────────────────────────────────
   useEffect(() => {
     if (initDone) return;
@@ -303,18 +313,24 @@ export default function OwnerAssistantSidebar({ orgId: propOrgId }: OwnerAssista
 
   return (
     <>
-      {/* ── Floating trigger button ── */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        title="Owner Assistant (⌘⇧A)"
-        aria-label="Open Owner Assistant"
-        aria-expanded={open}
-        aria-controls={panelId}
-        className={`fixed bottom-20 right-5 z-40 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-base transition-all hover:scale-105 active:scale-95
-          ${open ? 'bg-gray-700 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-      >
-        {open ? '✕' : '💬'}
-      </button>
+      {/* ── Floating trigger button — docked to the right edge, draggable anywhere ── */}
+      {dock.pos && (
+        <button
+          onClick={() => { if (!dock.wasDragged()) setOpen((v) => !v); }}
+          onPointerDown={dock.onPointerDown}
+          onPointerMove={dock.onPointerMove}
+          onPointerUp={dock.onPointerUp}
+          title="Owner Assistant (⌘⇧A · drag to move)"
+          aria-label="Open Owner Assistant"
+          aria-expanded={open}
+          aria-controls={panelId}
+          style={{ left: dock.pos.x, top: dock.pos.y, touchAction: 'none' }}
+          className={`fixed z-40 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-base transition-[background-color,transform] hover:scale-105 active:scale-95 cursor-grab active:cursor-grabbing
+            ${open ? 'bg-gray-700 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+        >
+          {open ? '✕' : '💬'}
+        </button>
+      )}
 
       {/* ── Slide-in panel ── */}
       <div

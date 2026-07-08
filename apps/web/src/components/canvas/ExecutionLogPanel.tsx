@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, apiErrorMessage } from '@/lib/api/client';
 import { useExecutionStore } from '@/stores';
 
 interface RfqArtifact {
@@ -561,6 +561,100 @@ interface PendingTask {
   title: string;
   description: string | null;
   status: string;
+  // Phase 22 S22.2 — task_type discriminates approval (decide) from input
+  // (submit-input); data.inputSchema carries the field list for input tasks.
+  task_type?: 'approval' | 'input';
+  data?: (Record<string, unknown> & { inputSchema?: InputFieldSpec[] }) | null;
+}
+
+interface InputFieldSpec {
+  key: string;
+  label: string;
+  type: 'string' | 'number' | 'boolean' | 'select';
+  required?: boolean;
+  options?: string[];
+}
+
+function PausedInputForm({ task, onSubmitted }: { task: PendingTask; onSubmitted: () => void }) {
+  const schema = task.data?.inputSchema ?? [];
+  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [busy, setBusy]     = useState(false);
+  const [error, setError]   = useState<string | null>(null);
+
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    const res = await apiClient.post<unknown>(`/approvals/${task.id}/submit-input`, { data: values });
+    if (res.error) {
+      setError(apiErrorMessage(res.error, 'Submission failed'));
+    } else {
+      onSubmitted();
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mx-4 my-3 rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+      <div>
+        <p className="text-sm font-semibold text-blue-900">Awaiting human input</p>
+        <p className="text-xs text-blue-700 mt-0.5">{task.title}</p>
+        {task.description && (
+          <p className="text-xs text-blue-600 mt-0.5">{task.description}</p>
+        )}
+      </div>
+
+      {schema.length === 0 ? (
+        <p className="text-xs text-red-600">This input task has no schema — nothing to fill in.</p>
+      ) : (
+        <div className="space-y-2">
+          {schema.map((field) => (
+            <label key={field.key} className="flex flex-col gap-1 text-xs font-semibold text-blue-800">
+              {field.label}{field.required && ' *'}
+              {field.type === 'boolean' ? (
+                <input
+                  type="checkbox"
+                  checked={Boolean(values[field.key])}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.checked }))}
+                  className="self-start"
+                />
+              ) : field.type === 'select' ? (
+                <select
+                  value={(values[field.key] as string) ?? ''}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-xs text-gray-700"
+                >
+                  <option value="">— select —</option>
+                  {(field.options ?? []).map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={field.type === 'number' ? 'number' : 'text'}
+                  value={(values[field.key] as string | number) ?? ''}
+                  onChange={(e) => setValues((prev) => ({
+                    ...prev,
+                    [field.key]: field.type === 'number' ? e.target.valueAsNumber : e.target.value,
+                  }))}
+                  className="rounded-md border border-blue-200 bg-white px-2 py-1.5 text-xs"
+                />
+              )}
+            </label>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="text-xs text-red-600">{error}</p>}
+
+      <button
+        onClick={() => void submit()}
+        disabled={busy || schema.length === 0}
+        className="w-full py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+      >
+        {busy ? '...' : 'Submit'}
+      </button>
+    </div>
+  );
 }
 
 function PausedApprovalBanner({ runId, onDecided }: { runId: string; onDecided: () => void }) {
@@ -581,7 +675,7 @@ function PausedApprovalBanner({ runId, onDecided }: { runId: string; onDecided: 
     setError(null);
     const res = await apiClient.post<unknown>(`/approvals/${taskId}/decide`, { decision, comments });
     if (res.error) {
-      setError(typeof res.error === 'string' ? res.error : 'Decision failed');
+      setError(apiErrorMessage(res.error, 'Decision failed'));
     } else {
       onDecided();
     }
@@ -591,6 +685,11 @@ function PausedApprovalBanner({ runId, onDecided }: { runId: string; onDecided: 
   if (tasks.length === 0) return null;
 
   const task = tasks[0];  // Show the first pending task
+
+  // Phase 22 S22.2 — request_input pauses have no approve/reject concept.
+  if (task.task_type === 'input') {
+    return <PausedInputForm task={task} onSubmitted={onDecided} />;
+  }
 
   return (
     <div className="mx-4 my-3 rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">

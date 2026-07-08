@@ -1,4 +1,4 @@
-import { IsOptional, IsObject, IsArray, ValidateNested, IsString } from 'class-validator';
+import { IsOptional, IsObject, IsArray, ValidateNested, IsString, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SkipNodeDto {
@@ -33,4 +33,16 @@ export class TriggerRunDto {
   @ValidateNested({ each: true })
   @Type(() => SkipNodeDto)
   skipNodes?: SkipNodeDto[];
+
+  /**
+   * Phase 22 S22.1 — optional dedupe key. If a non-failed run already exists
+   * for this (workflowId, idempotencyKey) pair, triggerRun() returns that
+   * existing run instead of starting a duplicate. Primarily for webhook/
+   * scheduled triggers that may retry or double-deliver; manual UI triggers
+   * typically omit this.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  idempotencyKey?: string;
 }

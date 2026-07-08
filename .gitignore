@@ -57,3 +57,7 @@ packages/execution-engine/src/*.js
 packages/execution-engine/src/*.js.map
 packages/execution-engine/src/*.d.ts
 packages/execution-engine/src/*.d.ts.map
+
+# Graphify generated graph output
+graphify-out/
+.graphify-work/

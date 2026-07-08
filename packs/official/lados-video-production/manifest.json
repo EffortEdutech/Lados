@@ -1,0 +1,81 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.video-production",
+  "version": "0.1.0",
+  "displayName": "Video Production",
+  "layer": "L2",
+  "status": "draft",
+  "runtimeStatus": "stub_executors",
+  "description": "Official Lados capability pack that orchestrates and validates the Claude + Remotion AI motion-graphics production workflow (Chronixel's Claude + Remotion Blueprint): script intake, scene drafting, creative-direction batching, rendering, layout revision, chroma-key validation, and image insertion.",
+  "ownerBoundary": [
+    "read a script and compute structure metrics",
+    "record a Remotion project's chosen starter template",
+    "segment a script into a numbered scene plan",
+    "lock and rotate a creative direction per scene batch",
+    "request a render pass for a batch of scenes",
+    "compute scene revision version labels and layout zones",
+    "validate a chroma-key (green-screen) request",
+    "map uploaded images onto named scene elements"
+  ],
+  "mustNotOwn": [
+    "generating motion graphics visuals or copy (the connected Claude session does this, not this pack)",
+    "actually running the Remotion CLI / producing MP4 output",
+    "video editing, timeline assembly, transitions, or audio mixing (DaVinci Resolve / Premiere / Final Cut)",
+    "actually keying out a chroma background (the NLE's keyer does this, not this pack)"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation"
+  ],
+  "capabilities": [
+    "video.script.read",
+    "video.project.scaffold",
+    "video.scene.draft",
+    "video.scene.generate_batch",
+    "video.scene.render",
+    "video.scene.revise_layout",
+    "video.scene.remove_background",
+    "video.scene.insert_images"
+  ],
+  "nodes": [
+    "lados.video.read_script",
+    "lados.video.scaffold_project",
+    "lados.video.draft_scenes",
+    "lados.video.generate_scene_batch",
+    "lados.video.render_scenes",
+    "lados.video.revise_scene_layout",
+    "lados.video.remove_background",
+    "lados.video.insert_images"
+  ],
+  "workflowTemplates": [
+    "templates/script-to-scene-plan.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": [
+      "Claude + Remotion Blueprint (Chronixel)",
+      "Scene Composition style guide",
+      "Creative Unlock Rule",
+      "Scene Revision & Versioning rule"
+    ]
+  },
+  "guardrails": [
+    "This pack orchestrates and validates the Claude + Remotion motion-graphics workflow; it does not itself call an LLM or run Remotion — creative generation happens in the connected Claude session.",
+    "Scene revisions must never overwrite an existing scene; version numbers only increase (Scene X V2, V3, ...) and the scene number never changes, per the Scene Revision & Versioning rule.",
+    "Creative direction should rotate every scene batch; generate_scene_batch flags (never blocks) a repeated direction so a human can confirm intent.",
+    "Chroma-key requests must resolve to a pure #00FF00 background with no gradients or semi-transparent UI, per the blueprint's green-screen rule.",
+    "render_scenes is honest about not having a wired render backend — do not build production templates depending on real MP4 output until a render backend is implemented and this pack's runtimeStatus is updated to runtime_enabled."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft — new pack, not yet reviewed by eff",
+    "runtime": "partial — read_script, scaffold_project, draft_scenes, generate_scene_batch, revise_scene_layout, remove_background, insert_images implemented; render_scenes is a stub (no Remotion render backend wired into the API)",
+    "canvas": "not_started",
+    "templates": "draft — script-to-scene-plan added: standard skeleton descriptor plus a real, importable graph body chaining 5 of 8 nodes automatically (3 ad-hoc revision nodes are standalone by design, see templates/README.md); not yet sanity-checked with a real import + trigger"
+  },
+  "visual": {
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "color": "#7c3aed",
+    "paletteGroup": "Content Production"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.video_production.script_to_scene_plan",
+  "displayName": "Script to Scene Plan",
+  "ownerPack": "lados.video-production",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.workflow-foundation"],
+  "recommendedKnowledgePacks": ["Claude + Remotion Blueprint (Chronixel)", "Scene Composition style guide"],
+  "summary": "Trigger a run, read a script, draft a numbered scene plan, lock the first creative-direction batch, and request a render — plus three ad-hoc example nodes (revise layout, chroma-key validation, image insertion) showing their config contract standalone, since their single-scene shape doesn't auto-chain off the bulk scene array. See script-to-scene-plan.workflow.json for the real, importable graph body."
+}

@@ -85,6 +85,25 @@ export class ProjectService {
     if (dto.status !== undefined) updates['status'] = dto.status;
     if (dto.currency !== undefined) updates['currency'] = dto.currency;
 
+    // Phase 22 S22.1 — assign/clear department scope. `null` clears it
+    // (moves the project back to org-wide/no department); a UUID must
+    // belong to the same org as the project, checked here rather than
+    // relying on the FK alone so the error is a clear 404 instead of a raw
+    // constraint violation.
+    if (dto.departmentId !== undefined) {
+      if (dto.departmentId !== null) {
+        const { data: dept } = await this.supabase.admin
+          .from('departments')
+          .select('id')
+          .eq('id', dto.departmentId)
+          .eq('organization_id', project.organization_id as string)
+          .maybeSingle();
+
+        if (!dept) throw new NotFoundException(`Department ${dto.departmentId} not found in this organization`);
+      }
+      updates['department_id'] = dto.departmentId;
+    }
+
     const { data, error } = await this.supabase.admin
       .from('projects')
       .update(updates)

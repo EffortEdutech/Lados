@@ -30,7 +30,7 @@ export class PackRegistryService {
   async getAll(): Promise<PackWithStats[]> {
     const { data: packs, error } = await this.supabase.admin
       .from('packs')
-      .select('id, display_name, description, author, version, previous_version, icon, color, is_official, is_enabled, status, dependencies, installed_from, checksum, installed_at, created_at, updated_at')
+      .select('id, display_name, description, author, version, previous_version, icon, color, is_official, is_enabled, status, dependencies, installed_from, checksum, installed_at, created_at, updated_at, layer')
       .order('is_official', { ascending: false })
       .order('display_name');
 

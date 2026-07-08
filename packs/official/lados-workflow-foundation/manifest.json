@@ -1,7 +1,7 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.workflow-foundation",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "Workflow Foundation",
   "layer": "L0",
   "status": "draft",
@@ -24,6 +24,7 @@
     "workflow.trigger.schedule",
     "workflow.trigger.event",
     "workflow.control.condition",
+    "workflow.control.switch",
     "workflow.control.loop",
     "workflow.control.parallel",
     "workflow.control.merge",
@@ -35,10 +36,13 @@
     "lados.workflow.trigger_manual",
     "lados.workflow.trigger_schedule",
     "lados.workflow.condition",
+    "lados.workflow.switch",
     "lados.workflow.parallel",
     "lados.workflow.merge",
     "lados.workflow.delay",
-    "lados.workflow.write_log"
+    "lados.workflow.write_log",
+    "lados.workflow.loop",
+    "lados.workflow.publish_event"
   ],
   "knowledgePacks": {
     "required": [],
@@ -54,8 +58,8 @@
     "core-pack"
   ],
   "verification": {
-    "manifest": "verified",
-    "runtime": "implemented",
+    "manifest": "verified — S9.1 fix: the skeleton declared \"workflow.control.loop\" and \"workflow.event.publish\" capabilities with no corresponding nodes; added lados.workflow.loop and lados.workflow.publish_event to close both gaps. \"workflow.trigger.event\" remains capability-only by design — event-triggered workflow starts are handled by EventBusService subscription dispatch (see event-bus.service.ts), not by a runnable node; a placeholder node would have no executable behavior of its own. Phase 22 S22.4 (2026-07-06): added \"workflow.control.switch\" + lados.workflow.switch (true multi-way routing, 5 fixed case slots + default — see switch.ts header for why fixed rather than dynamic) and extended lados.workflow.condition's expression grammar (named fields + AND/OR combinator, backward compatible).",
+    "runtime": "implemented — 10 of 11 capabilities have a backing node (see manifest note above for the one intentional exception, workflow.trigger.event)",
     "canvas": "not_started",
     "templates": "not_started"
   },

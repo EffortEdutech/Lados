@@ -91,6 +91,99 @@
     ]
   },
   {
+    "type": "lados.human.request_input",
+    "displayName": "Request Input",
+    "canonicalCapability": "human.input.request",
+    "ownerPack": "lados.human-work",
+    "status": "draft",
+    "intent": "Pause and ask a human to enter or correct structured data mid-run.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "input task reference and, after resume, the submitted data",
+    "ports": {
+      "inputs": [
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "inputTask",
+          "label": "Task",
+          "dataType": "object"
+        },
+        {
+          "id": "submittedData",
+          "label": "Submitted Data",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "request",
+        "label": "Request",
+        "fields": [
+          "title",
+          "description",
+          "assigneeRole",
+          "inputSchema"
+        ]
+      },
+      {
+        "id": "deadline",
+        "label": "Deadline",
+        "fields": [
+          "escalateAfterMinutes",
+          "escalatedToUserId"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Requires a human actor to enter or correct the requested data — AI must never fabricate submittedData.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Human Work",
+    "icon": "UserCheck",
+    "searchKeywords": [
+      "human work",
+      "input",
+      "form",
+      "data entry"
+    ],
+    "events": [
+      {
+        "eventType": "human.InputRequested",
+        "description": "Fires when an input task is created and the workflow pauses.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "approvalTaskId": { "type": "string" },
+            "assigneeRole": { "type": "string" }
+          }
+        }
+      }
+    ]
+  },
+  {
     "type": "lados.human.assign_user",
     "displayName": "Assign User",
     "canonicalCapability": "human.assignment.assign",

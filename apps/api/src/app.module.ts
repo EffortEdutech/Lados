@@ -6,6 +6,7 @@ import { HealthModule } from './health/health.module';
 import { SupabaseModule } from './common/supabase/supabase.module';
 import { AuthModule } from './auth/auth.module';
 import { OrganizationModule } from './organization/organization.module';
+import { DepartmentModule } from './department/department.module';   // Phase 22 S22.1
 import { ProjectModule } from './project/project.module';
 import { WorkflowModule } from './workflow/workflow.module';
 import { NodeModule } from './node/node.module';
@@ -37,6 +38,8 @@ import { SchedulerModule }    from './scheduler/scheduler.module';     // Phase 
 import { AuditLogModule }    from './audit-log/audit-log.module';      // Phase 11
 import { ResourceBindingsModule } from './resource-bindings/resource-bindings.module';
 import { DataPacksModule } from './data-packs/data-packs.module';
+import { AnalyticsModule } from './analytics/analytics.module';    // Phase 22 S22.3
+import { RetentionModule } from './retention/retention.module';    // Phase 22 S22.5
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -55,6 +58,7 @@ import { MulterModule } from '@nestjs/platform-express';
     HealthModule,
     AuthModule,
     OrganizationModule,
+    DepartmentModule,      // Phase 22 S22.1 -- department/business-unit layer
     ProjectModule,
     WorkflowModule,
     NodeModule,             // Sprint 5 -- node registry + pack registry
@@ -86,6 +90,8 @@ import { MulterModule } from '@nestjs/platform-express';
     AuditLogModule,         // Phase 11 -- Audit log API (GET /audit-log + CSV export)
     ResourceBindingsModule, // Phase 15 -- governed workflow resource bindings
     DataPacksModule,        // Phase 19 -- governed Data Pack engine
+    AnalyticsModule,        // Phase 22 S22.3 -- cross-run monitoring rollups
+    RetentionModule,        // Phase 22 S22.5 -- retention/archival execution job
     MulterModule.register({ dest: '/tmp/uploads' }),
   ],
   providers: [

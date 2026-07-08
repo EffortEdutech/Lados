@@ -51,7 +51,8 @@ import { ConditionNode } from './ConditionNode';
 import SkillGroupNode from './SkillGroupNode';
 import FastGroupBypasserNode from './FastGroupBypasserNode';
 import RunGroupModal from './RunGroupModal';
-import { useCanvasStore } from '@/stores';
+import { useCanvasStore, useExecutionStore } from '@/stores';
+import type { NodeRunStatus } from '@/stores';
 
 // ── Custom SkillNode (V2) ─────────────────────────────────────────────────────
 //
@@ -84,6 +85,41 @@ function SkillNode({ data, selected }: NodeProps) {
   const outputs   = (data.outputs as NodePort[] | undefined) ?? [];
   const selectedRing = selected ? 'ring-2 ring-offset-1 ' : '';
 
+  // S7 (UI Alignment) — canvas readability: honor the manifest's declared
+  // canvasUx (minWidth/minHeight/maxVisiblePortsPerSide) instead of a fixed
+  // 260px card for every node regardless of label length or port count.
+  // Falls back to the historical defaults when canvasUx is absent (all
+  // pre-Phase-20 prototype nodes, and any official node whose manifest
+  // omits it) — zero behavior change for those.
+  const canvasUx = data.canvasUx as NodeCanvasUx | undefined;
+  const cardWidth = Math.max(canvasUx?.minWidth ?? 260, 260);
+  const maxVisiblePortsPerSide = canvasUx?.maxVisiblePortsPerSide;
+
+  // S7 (UI Alignment) — live run status, driven by useExecutionRunStream's
+  // SSE consumption of run.node_started/run.node_done (S3 D4). Layered on
+  // top of the mode-based container styling below via a ring, independent
+  // of `mode` (active/muted/bypassed is a design-time property; runStatus
+  // is a runtime one — a node can be "active" and "running" at once).
+  const runStatus = data.runStatus as NodeRunStatus | undefined;
+  const RUN_STATUS_RING: Record<NodeRunStatus, string> = {
+    pending:   '',
+    waiting:   'ring-2 ring-amber-300 animate-pulse',
+    running:   'ring-2 ring-blue-400 animate-pulse',
+    completed: 'ring-2 ring-green-400',
+    failed:    'ring-2 ring-red-400',
+    skipped:   'ring-1 ring-gray-300',
+  };
+  const RUN_STATUS_BADGE: Record<NodeRunStatus, { icon: string; cls: string } | null> = {
+    pending:   null,
+    waiting:   { icon: '⏳', cls: 'bg-amber-100 text-amber-700' },
+    running:   { icon: '▶',  cls: 'bg-blue-100 text-blue-700' },
+    completed: { icon: '✓',  cls: 'bg-green-100 text-green-700' },
+    failed:    { icon: '✗',  cls: 'bg-red-100 text-red-700' },
+    skipped:   { icon: '⏭',  cls: 'bg-gray-100 text-gray-500' },
+  };
+  const runStatusRingCls = runStatus ? RUN_STATUS_RING[runStatus] : '';
+  const runStatusBadge = runStatus ? RUN_STATUS_BADGE[runStatus] : null;
+
   const containerCls =
     mode === 'muted'
       ? `bg-gray-100 border border-gray-300 opacity-55 ${selectedRing}${selected ? 'ring-blue-300' : ''}`
@@ -99,12 +135,22 @@ function SkillNode({ data, selected }: NodeProps) {
   // Category badge colors
   const catKey = category?.split('.')[0] ?? '';
   const catCls = CATEGORY_COLORS[catKey] ?? 'bg-gray-100 text-gray-500';
-  const inputHandles = inputs.length > 0 ? inputs : [{ id: 'in', label: 'in', type: 'any' }];
-  const outputHandles = outputs.length > 0 ? outputs : [{ id: 'out', label: 'out', type: 'any' }];
-  const needsLegacyInputHandle = !inputHandles.some((port) => port.id === 'in');
-  const needsLegacyOutputHandle = !outputHandles.some((port) => port.id === 'out');
   const visibleRowCount = Math.max(inputs.length, outputs.length);
-  const nodeMinHeight = visibleRowCount > 0 ? 66 + visibleRowCount * 22 : 58;
+  const nodeMinHeight = Math.max(
+    visibleRowCount > 0 ? 66 + visibleRowCount * 22 : 58,
+    canvasUx?.minHeight ?? 0,
+  );
+
+  // Cosmetic-only capping of the port LABEL list below the title — the
+  // connection handles themselves (renderPortHandle, below) always render
+  // every real port so an existing edge is never visually hidden. Only the
+  // summary row list is capped, with an affordance pointing to the
+  // inspector for the rest — matching the Node Design Standard's "detailed
+  // explanations belong in the inspector" rule.
+  const visibleInputRows  = maxVisiblePortsPerSide ? inputs.slice(0, maxVisiblePortsPerSide)  : inputs;
+  const visibleOutputRows = maxVisiblePortsPerSide ? outputs.slice(0, maxVisiblePortsPerSide) : outputs;
+  const hiddenInputCount  = inputs.length  - visibleInputRows.length;
+  const hiddenOutputCount = outputs.length - visibleOutputRows.length;
 
   const handleTop = (index: number, visibleCount: number): string | number => {
     if (visibleCount === 0) return '50%';
@@ -133,7 +179,23 @@ function SkillNode({ data, selected }: NodeProps) {
     );
   };
 
-  const renderLegacyCompatibilityHandle = (side: 'input' | 'output') => {
+  // Main (group-level) port — one per side, always rendered regardless of
+  // how many individual ports this node declares. Distinct from the
+  // per-port dots below (solid, colored by data type, positioned per row):
+  // this one is a hollow ring so it reads as "the whole node", sits fixed
+  // near the top edge instead of scaling with the port list, and always
+  // uses the generic id 'in'/'out'.
+  //
+  // This id choice is not cosmetic — packages/execution-engine/src/runner.ts's
+  // _resolveInputs() specifically skips its port-aware remap for any binding
+  // where sourcePortId === 'out' or targetPortId === 'in', falling back to
+  // the unconditional flat-merge of every upstream output instead. That
+  // flat-merge *is* "receive everything upstream produced" / "send
+  // everything downstream" — exactly the semantics a group-level connector
+  // should have — so dragging from/to the main dot needs no backend change
+  // at all; it reuses the same fallback path that's kept old prototype
+  // workflows (which never had named ports) working since S1.
+  const renderMainHandle = (side: 'input' | 'output') => {
     const isInput = side === 'input';
 
     return (
@@ -141,14 +203,14 @@ function SkillNode({ data, selected }: NodeProps) {
         id={isInput ? 'in' : 'out'}
         type={isInput ? 'target' : 'source'}
         position={isInput ? Position.Left : Position.Right}
+        title={isInput ? 'Main input — receives everything from connected nodes' : 'Main output — sends everything to connected nodes'}
         style={{
-          top: '50%',
-          width: 1,
-          height: 1,
-          opacity: 0,
-          pointerEvents: 'none',
-          border: 'none',
-          background: 'transparent',
+          top: 14,
+          background: '#ffffff',
+          border: `2.5px solid ${color ?? '#6B7280'}`,
+          width: 12,
+          height: 12,
+          zIndex: 2,
         }}
       />
     );
@@ -176,13 +238,13 @@ function SkillNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`group relative w-[260px] rounded px-3 py-2 text-xs font-medium shadow-sm transition-all ${containerCls}`}
-      style={{ ...accentStyle, minHeight: nodeMinHeight }}
+      className={`group relative rounded px-3 py-2 text-xs font-medium shadow-sm transition-all ${containerCls} ${runStatusRingCls}`}
+      style={{ ...accentStyle, width: cardWidth, minHeight: nodeMinHeight }}
     >
-      {inputHandles.map((port, index) =>
+      {renderMainHandle('input')}
+      {inputs.map((port, index) =>
         renderPortHandle(port, index, inputs.length, 'input'),
       )}
-      {needsLegacyInputHandle && renderLegacyCompatibilityHandle('input')}
 
       {/* Mode badge */}
       {mode !== 'active' && (
@@ -192,6 +254,17 @@ function SkillNode({ data, selected }: NodeProps) {
           }`}
         >
           {mode === 'muted' ? '🔇 muted' : '⏭ bypass'}
+        </span>
+      )}
+
+      {/* Live run status badge (S7 — SSE-driven) — top-right, independent
+          of the mode badge above (top-center) so both can show at once. */}
+      {runStatusBadge && (
+        <span
+          className={`absolute -top-3 -right-2 rounded-full px-1.5 py-0.5 text-[9px] font-bold whitespace-nowrap shadow-sm ${runStatusBadge.cls}`}
+          title={`Run status: ${runStatus}`}
+        >
+          {runStatusBadge.icon}
         </span>
       )}
 
@@ -213,18 +286,28 @@ function SkillNode({ data, selected }: NodeProps) {
       {visibleRowCount > 0 && (
         <div className="mt-2 grid grid-cols-2 gap-x-3 border-t border-gray-100 pt-1.5">
           <div className="space-y-1 overflow-hidden">
-            {inputs.map((port) => renderPortRow(port, 'input'))}
+            {visibleInputRows.map((port) => renderPortRow(port, 'input'))}
+            {hiddenInputCount > 0 && (
+              <p className="text-[9px] italic text-gray-300" title="See the inspector for the full list">
+                +{hiddenInputCount} more — see inspector
+              </p>
+            )}
           </div>
           <div className="space-y-1 overflow-hidden">
-            {outputs.map((port) => renderPortRow(port, 'output'))}
+            {visibleOutputRows.map((port) => renderPortRow(port, 'output'))}
+            {hiddenOutputCount > 0 && (
+              <p className="text-[9px] italic text-gray-300 text-right" title="See the inspector for the full list">
+                +{hiddenOutputCount} more — see inspector
+              </p>
+            )}
           </div>
         </div>
       )}
 
-      {outputHandles.map((port, index) =>
+      {outputs.map((port, index) =>
         renderPortHandle(port, index, outputs.length, 'output'),
       )}
-      {needsLegacyOutputHandle && renderLegacyCompatibilityHandle('output')}
+      {renderMainHandle('output')}
     </div>
   );
 }
@@ -444,9 +527,21 @@ interface NodePort {
   required?: boolean;
 }
 
+/** Phase 20B6 canvas visual metadata (S7 — UI Alignment). Persisted on
+ *  registered_nodes.canvas_ux by OfficialPackLoaderService; null for
+ *  pre-Phase-20 prototype nodes and any official node whose manifest
+ *  omits canvasUx — SkillNode falls back to the historical fixed-width
+ *  rendering in that case. */
+export interface NodeCanvasUx {
+  minWidth?: number;
+  minHeight?: number;
+  maxVisiblePortsPerSide?: number;
+}
+
 interface NodeDef {
   inputs:  NodePort[];
   outputs: NodePort[];
+  canvasUx?: NodeCanvasUx | null;
 }
 
 export interface ValidationError {
@@ -639,12 +734,12 @@ function WorkflowCanvasInner({
 
   useEffect(() => {
     apiClient
-      .get<{ type: string; inputs: NodePort[]; outputs: NodePort[] }[]>('/nodes')
+      .get<{ type: string; inputs: NodePort[]; outputs: NodePort[]; canvas_ux?: NodeCanvasUx | null }[]>('/nodes')
       .then((res) => {
         if (!res.data) return;
         const map = new Map<string, NodeDef>();
         res.data.forEach((n) =>
-          map.set(n.type, { inputs: n.inputs ?? [], outputs: n.outputs ?? [] }),
+          map.set(n.type, { inputs: n.inputs ?? [], outputs: n.outputs ?? [], canvasUx: n.canvas_ux ?? null }),
         );
         setNodeRegistry(map);
       })
@@ -667,11 +762,39 @@ function WorkflowCanvasInner({
             ...node.data,
             inputs: def.inputs,
             outputs: def.outputs,
+            canvasUx: def.canvasUx,
           },
         };
       }),
     );
   }, [nodeRegistry, setNodes]);
+
+  // S7 (UI Alignment) — live node status colouring from the S3 SSE stream.
+  // useExecutionRunStream (wired by the workflow page) writes per-node
+  // status into useExecutionStore as run.node_started/run.node_done events
+  // arrive; this effect merges that live status onto each matching canvas
+  // node's data.runStatus so SkillNode can colour it in real time, instead
+  // of only learning final status once the whole run completes.
+  const nodeLogs = useExecutionStore((state) => state.nodeLogs);
+
+  useEffect(() => {
+    if (Object.keys(nodeLogs).length === 0) return;
+
+    setNodes((nds) =>
+      nds.map((node) => {
+        const log = nodeLogs[node.id];
+        if (!log || node.data?.runStatus === log.status) return node;
+
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            runStatus: log.status,
+          },
+        };
+      }),
+    );
+  }, [nodeLogs, setNodes]);
 
   const portTypeMap = useMemo(() => {
     const map = new Map<string, Map<string, PortDataType>>();
@@ -1346,13 +1469,22 @@ function WorkflowCanvasInner({
 
   const handleConfigChange = useCallback(
     (nodeId: string, newConfig: Record<string, unknown>) => {
-      setNodes((nds) =>
-        nds.map((n) =>
+      setNodes((nds) => {
+        const updated = nds.map((n) =>
           n.id === nodeId ? { ...n, data: { ...n.data, config: newConfig } } : n,
-        ),
-      );
+        );
+        // Bugfix 2026-07-07: this was the only node-editing handler that
+        // never called scheduleAutoSave, so a pure config-field edit (e.g.
+        // setting escalateAfterMinutes/escalatedToUserId) was silently
+        // dropped unless some other action (drag, label edit, etc.)
+        // happened to trigger a save afterward. Publish only promotes
+        // whatever's already saved server-side, so Save → Publish → refresh
+        // with no other edit in between would always show the field blank.
+        scheduleAutoSave(updated, edges);
+        return updated;
+      });
     },
-    [setNodes],
+    [setNodes, scheduleAutoSave, edges],
   );
 
   // ── Label change ───────────────────────────────────────────────────────────
@@ -1468,6 +1600,7 @@ function WorkflowCanvasInner({
           category: nodeCat   || undefined,
           inputs:   nodeDef?.inputs ?? [],
           outputs:  nodeDef?.outputs ?? [],
+          canvasUx: nodeDef?.canvasUx ?? undefined,
         },
       };
 

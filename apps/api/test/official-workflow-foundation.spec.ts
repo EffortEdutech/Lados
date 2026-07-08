@@ -2,14 +2,25 @@
  * Phase 21 S2 (Wave 1) — @lados/official-workflow-foundation.
  *
  * Covers the master-plan S2 test requirement: "Jest per node: manifest ↔
- * executor contract, MockNodeContext execution" for all 7 nodes in this
- * pack (trigger_manual, trigger_schedule, condition, parallel, merge,
- * delay, write_log). No external services are required for this pack.
+ * executor contract, MockNodeContext execution" for all 7 original nodes in
+ * this pack (trigger_manual, trigger_schedule, condition, parallel, merge,
+ * delay, write_log). No external services are required for those 7 nodes.
+ *
+ * Phase 21 S9.1 (gap closure, 2026-07-04): added coverage for `loop`
+ * (successor to prototype `core.loop`) and `publish_event` (successor to
+ * prototype `event.publish`, closing the "declared but unbuilt"
+ * workflow.event.publish capability gap). publish_event is the only node in
+ * this pack that needs an injected service (a fake IEventBusService).
+ *
+ * Phase 22 S22.4 (Branching Expressiveness, 2026-07-06): added coverage for
+ * condition's extended grammar (named fields + AND/OR combinator, backward
+ * compatible with every S2 test above) and the new `switch` node (true
+ * multi-way routing, 5 fixed case slots + default).
  */
 import * as fs from 'fs';
 import * as path from 'path';
 import { createMockNodeContext } from '@lados/testing';
-import { resolveNode } from '@lados/official-workflow-foundation';
+import { resolveNode, type IEventBusService } from '@lados/official-workflow-foundation';
 
 interface NodeManifestLike {
   type: string;
@@ -23,10 +34,13 @@ const manifests: NodeManifestLike[] = JSON.parse(
   ),
 );
 
-describe('official-workflow-foundation — manifest <-> executor contract', () => {
-  const resolve = resolveNode();
+function fakeEventBusService(id: string | null = 'evt-1'): IEventBusService {
+  return { publish: jest.fn().mockResolvedValue(id ? { id } : null) };
+}
 
+describe('official-workflow-foundation — manifest <-> executor contract', () => {
   it('every node declared in nodes.json resolves to a real executor', () => {
+    const resolve = resolveNode({ eventBusService: fakeEventBusService() });
     for (const m of manifests) {
       expect(typeof resolve(m.type)).toBe('function');
     }
@@ -39,7 +53,24 @@ describe('official-workflow-foundation — manifest <-> executor contract', () =
   });
 
   it('unknown node types resolve to null', () => {
-    expect(resolve('lados.workflow.does_not_exist')).toBeNull();
+    expect(resolveNode()('lados.workflow.does_not_exist')).toBeNull();
+  });
+
+  it('declares 10 nodes for the 10 capabilities that have a backing node (workflow.trigger.event is capability-only by design)', () => {
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, '../../../packs/official/lados-workflow-foundation/manifest.json'),
+        'utf8',
+      ),
+    ) as { capabilities: string[]; nodes: string[] };
+    expect(manifest.nodes).toContain('lados.workflow.loop');
+    expect(manifest.nodes).toContain('lados.workflow.publish_event');
+    expect(manifest.nodes).toContain('lados.workflow.switch');
+    expect(manifest.capabilities).toContain('workflow.control.loop');
+    expect(manifest.capabilities).toContain('workflow.event.publish');
+    expect(manifest.capabilities).toContain('workflow.control.switch');
+    expect(manifest.nodes.length).toBe(10);
+    expect(manifests.length).toBe(10);
   });
 });
 
@@ -106,6 +137,160 @@ describe('lados.workflow.condition', () => {
 
     expect(result.status).toBe('failure');
     expect(result.error?.code).toBe('MISSING_CONFIG');
+  });
+
+  it('additively emits the full input set on the new context output', async () => {
+    const { ctx } = createMockNodeContext({ config: { expression: 'value >= 100' }, inputs: { value: 150, extra: 'x' } });
+    const result = await exec(ctx);
+
+    expect(result.outputs['context']).toEqual({ value: 150, extra: 'x' });
+  });
+
+  describe('S22.4 — named fields + AND/OR', () => {
+    it('evaluates a named field (not just "value")', async () => {
+      const { ctx } = createMockNodeContext({ config: { expression: 'amount >= 1000' }, inputs: { amount: 1500 } });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('success');
+      expect(result.summary).toContain('TRUE');
+    });
+
+    it('combines two named-field clauses with AND', async () => {
+      const { ctx } = createMockNodeContext({
+        config: { expression: 'amount >= 1000 AND status == "approved"' },
+        inputs: { amount: 1500, status: 'approved', value: 'passthrough' },
+      });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('success');
+      expect(result.outputs['true']).toBe('passthrough');
+    });
+
+    it('routes to false when one AND clause fails', async () => {
+      const { ctx } = createMockNodeContext({
+        config: { expression: 'amount >= 1000 AND status == "approved"' },
+        inputs: { amount: 1500, status: 'rejected' },
+      });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('success');
+      expect(result.outputs['false']).not.toBeNull();
+      expect(result.outputs['true']).toBeNull();
+    });
+
+    it('combines clauses with OR', async () => {
+      const { ctx } = createMockNodeContext({
+        config: { expression: 'priority == "low" OR priority == "normal"' },
+        inputs: { priority: 'normal', value: 'x' },
+      });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('success');
+      expect(result.outputs['true']).toBe('x');
+    });
+
+    it('rejects mixing AND and OR in one expression', async () => {
+      const { ctx } = createMockNodeContext({
+        config: { expression: 'a == 1 AND b == 2 OR c == 3' },
+        inputs: { a: 1, b: 2, c: 3 },
+      });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('failure');
+      expect(result.error?.code).toBe('EXPRESSION_ERROR');
+      expect(result.error?.message).toContain('mixes AND and OR');
+    });
+
+    it('fails clearly when a named field is not among the inputs', async () => {
+      const { ctx } = createMockNodeContext({ config: { expression: 'nonexistent >= 1' }, inputs: { amount: 5 } });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('failure');
+      expect(result.error?.code).toBe('EXPRESSION_ERROR');
+      expect(result.error?.message).toContain('nonexistent');
+    });
+
+    it('still evaluates every Phase 21 single-field "value" expression identically (backward compatibility)', async () => {
+      const { ctx } = createMockNodeContext({ config: { expression: 'value == "approved"' }, inputs: { value: 'approved' } });
+      const result = await exec(ctx);
+
+      expect(result.status).toBe('success');
+      expect(result.outputs['true']).toBe('approved');
+    });
+  });
+});
+
+describe('lados.workflow.switch (S22.4)', () => {
+  const exec = resolveNode()('lados.workflow.switch')!;
+
+  it('routes to the first matching case', async () => {
+    const { ctx } = createMockNodeContext({
+      config: {
+        cases: [
+          { expression: 'amount >= 10000', label: 'High' },
+          { expression: 'amount >= 1000', label: 'Medium' },
+        ],
+      },
+      inputs: { amount: 5000, value: 'payload' },
+    });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['case1']).toBeNull();
+    expect(result.outputs['case2']).toBe('payload');
+    expect(result.outputs['matchedCase']).toBe('Medium');
+  });
+
+  it('routes to default when no case matches', async () => {
+    const { ctx } = createMockNodeContext({
+      config: { cases: [{ expression: 'amount >= 10000', label: 'High' }] },
+      inputs: { amount: 5, value: 'payload' },
+    });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['default']).toBe('payload');
+    expect(result.outputs['matchedCase']).toBe('default');
+  });
+
+  it('accepts a JSON-string cases config (canvas inspector floor, same pattern as request_input.inputSchema)', async () => {
+    const { ctx } = createMockNodeContext({
+      config: { cases: '[{"expression":"status == \\"urgent\\"","label":"Urgent"}]' },
+      inputs: { status: 'urgent', value: 'x' },
+    });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['case1']).toBe('x');
+  });
+
+  it('fails with MISSING_CONFIG when cases is absent', async () => {
+    const { ctx } = createMockNodeContext();
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MISSING_CONFIG');
+  });
+
+  it('fails with MAX_CASES_EXCEEDED beyond 5 cases', async () => {
+    const { ctx } = createMockNodeContext({
+      config: { cases: Array.from({ length: 6 }, (_, i) => ({ expression: `x == ${i}` })) },
+      inputs: { x: 0 },
+    });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MAX_CASES_EXCEEDED');
+  });
+
+  it('emits the full input context alongside the matched case', async () => {
+    const { ctx } = createMockNodeContext({
+      config: { cases: [{ expression: 'flag == true' }] },
+      inputs: { flag: true, other: 'data' },
+    });
+    const result = await exec(ctx);
+
+    expect(result.outputs['context']).toEqual({ flag: true, other: 'data' });
   });
 });
 
@@ -202,5 +387,95 @@ describe('lados.workflow.write_log', () => {
     expect(result.status).toBe('success');
     expect(result.outputs['logged']).toBe(true);
     expect(infoLogs().some((l) => l.message === 'Checkpoint A')).toBe(true);
+  });
+});
+
+describe('lados.workflow.loop (S9.1 gap closure)', () => {
+  const exec = resolveNode()('lados.workflow.loop')!;
+
+  it('processes an array passed via the items input', async () => {
+    const { ctx } = createMockNodeContext({ inputs: { items: [1, 2, 3] } });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['results']).toEqual([1, 2, 3]);
+    expect(result.outputs['count']).toBe(3);
+    expect(result.outputs['first']).toBe(1);
+    expect(result.outputs['last']).toBe(3);
+  });
+
+  it('extracts a sub-key from each item when extract_key is configured', async () => {
+    const { ctx } = createMockNodeContext({
+      config: { extract_key: 'id' },
+      inputs: { items: [{ id: 'a' }, { id: 'b' }] },
+    });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['results']).toEqual(['a', 'b']);
+  });
+
+  it('reads the array from upstream output when items_key matches', async () => {
+    const { ctx } = createMockNodeContext({
+      config: { items_key: 'rows' },
+      upstream: { nodeA: { rows: [10, 20] } },
+    });
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['count']).toBe(2);
+  });
+
+  it('fails with LOOP_NO_ARRAY when nothing resolves to an array', async () => {
+    const { ctx } = createMockNodeContext();
+    const result = await exec(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('LOOP_NO_ARRAY');
+  });
+});
+
+describe('lados.workflow.publish_event (S9.1 gap closure)', () => {
+  it('fails with NO_SERVICE when no event bus service is injected', async () => {
+    const { ctx } = createMockNodeContext({ config: { eventType: 'event.custom' } });
+    const result = await resolveNode()('lados.workflow.publish_event')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('NO_SERVICE');
+  });
+
+  it('publishes an event and returns its id', async () => {
+    const eventBusService = fakeEventBusService('evt-42');
+    const { ctx } = createMockNodeContext({
+      config: { eventType: 'event.custom' },
+      inputs: { payload: { hello: 'world' } },
+    });
+    const result = await resolveNode({ eventBusService })('lados.workflow.publish_event')!(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['eventId']).toBe('evt-42');
+    expect(result.outputs['published']).toBe(true);
+    expect(eventBusService.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'event.custom', payload: { hello: 'world' } }),
+    );
+  });
+
+  it('fails with MISSING_INPUT when eventType is missing', async () => {
+    const eventBusService = fakeEventBusService();
+    const { ctx } = createMockNodeContext();
+    const result = await resolveNode({ eventBusService })('lados.workflow.publish_event')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MISSING_INPUT');
+  });
+
+  it('reports published:false (not thrown) when the event bus returns null', async () => {
+    const eventBusService = fakeEventBusService(null);
+    const { ctx } = createMockNodeContext({ config: { eventType: 'event.custom' } });
+    const result = await resolveNode({ eventBusService })('lados.workflow.publish_event')!(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['eventId']).toBeNull();
+    expect(result.outputs['published']).toBe(false);
   });
 });

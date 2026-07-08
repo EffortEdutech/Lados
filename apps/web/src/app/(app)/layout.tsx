@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -11,12 +11,14 @@ import OwnerAssistantSidebar from '@/components/OwnerAssistantSidebar';
 const NAV = [
   { href: '/dashboard',          label: 'Dashboard',    icon: 'grid' },
   { href: '/projects',           label: 'Projects',     icon: 'folder' },
-  { href: '/resources',          label: 'Resources',    icon: 'layers' },
+  { href: '/resources',          label: 'Assets',        icon: 'layers' },
   { href: '/approvals',          label: 'Approvals',    icon: 'check-square' },
   { href: '/ai',                 label: 'AI Insights',  icon: 'cpu' },
   { href: '/suppliers',          label: 'Suppliers',    icon: 'truck' },
   { href: '/packs',              label: 'Packs',        icon: 'package' },
   { href: '/marketplace',        label: 'Marketplace',  icon: 'shopping-cart' },
+  { href: '/analytics',          label: 'Operations',   icon: 'bar-chart' },
+  { href: '/settings/departments', label: 'Departments', icon: 'building' },
   { href: '/settings/services',  label: 'Services',     icon: 'settings' },
 ];
 
@@ -73,17 +75,55 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
       <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>
   ),
+  building: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="1"/>
+      <line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/>
+      <line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/>
+      <line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/>
+      <line x1="9" y1="18" x2="15" y2="18"/>
+    </svg>
+  ),
+  'bar-chart': (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
+    </svg>
+  ),
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Item 6 (eff, 2026-07-05): show the logged-in user's name/email near
+  // Notifications/Sign out — previously the sidebar had no indication of
+  // who was logged in at all.
+  const [userLabel, setUserLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const user = data?.user;
+      if (!user) return;
+      const displayName =
+        (user.user_metadata?.['full_name'] as string | undefined) ??
+        (user.user_metadata?.['name'] as string | undefined) ??
+        null;
+      setUserLabel(displayName ?? user.email ?? null);
+    });
+  }, []);
+
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Bugfix 2026-07-07: router.push() + router.refresh() back-to-back fired
+    // two overlapping RSC re-renders of the route tree (push already gets a
+    // fresh server render of the destination route) — React's dev-mode
+    // <html>/<body> singleton check caught the race and logged "mounting a
+    // new html/body component when a previous one has not first unmounted."
+    // push() alone is correct here since we're navigating away, not
+    // re-rendering the current route.
     router.push('/login');
-    router.refresh();
   }
 
   return (
@@ -128,8 +168,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Notifications + Sign out */}
+        {/* User + Notifications + Sign out */}
         <div className="px-3 py-4 border-t border-gray-700 space-y-1">
+          {userLabel && (
+            <div className="px-3 py-1.5 mb-1">
+              <p className="text-xs font-medium text-gray-200 truncate" title={userLabel}>
+                {userLabel}
+              </p>
+            </div>
+          )}
           <div className="flex items-center justify-between px-3 py-1.5">
             <span className="text-xs text-gray-500">Notifications</span>
             <NotificationBell />

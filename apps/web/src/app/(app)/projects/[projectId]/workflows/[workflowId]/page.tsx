@@ -18,6 +18,7 @@ import {
 } from '@/stores';
 import type { SaveState } from '@/stores';
 import { useExecutionRunMonitor } from '@/hooks/useExecutionRunMonitor';
+import { useExecutionRunStream } from '@/hooks/useExecutionRunStream';
 
 // â”€â”€ Normalize definition from DB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Templates stored via SQL seed may use React Flow's "edges" key instead of
@@ -122,6 +123,10 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   const setRunError = useExecutionStore((state) => state.setRunError);
   const resetRun = useExecutionStore((state) => state.resetRun);
   useExecutionRunMonitor(activeRunId);
+  // Phase 21 S7.4 — additive live per-node status via SSE, on top of the
+  // poll-based monitor above (which stays the terminal-status/log fetch
+  // safety net). See useExecutionRunStream.ts doc comment.
+  useExecutionRunStream(activeRunId);
 
   // â”€â”€ Sidebar tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const setExplorerTab = useUIStore((state) => state.setExplorerTab);
@@ -503,6 +508,11 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           )}
 
           {/* Run error banner */}
+          {/* Bugfix 2026-07-07: AiCommandBar/OwnerAssistantSidebar's floating
+              trigger buttons were fixed to bottom-right and used to sit on
+              top of this banner (blocking its own close "x"). They're now
+              docked to the right edge, vertically centered (see
+              useFloatingDockPosition), so bottom-4/right-4 is clear again. */}
           {runError && !showLogs && (
             <div className="absolute bottom-4 left-4 right-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm text-red-700 flex items-center gap-2">
               <span className="font-semibold">Warning</span>

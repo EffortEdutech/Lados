@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.procurement",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Procurement",
   "layer": "L1",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados procurement capability pack for RFQ, quotation, award recommendation, and purchase order request workflows.",
   "ownerBoundary": [
     "create RFQ",
@@ -62,8 +62,8 @@
     "procurement-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S5 fix: nodes.json only defined 4 of the 6 nodes manifest.json declared (issue_rfq, receive_quotation were missing); added both. New migration 0058_procurement_resource_types.sql adds rfq/quotation/po_request resource types",
+    "runtime": "implemented — all 6 nodes implemented; compare_quotations and recommend_award are deliberately stateless/advisory (no resource persisted — human review happens via a separate lados.human.request_approval node in the composing template)",
     "canvas": "not_started",
     "templates": "not_started"
   },

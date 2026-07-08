@@ -490,7 +490,7 @@ export default function PackDetailPage({ params }: PageProps) {
         ))}
       </div>
 
-      {/* Data Pack dependencies */}
+      {/* Knowledge Pack dependencies */}
       {allDataPackDeps.length > 0 && (
         <div className="mt-6">
           <h2 className="text-sm font-semibold text-gray-700 mb-2">Optional Knowledge Pack dependencies</h2>

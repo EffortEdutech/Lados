@@ -1,7 +1,8 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
+import { IsUuidLike } from '../../common/validators/is-uuid-like.validator';
 
 export class UpsertBindingDto {
-  @IsUUID()
+  @IsUuidLike()
   resourceId!: string;
 
   @IsString()

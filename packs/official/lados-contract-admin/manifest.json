@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.contract-admin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Contract Administration",
   "layer": "L2",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados contract administration pack for instructions, notices, clause references, and correspondence evidence control.",
   "ownerBoundary": [
     "instruction register",
@@ -56,8 +56,8 @@
   ],
   "prototypeReferences": [],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 5 declared nodes (first Wave 4 pack with no skeleton parity gap)",
+    "runtime": "implemented — all 5 nodes implemented. New migration 0060_contract_admin_resource_types.sql adds contract_instruction/contract_notice. lookup_clause_reference is a deterministic keyword match, not a real Knowledge Pack search integration (honest limitation, no capability fabricated) and is deliberately stateless",
     "canvas": "not_started",
     "templates": "not_started"
   },

@@ -17,7 +17,8 @@ import {
   Query, Body, Param, UseGuards, Request,
   BadRequestException,
 } from '@nestjs/common';
-import { IsString, IsUUID, IsOptional, IsBoolean, IsObject, MinLength } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsObject, MinLength } from 'class-validator';
+import { IsUuidLike } from '../common/validators/is-uuid-like.validator';
 import { SupabaseJwtGuard } from '../common/guards/supabase-jwt.guard';
 import { EventBusService } from './event-bus.service';
 import { SecurityEngineService } from '../security/security.service';
@@ -25,7 +26,7 @@ import type { AuthenticatedRequest } from '../common/types/authenticated-request
 
 class CreateSubscriptionDto {
   @IsString() @MinLength(1) eventType!: string;
-  @IsUUID()                 workflowId!: string;
+  @IsUuidLike()              workflowId!: string;
   @IsOptional() @IsObject() filter?: Record<string, unknown>;
 }
 

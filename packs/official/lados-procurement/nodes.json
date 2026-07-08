@@ -4,7 +4,7 @@
     "displayName": "Create RFQ",
     "canonicalCapability": "procurement.rfq.create",
     "ownerPack": "lados.procurement",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create an RFQ record from scope, item, supplier, and due-date details.",
     "inputPattern": [
       "ports",
@@ -70,7 +70,7 @@
     "compatibilityAliases": [
       "procurement.generate_rfq"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Procurement",
     "icon": "ShoppingCart",
     "searchKeywords": [
@@ -80,11 +80,146 @@
     ]
   },
   {
+    "type": "lados.procurement.issue_rfq",
+    "displayName": "Issue RFQ",
+    "canonicalCapability": "procurement.rfq.issue",
+    "ownerPack": "lados.procurement",
+    "status": "draft",
+    "intent": "Issue a previously created RFQ, transitioning it out of draft.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "issued RFQ record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "rfq",
+          "label": "RFQ",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "issued",
+          "label": "Issued",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "issue",
+        "label": "Issue",
+        "fields": [
+          "resourceId",
+          "issuedTo"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "supplier catalogues"
+      ]
+    },
+    "humanDecisionBoundary": "Issues the RFQ record only; supplier communication is a Communication-pack concern.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "searchKeywords": [
+      "procurement",
+      "issue",
+      "rfq"
+    ]
+  },
+  {
+    "type": "lados.procurement.receive_quotation",
+    "displayName": "Receive Quotation",
+    "canonicalCapability": "procurement.quotation.receive",
+    "ownerPack": "lados.procurement",
+    "status": "draft",
+    "intent": "Record a supplier's quotation response against an RFQ.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "quotation record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "quotation",
+          "label": "Quotation",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "received",
+          "label": "Received",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "quotation",
+        "label": "Quotation",
+        "fields": [
+          "rfqId",
+          "supplier",
+          "amount",
+          "currency",
+          "validUntil"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "supplier catalogues"
+      ]
+    },
+    "humanDecisionBoundary": "Records a supplier response only.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Procurement",
+    "icon": "ShoppingCart",
+    "searchKeywords": [
+      "procurement",
+      "receive",
+      "quotation"
+    ]
+  },
+  {
     "type": "lados.procurement.compare_quotations",
     "displayName": "Compare Quotations",
     "canonicalCapability": "procurement.quotation.compare",
     "ownerPack": "lados.procurement",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Compare quotations against declared criteria and produce a review-ready comparison.",
     "inputPattern": [
       "ports",
@@ -147,7 +282,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Procurement",
     "icon": "ShoppingCart",
     "searchKeywords": [
@@ -161,7 +296,7 @@
     "displayName": "Recommend Award",
     "canonicalCapability": "procurement.award.recommend",
     "ownerPack": "lados.procurement",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Prepare a procurement award recommendation for human review.",
     "inputPattern": [
       "ports",
@@ -215,7 +350,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Procurement",
     "icon": "ShoppingCart",
     "searchKeywords": [
@@ -229,7 +364,7 @@
     "displayName": "Generate PO Request",
     "canonicalCapability": "procurement.po.generate",
     "ownerPack": "lados.procurement",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Generate a purchase order request for Commercial Finance handoff.",
     "inputPattern": [
       "ports",
@@ -285,7 +420,7 @@
     "compatibilityAliases": [
       "procurement.generate_po"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Procurement",
     "icon": "ShoppingCart",
     "searchKeywords": [

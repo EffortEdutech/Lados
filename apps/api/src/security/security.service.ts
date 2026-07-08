@@ -37,6 +37,9 @@ import { SupabaseService } from '../common/supabase/supabase.service';
 
 export type OrgRole = 'owner' | 'admin' | 'member' | 'driver' | 'operator' | 'viewer';
 
+/** Phase 22 S22.1 — department-level role, independent of the user's OrgRole. */
+export type DepartmentRole = 'owner' | 'admin' | 'member' | 'viewer';
+
 // Ordered hierarchy — index 0 = highest authority.
 // driver and operator are parallel (same index), checked separately.
 export const ROLE_HIERARCHY: OrgRole[] = ['owner', 'admin', 'member', 'viewer'];
@@ -213,6 +216,52 @@ export class SecurityEngineService {
    */
   async requireMembership(userId: string, orgId: string): Promise<OrgRole> {
     return this.requirePermission(userId, orgId, 'membership');
+  }
+
+  // ── Department-level checks (Phase 22 S22.1) ─────────────────────────────
+  //
+  // A user's department role is independent of their org role (see
+  // department_members, migration 0069) — a user can be an org `member` but
+  // a department `admin`, or vice versa. Nothing calls these yet; the first
+  // consumers are S22.2 (approval routing/assignment) and S22.3 (monitoring
+  // rollups scoped by department).
+
+  /** Return the user's role in the department, or null if not a member. */
+  async getDepartmentRole(userId: string, departmentId: string): Promise<DepartmentRole | null> {
+    const { data } = await this.supabase.admin
+      .from('department_members')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('department_id', departmentId)
+      .maybeSingle();
+
+    return (data?.['role'] as DepartmentRole | undefined) ?? null;
+  }
+
+  /**
+   * Assert userId is a member of departmentId, optionally restricted to a
+   * set of roles. Throws NotFoundException (404) if not a department member
+   * at all, ForbiddenException (403) if a member but the role doesn't
+   * qualify. Deliberately does NOT fall back to org-level role — callers
+   * that want "org admin OR department admin" should check both explicitly
+   * (see DepartmentService.assertDepartmentOrOrgAdmin for the pattern).
+   */
+  async requireDepartmentMembership(
+    userId: string,
+    departmentId: string,
+    roles?: DepartmentRole[],
+  ): Promise<DepartmentRole> {
+    const role = await this.getDepartmentRole(userId, departmentId);
+
+    if (!role) {
+      throw new NotFoundException('Access denied — not a member of this department');
+    }
+
+    if (roles && !roles.includes(role)) {
+      throw new ForbiddenException(`Requires department role: ${roles.join(' or ')}`);
+    }
+
+    return role;
   }
 
   // ── Role metadata ─────────────────────────────────────────────────────────

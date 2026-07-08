@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.people-payroll",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "People and Payroll Operations",
   "layer": "L2",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados people and payroll pack for payroll preparation, payroll approval records, and expense approval records.",
   "ownerBoundary": [
     "payroll run preparation",
@@ -51,8 +51,8 @@
     "contractor-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 3 declared nodes (no skeleton parity gap)",
+    "runtime": "implemented — all 3 nodes implemented, reusing payroll_run (migration 0034_phase9_contractor_edition_m3.sql) and expense (migration 0032_phase9_contractor_edition.sql) resource types (no new migration needed). record_payroll_approval and record_expense_approval both enforce the MISSING_HUMAN_DECISION contract on approvedBy — the system never approves payroll or expenses itself.",
     "canvas": "not_started",
     "templates": "not_started"
   },
@@ -61,5 +61,46 @@
     "icon": "UsersRound",
     "color": "#be123c",
     "paletteGroup": "Operations"
-  }
+  },
+  "resourceViews": [
+    {
+      "type": "expense",
+      "displayName": "Expense",
+      "displayNamePlural": "Expenses",
+      "icon": "💸",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.amount",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Submit", "node": "state.change", "visibleInStates": ["draft"], "icon": "📤" },
+          { "label": "Approve", "node": "lados.people_payroll.record_expense_approval", "visibleInStates": ["pending_approval"], "icon": "✅", "requiresConfirm": true },
+          { "label": "Reject", "node": "state.change", "visibleInStates": ["pending_approval"], "icon": "❌", "requiresConfirm": true }
+        ]
+      }
+    },
+    {
+      "type": "payroll_run",
+      "displayName": "Payroll Run",
+      "displayNamePlural": "Payroll Runs",
+      "icon": "👥",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.totalGross",
+          "badgeField": "state",
+          "counterField": "data.employees.length",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Submit for Review", "node": "state.change", "visibleInStates": ["draft"], "icon": "📤" },
+          { "label": "Approve", "node": "lados.people_payroll.record_payroll_approval", "visibleInStates": ["pending_review"], "icon": "✅", "requiresConfirm": true },
+          { "label": "Mark as Paid", "node": "state.change", "visibleInStates": ["approved"], "icon": "💰", "requiresConfirm": true }
+        ]
+      }
+    }
+  ]
 }

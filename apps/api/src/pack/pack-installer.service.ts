@@ -26,77 +26,42 @@ import { SupabaseService }     from '../common/supabase/supabase.service';
 import { PackRegistryService } from './pack-registry.service';
 import type { PackSyncResult, PackHealth } from './pack.types';
 
-// -- Pack-level manifests (PackManifest) -----------------------------------------
-import { manifest as coreManifest }         from '@lados/core-pack';
-import { manifest as foundationManifest }   from '@lados/foundation-pack';
-import { manifest as contractorManifest }   from '@lados/contractor-pack';
-import { manifest as qsManifest }           from '@lados/qs-pack';
-import { manifest as documentManifest }     from '@lados/document-pack';
-import { manifest as procurementManifest }  from '@lados/procurement-pack';
-import { manifest as constructionManifest }    from '@lados/construction-pack';     // Phase 7
-import { manifest as financeManifest }         from '@lados/finance-pack';            // Phase 9
-import { manifest as notificationsManifest }   from '@lados/notifications-pack';      // Phase 10
+// Phase 21 S9 (prototype-pack removal, 2026-07-04): the 9 legacy prototype
+// pack-level and node-level manifest imports (core/foundation/qs/document/
+// procurement/contractor/construction/finance/notifications-pack) were
+// removed from this file along with their COMPILED_PACKS/MANIFEST_MAP/
+// MANIFEST_TO_DB_PACK_ID/PACK_PREFIXES entries and ALL_NODE_MANIFESTS
+// spreads. Every node type they registered has a canonical official-pack
+// successor, and no live workflow/template references any prototype node
+// type (confirmed via migration 0064). This also removes the resurrection
+// risk noted in the Phase 21 checklist: syncNodeManifests() previously
+// unconditionally re-enabled (is_enabled: true) every registered_nodes row
+// for these packs on every API restart, undoing migration 0063's
+// soft-archive; migration 0065 hard-deletes the underlying rows so there is
+// nothing left to resurrect. Prototype source is preserved, unbuilt, under
+// archived/packs/ — see Lados_V4_Phase21_Checklist.md Handover 2026-07-04 (8).
 import type { PackResourceDefinition }      from '@lados/pack-sdk';
 
 // -- Node-level manifests (NodeManifestV2) — Phase 1G ----------------------------
 import type { NodeManifestV2 }                            from '@lados/node-sdk';
-import { nodeManifests as coreNodeManifests }             from '@lados/core-pack';
-import { nodeManifests as foundationNodeManifests }       from '@lados/foundation-pack';
-import { nodeManifests as contractorNodeManifests }       from '@lados/contractor-pack';
-import { nodeManifests as qsNodeManifests }               from '@lados/qs-pack';
-import { nodeManifests as documentNodeManifests }         from '@lados/document-pack';
-import { nodeManifests as procurementNodeManifests }      from '@lados/procurement-pack';
-import { nodeManifests as constructionNodeManifests }     from '@lados/construction-pack';     // Phase 7
-import { nodeManifests as financeNodeManifests }         from '@lados/finance-pack';            // Phase 9
-import { nodeManifests as notificationsNodeManifests }   from '@lados/notifications-pack';      // Phase 10
 
 // -- Known node-type prefixes per compiled pack ------------------------------------
 //
 // Used for startup health check without requiring full service injection.
 // A node type is "resolvable" if its prefix matches the pack's known namespace.
 
-const PACK_PREFIXES: Record<string, string[]> = {
-  'lados.core-pack':          ['core.', 'resource.', 'event.', 'state.', 'artifact.', 'control.', 'trigger.', 'http.', 'delay.', 'notification.', 'workflow.', 'project.'],  // 'workflow.' kept for backward-compat alias
-  'lados.foundation-pack':    ['foundation.'],
-  'lados.contractor-pack':    ['contractor.'],
-  'lados.qs-pack':            ['qs.'],
-  'lados.document-pack':      ['document.'],
-  'lados.procurement-pack':   ['procurement.'],
-  'lados.construction-pack':  ['construction.'],  // Phase 7
-  'lados.finance-pack':         ['finance.'],          // Phase 9
-  'lados.notifications-pack':  ['notification.send_email', 'notification.send_sms', 'notification.send_in_app'],  // Phase 10
-};
+const PACK_PREFIXES: Record<string, string[]> = {};
 
 // -- In-memory manifest map -------------------------------------------------------
 
-const MANIFEST_MAP: Record<string, { resources?: PackResourceDefinition[] }> = {
-  'lados.core-pack':         coreManifest,
-  'lados.foundation-pack':   foundationManifest,
-  'lados.contractor-pack':   contractorManifest,
-  'lados.qs-pack':           qsManifest,
-  'lados.document-pack':     documentManifest,
-  'lados.procurement-pack':  procurementManifest,
-  'lados.construction-pack': constructionManifest,  // Phase 7
-  'lados.finance-pack':         financeManifest,         // Phase 9
-  'lados.notifications-pack':  notificationsManifest,   // Phase 10
-};
+const MANIFEST_MAP: Record<string, { resources?: PackResourceDefinition[] }> = {};
 
 // -- Node manifest registry (Phase 1G) --------------------------------------------
 //
 // Maps manifest.packId (short form in pack source) to DB packs.id (lados. prefixed).
 // All packs now use short-form packId in their manifests (e.g. 'contractor-pack', 'core-pack').
 
-const MANIFEST_TO_DB_PACK_ID: Record<string, string> = {
-  'core-pack':              'lados.core-pack',
-  'foundation-pack':        'lados.foundation-pack',
-  'qs-pack':                'lados.qs-pack',
-  'document-pack':          'lados.document-pack',
-  'procurement-pack':       'lados.procurement-pack',
-  'contractor-pack':        'lados.contractor-pack',
-  'construction-pack':      'lados.construction-pack',  // Phase 7
-  'finance-pack':           'lados.finance-pack',          // Phase 9
-  'notifications-pack':     'lados.notifications-pack',   // Phase 10
-};
+const MANIFEST_TO_DB_PACK_ID: Record<string, string> = {};
 
 const CATEGORY_COLOR: Record<string, string> = {
   core:         '#6B7280',
@@ -115,17 +80,7 @@ const CATEGORY_COLOR: Record<string, string> = {
   construction: '#F97316',  // Phase 7 — orange
 };
 
-const ALL_NODE_MANIFESTS: NodeManifestV2[] = [
-  ...coreNodeManifests,
-  ...foundationNodeManifests,
-  ...qsNodeManifests,
-  ...documentNodeManifests,
-  ...procurementNodeManifests,
-  ...contractorNodeManifests,
-  ...constructionNodeManifests,  // Phase 7
-  ...financeNodeManifests,          // Phase 9
-  ...notificationsNodeManifests,    // Phase 10
-];
+const ALL_NODE_MANIFESTS: NodeManifestV2[] = [];
 
 // -- Compiled pack registry -------------------------------------------------------
 
@@ -142,119 +97,7 @@ interface CompiledPackEntry {
   installedFrom: string;
 }
 
-const COMPILED_PACKS: CompiledPackEntry[] = [
-  {
-    dbId:          'lados.core-pack',
-    version:       coreManifest.version,
-    displayName:   coreManifest.displayName,
-    description:   coreManifest.description ?? 'Fundamental workflow control nodes',
-    author:        coreManifest.author ?? 'Lados Platform',
-    icon:          'cpu',
-    color:         '#6B7280',
-    isOfficial:    true,
-    dependencies:  [],
-    installedFrom: 'startup-sync',
-  },
-  {
-    dbId:          'lados.foundation-pack',
-    version:       foundationManifest.version,
-    displayName:   foundationManifest.displayName,
-    description:   foundationManifest.description ?? 'Universal capabilities for every Lados workspace',
-    author:        foundationManifest.author ?? 'Lados Platform',
-    icon:          'layers',
-    color:         '#6366F1',
-    isOfficial:    true,
-    dependencies:  [],
-    installedFrom: 'startup-sync',
-  },
-  {
-    dbId:          'lados.qs-pack',
-    version:       qsManifest.version,
-    displayName:   qsManifest.displayName,
-    description:   qsManifest.description ?? 'Quantity Surveying - BOQ reading, trade classification, cost plans',
-    author:        qsManifest.author ?? 'Lados Platform',
-    icon:          'bar-chart-2',
-    color:         '#6366F1',
-    isOfficial:    true,
-    dependencies:  ['lados.foundation-pack'],
-    installedFrom: 'startup-sync',
-  },
-  {
-    dbId:          'lados.document-pack',
-    version:       documentManifest.version,
-    displayName:   documentManifest.displayName,
-    description:   documentManifest.description ?? 'Document business capabilities - Excel reading, file upload',
-    author:        documentManifest.author ?? 'Lados Platform',
-    icon:          'file-text',
-    color:         '#F59E0B',
-    isOfficial:    true,
-    dependencies:  ['lados.foundation-pack'],
-    installedFrom: 'startup-sync',
-  },
-  {
-    dbId:          'lados.procurement-pack',
-    version:       procurementManifest.version,
-    displayName:   procurementManifest.displayName,
-    description:   procurementManifest.description ?? 'Procurement capabilities - RFQ generation, Purchase Orders',
-    author:        procurementManifest.author ?? 'Lados Platform',
-    icon:          'shopping-cart',
-    color:         '#3B82F6',
-    isOfficial:    true,
-    dependencies:  ['lados.foundation-pack'],
-    installedFrom: 'startup-sync',
-  },
-  {
-    dbId:          'lados.contractor-pack',
-    version:       contractorManifest.version,
-    displayName:   contractorManifest.displayName,
-    description:   contractorManifest.description ?? 'Contractor Edition for civil and earth-works contractors',
-    author:        contractorManifest.author ?? 'Lados Platform',
-    icon:          'truck',
-    color:         '#F59E0B',
-    isOfficial:    true,
-    dependencies:  ['lados.foundation-pack'],
-    installedFrom: 'startup-sync',
-  },
-  // Phase 7 — Construction Pack
-  {
-    dbId:          'lados.construction-pack',
-    version:       constructionManifest.version,
-    displayName:   constructionManifest.displayName,
-    description:   constructionManifest.description ?? 'Construction domain nodes — Projects, Claims, Variations, Defects, BOQ, Inspections',
-    author:        constructionManifest.author ?? 'Lados Platform',
-    icon:          'hard-hat',
-    color:         '#F97316',
-    isOfficial:    true,
-    dependencies:  ['lados.foundation-pack'],
-    installedFrom: 'startup-sync',
-  },
-  // Phase 9 — Finance Pack
-  {
-    dbId:          'lados.finance-pack',
-    version:       financeManifest.version,
-    displayName:   financeManifest.displayName,
-    description:   financeManifest.description ?? 'Finance domain nodes — Invoice, Purchase Orders, Retention Release for CIPAA / PAM / JKR contracts',
-    author:        financeManifest.author ?? 'Lados Platform',
-    icon:          'banknote',
-    color:         '#059669',
-    isOfficial:    true,
-    dependencies:  ['lados.foundation-pack', 'lados.construction-pack'],
-    installedFrom: 'startup-sync',
-  },
-  // Phase 10 — Notifications Pack
-  {
-    dbId:          'lados.notifications-pack',
-    version:       notificationsManifest.version,
-    displayName:   notificationsManifest.displayName,
-    description:   notificationsManifest.description ?? 'Notification channel nodes — email, SMS, and in-app notifications',
-    author:        notificationsManifest.author ?? 'Lados Platform',
-    icon:          'bell',
-    color:         '#6366F1',
-    isOfficial:    true,
-    dependencies:  [],
-    installedFrom: 'startup-sync',
-  },
-];
+const COMPILED_PACKS: CompiledPackEntry[] = [];
 
 // -- Service ----------------------------------------------------------------------
 
@@ -519,9 +362,17 @@ export class PackInstallerService implements OnModuleInit {
         error:      'Node type prefix does not match any known resolver for this pack',
       }));
 
+    // A pack with 0 registered nodes is not "broken" — L3 (Solution) and L5
+    // (Template) official packs are bundle/composition packs by design and
+    // never register their own node types (e.g. lados.solution.qs-practice,
+    // lados.template.cipaa-preparation). "Broken" should mean "this pack's
+    // registered nodes don't resolve", not "this pack doesn't register any
+    // nodes" — those are different failure modes, and only the first one is
+    // actually a health problem. Vacuously healthy: nothing registered, so
+    // nothing is broken.
     let status: PackHealth['status'];
     if (nodes.length === 0) {
-      status = 'broken';
+      status = 'healthy';
     } else if (brokenNodes.length === 0) {
       status = 'healthy';
     } else if (brokenNodes.length < nodes.length) {
@@ -539,12 +390,59 @@ export class PackInstallerService implements OnModuleInit {
     };
   }
 
+  /**
+   * Bulk health check for every enabled pack — Phase 21 S9.1 (429 fix,
+   * 2026-07-05).
+   *
+   * The /packs list page used to call GET /packs/:id/health once per
+   * enabled pack in parallel on mount (~21 official packs = ~21 requests,
+   * doubled by React StrictMode's dev-mode double-effect). That burst,
+   * plus normal nav-bar/notification polling, was enough to trip the
+   * global 120 req/min-per-IP throttle (see app.module.ts PD-3 comment),
+   * which then 429'd the very next page (e.g. a pack detail page) that
+   * tried its own single health call right after. Fix: one bulk endpoint,
+   * one request, computed server-side with no HTTP round-trips between
+   * packs — same getPackHealthByPrefix() logic per pack, just not one
+   * network call per pack.
+   */
+  async getAllPackHealth(): Promise<Record<string, PackHealth>> {
+    const { data: activePacks, error } = await this.supabase.admin
+      .from('packs')
+      .select('id')
+      .eq('is_enabled', true);
+
+    if (error) throw new Error(error.message);
+
+    const result: Record<string, PackHealth> = {};
+    for (const pack of activePacks ?? []) {
+      const packId = pack['id'] as string;
+      try {
+        result[packId] = await this.getPackHealthByPrefix(packId);
+      } catch (err) {
+        this.logger.warn(`[getAllPackHealth] ${packId} - error: ${String(err)}`);
+      }
+    }
+    return result;
+  }
+
   // -- Resource view registry ----------------------------------------------------
 
   async getResourceViews(): Promise<Record<string, PackResourceDefinition & { packId: string }>> {
+    // Phase 21 S9.1 (gap closure, 2026-07-05) — the legacy prototype
+    // pack path (MANIFEST_MAP) was emptied when the 10 prototype packs
+    // were removed in S9, which silently deleted every resource view
+    // declaration (vehicle/job/trip/driver/fuel_receipt/invoice/payment/
+    // expense/payroll_run, etc.) and left the /resources page with no
+    // tabs, even though the underlying resource rows were never deleted.
+    // Official packs now declare the equivalent via manifest.json's
+    // optional resourceViews field, persisted to packs.resource_views by
+    // OfficialPackLoaderService (migration 0067). This selects both
+    // sources — MANIFEST_MAP will stay permanently empty, kept only so
+    // this function's shape doesn't need to change again if a compiled
+    // pack path is ever reintroduced.
     const { data: activePacks } = await this.supabase.admin
       .from('packs')
-      .select('id')
+      .select('id, resource_views')
       .eq('is_enabled', true)
       .eq('status', 'active');
 
@@ -555,6 +453,14 @@ export class PackInstallerService implements OnModuleInit {
     for (const [packId, manifest] of Object.entries(MANIFEST_MAP)) {
       if (!activeIds.has(packId)) continue;
       for (const resource of manifest.resources ?? []) {
+        result[resource.type] = { ...resource, packId };
+      }
+    }
+
+    for (const pack of activePacks ?? []) {
+      const packId = pack['id'] as string;
+      const resourceViews = (pack['resource_views'] as PackResourceDefinition[] | null) ?? [];
+      for (const resource of resourceViews) {
         result[resource.type] = { ...resource, packId };
       }
     }

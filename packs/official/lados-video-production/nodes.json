@@ -1,0 +1,248 @@
+[
+  {
+    "type": "lados.video.read_script",
+    "displayName": "Read Script",
+    "canonicalCapability": "video.script.read",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Read a script's raw text (inline or uploaded file) and compute basic structure metrics used to plan scenes.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "script text with word/line/paragraph counts",
+    "ports": {
+      "inputs": [
+        { "id": "file", "label": "Script File", "dataType": "file", "required": false }
+      ],
+      "outputs": [
+        { "id": "script", "label": "Script", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      { "id": "source", "label": "Source", "fields": ["scriptText", "fileId", "title"] }
+    ],
+    "resourceBindings": { "supported": true, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": ["Scene Composition style guide"] },
+    "humanDecisionBoundary": "Reads and measures the script only; it does not interpret meaning or approve content.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 240, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "script", "remotion", "read"]
+  },
+  {
+    "type": "lados.video.scaffold_project",
+    "displayName": "Scaffold Project",
+    "canonicalCapability": "video.project.scaffold",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Record the chosen Remotion starter template and project folder for a video project.",
+    "inputPattern": ["inspector"],
+    "outputPattern": "project reference with template and folder path",
+    "ports": {
+      "inputs": [],
+      "outputs": [
+        { "id": "project", "label": "Project", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      { "id": "project", "label": "Project", "fields": ["projectName", "template", "folderPath"] }
+    ],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Selects a template only; the actual `npx create-video` scaffold runs in the connected Claude session.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 230, "minHeight": 104, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "remotion", "template", "scaffold", "project"]
+  },
+  {
+    "type": "lados.video.draft_scenes",
+    "displayName": "Draft Scenes",
+    "canonicalCapability": "video.scene.draft",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Segment a script into a numbered scene plan, following the Scene Composition rule (translate meaning into visuals, not word-for-word).",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "array of numbered scenes with source excerpts",
+    "ports": {
+      "inputs": [
+        { "id": "script", "label": "Script", "dataType": "object", "required": true }
+      ],
+      "outputs": [
+        { "id": "scenes", "label": "Scenes", "dataType": "array" }
+      ]
+    },
+    "configGroups": [
+      { "id": "segmentation", "label": "Segmentation", "fields": ["splitStrategy", "scenesPerBatch"] }
+    ],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": ["Scene Composition style guide"] },
+    "humanDecisionBoundary": "Produces a structural scene plan only; the visual concept for each scene is authored by the creative director (human + Claude), not this node.",
+    "aiBoundary": "requires_human_review",
+    "canvasUx": { "minWidth": 240, "minHeight": 116, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "scene", "script", "draft", "segmentation"]
+  },
+  {
+    "type": "lados.video.generate_scene_batch",
+    "displayName": "Generate Scene Batch",
+    "canonicalCapability": "video.scene.generate_batch",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Lock a creative direction for the next batch of scenes and flag when the same direction repeats instead of rotating, per the Creative Unlock Rule.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "batch descriptor with locked creative direction and rotation flag",
+    "ports": {
+      "inputs": [
+        { "id": "scenes", "label": "Scenes", "dataType": "array", "required": true }
+      ],
+      "outputs": [
+        { "id": "batch", "label": "Batch", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      { "id": "batch", "label": "Batch", "fields": ["batchIndex", "batchSize", "creativeDirection", "previousDirection"] }
+    ],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": ["Creative Unlock Rule"] },
+    "humanDecisionBoundary": "Tracks and validates creative-direction rotation only; it does not generate or judge the motion graphics themselves.",
+    "aiBoundary": "advisory",
+    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "scene", "batch", "creative direction"]
+  },
+  {
+    "type": "lados.video.render_scenes",
+    "displayName": "Render Scenes",
+    "canonicalCapability": "video.scene.render",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Request a render pass (1080p or 4K) for a batch of scenes into the project's output folder.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "render result with output folder and file list; stub until a render backend is wired",
+    "ports": {
+      "inputs": [
+        { "id": "scenes", "label": "Scenes", "dataType": "array", "required": true }
+      ],
+      "outputs": [
+        { "id": "render", "label": "Render", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      { "id": "render", "label": "Render", "fields": ["resolution", "outDir"] }
+    ],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Requests a render only; it never fabricates a completed render when no render backend is configured.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 230, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "stub",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "render", "remotion", "export"]
+  },
+  {
+    "type": "lados.video.revise_scene_layout",
+    "displayName": "Revise Scene Layout",
+    "canonicalCapability": "video.scene.revise_layout",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Compute the next version label for a scene revision (Scene X V2, V3, ...) without ever overwriting the prior version, per the Scene Revision & Versioning rule.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "next version label and validated layout zone",
+    "ports": {
+      "inputs": [
+        { "id": "scene", "label": "Scene", "dataType": "object", "required": true }
+      ],
+      "outputs": [
+        { "id": "revision", "label": "Revision", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      { "id": "layout", "label": "Layout", "fields": ["targetZone"] }
+    ],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": ["Scene Revision & Versioning rule"] },
+    "humanDecisionBoundary": "Computes the version label and target layout zone only; the actual recomposition happens in the connected Claude + Remotion session.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 250, "minHeight": 116, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "scene", "revision", "version", "layout"]
+  },
+  {
+    "type": "lados.video.remove_background",
+    "displayName": "Remove Background",
+    "canonicalCapability": "video.scene.remove_background",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Validate a chroma-key request against the pure-green, no-gradient rule so the scene keys cleanly in the NLE.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "chroma-key validation result with any issues found",
+    "ports": {
+      "inputs": [
+        { "id": "scene", "label": "Scene", "dataType": "object", "required": true }
+      ],
+      "outputs": [
+        { "id": "chromaKey", "label": "Chroma Key", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      { "id": "chroma", "label": "Chroma Key", "fields": ["backgroundColor", "allowGradient"] }
+    ],
+    "resourceBindings": { "supported": false, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Validates the chroma-key request only; the actual keying happens in the NLE (e.g. DaVinci Resolve's 3D Keyer), not here.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 240, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "chroma key", "green screen", "background"]
+  },
+  {
+    "type": "lados.video.insert_images",
+    "displayName": "Insert Images",
+    "canonicalCapability": "video.scene.insert_images",
+    "ownerPack": "lados.video-production",
+    "status": "draft",
+    "intent": "Map uploaded images onto named scene elements (e.g. phone screen, card) across a batch of scenes.",
+    "inputPattern": ["ports", "inspector"],
+    "outputPattern": "array mapping scene number, target element, and image reference",
+    "ports": {
+      "inputs": [
+        { "id": "images", "label": "Images", "dataType": "array", "required": true }
+      ],
+      "outputs": [
+        { "id": "mapping", "label": "Mapping", "dataType": "array" }
+      ]
+    },
+    "configGroups": [
+      { "id": "mapping", "label": "Mapping", "fields": ["targetElement", "sceneNumbers"] }
+    ],
+    "resourceBindings": { "supported": true, "required": false },
+    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "humanDecisionBoundary": "Maps image references to scene elements only; it does not generate or edit image content.",
+    "aiBoundary": "none",
+    "canvasUx": { "minWidth": 240, "minHeight": 116, "maxVisiblePortsPerSide": 2 },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Video Production",
+    "icon": "Clapperboard",
+    "searchKeywords": ["video", "images", "thumbnails", "insert"]
+  }
+]

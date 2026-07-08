@@ -34,7 +34,43 @@ interface RegisteredNode {
     display_name: string;
     color?: string;
     icon?: string;
+    /** Phase 20B official Capability Pack layer (L0-L5). Null for prototype packs. */
+    layer?: string | null;
+    is_official?: boolean;
   };
+}
+
+// ── Capability layer grouping (S7 — UI Alignment) ─────────────────────────────
+//
+// Master plan S7: "Node palette grouped by capability layer (L0–L2) and
+// pack, driven by official manifest metadata — not a flat list." L0-L2 are
+// the executable capability layers (Foundation / Domain / Solution-Industry,
+// per Lados_V4_Phase20A_Capability_Pack_Planning_and_Node_Taxonomy.md).
+// L3 (Vendor/Solution composition packs) and L5 (Template packs) don't
+// carry individually-draggable canvas nodes in the same way and are folded
+// into OTHER_LAYER_KEY alongside pre-Phase-20 prototype packs (layer:null)
+// so nothing regresses for packs this grouping doesn't apply to.
+const OTHER_LAYER_KEY = '__other__';
+
+const LAYER_ORDER = ['L0', 'L1', 'L2', OTHER_LAYER_KEY] as const;
+
+const LAYER_LABELS: Record<string, string> = {
+  L0: 'L0 · Foundation',
+  L1: 'L1 · Domain',
+  L2: 'L2 · Solution / Industry',
+  [OTHER_LAYER_KEY]: 'Other Packs',
+};
+
+const LAYER_DESCRIPTIONS: Record<string, string> = {
+  L0: 'Primitive technical capabilities (workflow, human work, resources)',
+  L1: 'Industry/business domain actions (finance, procurement, documents)',
+  L2: 'End-to-end operating workflows for a role or sector',
+  [OTHER_LAYER_KEY]: 'Vendor/solution/template packs and legacy prototype packs',
+};
+
+function layerKeyFor(node: RegisteredNode): string {
+  const layer = node.packs?.layer;
+  return layer && (LAYER_ORDER as readonly string[]).includes(layer) ? layer : OTHER_LAYER_KEY;
 }
 
 // ── Service chip helpers ──────────────────────────────────────────────────────
@@ -254,22 +290,36 @@ export default function NodePalette({ onBulkMode, searchOverride }: NodePaletteP
 
   const filtered = nodes;
 
-  // Group by pack, preserving pack metadata
-  const packMap = new Map<string, { name: string; color?: string; icon?: string; nodes: RegisteredNode[] }>();
+  // Group by capability layer (L0-L2, else "Other"), then by pack within
+  // each layer — driven by official manifest metadata (packs.layer), not a
+  // flat list. See LAYER_ORDER/LAYER_LABELS above for the S7 rationale.
+  type PackGroup = { name: string; color?: string; icon?: string; nodes: RegisteredNode[] };
+  const layerMap = new Map<string, Map<string, PackGroup>>();
   for (const node of filtered) {
+    const layerKey  = layerKeyFor(node);
     const packId    = node.pack_id;
     const packName  = node.packs?.display_name ?? packId;
     const packColor = node.packs?.color ?? undefined;
     const packIcon  = node.packs?.icon ?? undefined;
+
+    if (!layerMap.has(layerKey)) layerMap.set(layerKey, new Map());
+    const packMap = layerMap.get(layerKey)!;
     if (!packMap.has(packId)) {
       packMap.set(packId, { name: packName, color: packColor, icon: packIcon, nodes: [] });
     }
     packMap.get(packId)!.nodes.push(node);
   }
 
-  const packs = Array.from(packMap.entries()).sort(([, a], [, b]) =>
-    a.name.localeCompare(b.name),
-  );
+  const layers = LAYER_ORDER
+    .filter((layerKey) => layerMap.has(layerKey))
+    .map((layerKey) => ({
+      layerKey,
+      packs: Array.from(layerMap.get(layerKey)!.entries()).sort(([, a], [, b]) =>
+        a.name.localeCompare(b.name),
+      ),
+    }));
+
+  const totalPacks = layers.reduce((sum, l) => sum + l.packs.length, 0);
 
   const onDragStart = (event: React.DragEvent, node: RegisteredNode) => {
     event.dataTransfer.setData('application/lados-node-type',     node.type);
@@ -306,28 +356,43 @@ export default function NodePalette({ onBulkMode, searchOverride }: NodePaletteP
         {error && (
           <p className="text-xs text-red-500 text-center py-4">{error}</p>
         )}
-        {!loading && !error && packs.length === 0 && (
+        {!loading && !error && totalPacks === 0 && (
           <p className="text-xs text-gray-400 text-center py-4">
             {effectiveSearch.trim() ? 'No skills match your search' : 'No skills available'}
           </p>
         )}
 
-        {!loading && !error && packs.map(([packId, pack]) => (
-          <PackSection
-            key={packId}
-            packId={packId}
-            packName={pack.name}
-            packColor={pack.color}
-            packIconName={pack.icon}
-            nodes={pack.nodes}
-            onDragStart={onDragStart}
-            onBulkMode={onBulkMode}
-            defaultOpen={true}
-          />
+        {!loading && !error && layers.map(({ layerKey, packs }) => (
+          <div key={layerKey} className="mb-4">
+            <div
+              className="mb-1.5 flex items-baseline gap-1.5 border-b border-gray-100 pb-1"
+              title={LAYER_DESCRIPTIONS[layerKey]}
+            >
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-600">
+                {LAYER_LABELS[layerKey] ?? layerKey}
+              </span>
+              <span className="text-[9px] text-gray-300">
+                ({packs.reduce((n, [, p]) => n + p.nodes.length, 0)})
+              </span>
+            </div>
+            {packs.map(([packId, pack]) => (
+              <PackSection
+                key={packId}
+                packId={packId}
+                packName={pack.name}
+                packColor={pack.color}
+                packIconName={pack.icon}
+                nodes={pack.nodes}
+                onDragStart={onDragStart}
+                onBulkMode={onBulkMode}
+                defaultOpen={true}
+              />
+            ))}
+          </div>
         ))}
 
         {/* Drag hint */}
-        {!loading && !error && packs.length > 0 && (
+        {!loading && !error && totalPacks > 0 && (
           <p className="mt-3 text-[10px] text-center text-gray-300">
             Drag a skill onto the canvas
           </p>

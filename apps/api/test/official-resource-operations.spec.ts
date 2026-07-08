@@ -1,14 +1,18 @@
 /**
  * Phase 21 S4 (Wave 2) — @lados/official-resource-operations.
  *
- * Covers the master-plan S4 test requirement: "TEST per node as S2" for all
- * 8 nodes (create, read, list, update, transition, resolve_binding,
- * artifact.write, artifact.read).
+ * Covers the master-plan S4 test requirement: "TEST per node as S2" for the
+ * original 8 nodes (create, read, list, update, transition,
+ * resolve_binding, artifact.write, artifact.read).
  *
  * Also proves the S4 skeleton-gap fix: nodes.json/manifest.json declared
  * the "resource.transition" capability with no corresponding node — this
  * suite asserts the fix (lados.resource.transition) is present, resolves,
  * and is marked implemented, alongside every other declared node.
+ *
+ * Phase 21 S9.1 (gap closure, 2026-07-04): added coverage for
+ * `lados.resource.assign` (successor to prototype `foundation.assign_user`),
+ * bringing the pack to 9 nodes for 9 capabilities.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -83,11 +87,13 @@ function fakeArtifactReadService(found = true): IArtifactReadService {
 }
 
 describe('official-resource-operations — manifest <-> executor contract', () => {
-  it('declares 8 nodes for 8 capabilities (S4 fix: resource.transition gap closed)', () => {
+  it('declares 9 nodes for 9 capabilities (S4 fix: resource.transition gap closed; S9.1: resource.assign added)', () => {
     expect(manifest.capabilities).toContain('resource.transition');
     expect(manifest.nodes).toContain('lados.resource.transition');
+    expect(manifest.capabilities).toContain('resource.assign');
+    expect(manifest.nodes).toContain('lados.resource.assign');
     expect(manifest.nodes.length).toBe(manifest.capabilities.length);
-    expect(manifests.length).toBe(8);
+    expect(manifests.length).toBe(9);
   });
 
   it('every node declared in nodes.json resolves to a real executor', () => {
@@ -99,6 +105,7 @@ describe('official-resource-operations — manifest <-> executor contract', () =
       transitionService: fakeTransitionService(),
       artifactWriteService: fakeArtifactWriteService(),
       artifactReadService: fakeArtifactReadService(),
+      assignService: fakeUpdateService(),
     });
     for (const m of manifests) {
       expect(typeof resolve(m.type)).toBe('function');
@@ -272,5 +279,54 @@ describe('lados.artifact.write / lados.artifact.read', () => {
     const result = await resolveNode({ artifactReadService })('lados.artifact.read')!(ctx);
     expect(result.status).toBe('failure');
     expect(result.error?.code).toBe('ARTIFACT_NOT_FOUND');
+  });
+});
+
+describe('lados.resource.assign (S9.1 gap closure)', () => {
+  it('fails with NO_SERVICE when no update service is injected', async () => {
+    const { ctx } = createMockNodeContext({ config: { resourceId: 'r1', userId: 'u1' } });
+    const result = await resolveNode()('lados.resource.assign')!(ctx);
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('NO_SERVICE');
+  });
+
+  it('assigns a user to a resource, writing assignee + assigneeRole into data', async () => {
+    const assignService = fakeUpdateService();
+    const { ctx } = createMockNodeContext({
+      inputs: { resource: { resourceId: 'r1' }, data: { userId: 'u1', assigneeRole: 'driver' } },
+    });
+    const result = await resolveNode({ assignService })('lados.resource.assign')!(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['assigned']).toMatchObject({ resourceId: 'r1', userId: 'u1', assigneeRole: 'driver' });
+    expect(assignService.updateResource).toHaveBeenCalledWith(
+      'r1',
+      expect.any(String),
+      { data: { assignee: 'u1', assigneeRole: 'driver' } },
+      expect.any(String),
+    );
+  });
+
+  it('falls back to the shared updateService when no dedicated assignService is injected', async () => {
+    const updateService = fakeUpdateService();
+    const { ctx } = createMockNodeContext({
+      inputs: { resource: { resourceId: 'r1' }, data: { userId: 'u1' } },
+    });
+    const result = await resolveNode({ updateService })('lados.resource.assign')!(ctx);
+    expect(result.status).toBe('success');
+  });
+
+  it('fails when resourceId is missing', async () => {
+    const { ctx } = createMockNodeContext({ inputs: { data: { userId: 'u1' } } });
+    const result = await resolveNode({ assignService: fakeUpdateService() })('lados.resource.assign')!(ctx);
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MISSING_INPUT');
+  });
+
+  it('fails when userId is missing', async () => {
+    const { ctx } = createMockNodeContext({ inputs: { resource: { resourceId: 'r1' } } });
+    const result = await resolveNode({ assignService: fakeUpdateService() })('lados.resource.assign')!(ctx);
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MISSING_INPUT');
   });
 });

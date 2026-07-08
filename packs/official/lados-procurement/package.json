@@ -1,0 +1,21 @@
+{
+  "name": "@lados/official-procurement",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Lados official Capability Pack (L1) — RFQ, quotation comparison, award recommendation, and PO request handoff",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lados/execution-engine": "workspace:*",
+    "@lados/node-sdk": "workspace:*",
+    "@lados/pack-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -55,22 +55,46 @@ export class WorkflowBuilder {
     };
   }
 
-  /** Create a minimal blank workflow definition (Start + End nodes) */
+  /**
+   * Create a minimal blank workflow definition (Start + End nodes).
+   *
+   * Phase 21 S9 (2026-07-04): 'core.start'/'core.end' were registered_nodes
+   * rows belonging to the legacy prototype core-pack, which has been fully
+   * removed from the platform (migration 0065 hard-deletes its packs/
+   * registered_nodes rows; the source is preserved, unbuilt, under
+   * archived/packs/core-pack). Neither had a compatibility alias to an
+   * official successor (unlike core.logger -> lados.workflow.write_log,
+   * core.condition -> lados.workflow.condition, etc. — see
+   * packages/@lados/pack-sdk/src/compatibility-aliases.ts) since "Start"/
+   * "End" were pure canvas scaffolding markers, not real capabilities.
+   * Every new blank workflow was hitting GET /nodes/core.start and
+   * /nodes/core.end 404s in the property panel as soon as the user clicked
+   * either node, because those rows no longer exist.
+   *
+   * Replaced with the closest real official-pack equivalents from
+   * lados-workflow-foundation (the pack whose manifest.json explicitly
+   * declares `"prototypeReferences": ["core-pack"]`): trigger_manual is a
+   * genuine, direct successor for "Start" ("Start a workflow from a manual
+   * operator action"); write_log has no perfect "End" equivalent but is the
+   * closest natural terminus marker (logs a checkpoint and stops there) —
+   * given a sensible default config so it works immediately without the
+   * user having to configure it first.
+   */
   static blank(name: string, id: WorkflowId): QSWorkflowDefinition {
     return new WorkflowBuilder(name, id)
       .addNode({
         id: 'node-start' as NodeInstanceId,
-        type: 'core.start' as NodeTypeId,
+        type: 'lados.workflow.trigger_manual' as NodeTypeId,
         label: 'Start',
         position: { x: 100, y: 200 },
-        config: {},
+        config: { label: 'Start', description: 'Manually start this workflow.' },
       })
       .addNode({
         id: 'node-end' as NodeInstanceId,
-        type: 'core.end' as NodeTypeId,
+        type: 'lados.workflow.write_log' as NodeTypeId,
         label: 'End',
         position: { x: 500, y: 200 },
-        config: {},
+        config: { message: 'Workflow completed.', level: 'info' },
       })
       .build();
   }

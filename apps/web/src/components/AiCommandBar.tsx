@@ -22,6 +22,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiClient } from '@/lib/api/client';
+import { useFloatingDockPosition } from '@/lib/useFloatingDockPosition';
 import AiWorkflowDesigner from './AiWorkflowDesigner';
 
 // ── Types (mirror server-side) ────────────────────────────────────────────────
@@ -103,6 +104,15 @@ export default function AiCommandBar() {
 
   const cmdRef    = useRef<HTMLTextAreaElement>(null);
   const answerRef = useRef<HTMLInputElement>(null);
+
+  // Docked, draggable trigger position — defaults to the right edge,
+  // vertically centered (clear of React Flow's MiniMap/Controls/attribution
+  // and the canvas's paused/error banners, which all live in the corners).
+  // Remembers where the user drags it to (per-browser).
+  const dock = useFloatingDockPosition('lados:aiCommandBar:dockPos', () => ({
+    x: window.innerWidth - 60,
+    y: Math.max(80, window.innerHeight / 2 - 60),
+  }));
 
   // Load org on mount — use the API (not Supabase client direct) to avoid RLS 500s
   useEffect(() => {
@@ -228,15 +238,21 @@ export default function AiCommandBar() {
 
   return (
     <>
-      {/* Floating trigger */}
-      <button
-        onClick={open}
-        title="AI Workflow Trigger"
-        className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center text-xl"
-        aria-label="Open AI command bar"
-      >
-        🤖
-      </button>
+      {/* Floating trigger — docked to the right edge, draggable anywhere */}
+      {dock.pos && (
+        <button
+          onClick={() => { if (!dock.wasDragged()) open(); }}
+          onPointerDown={dock.onPointerDown}
+          onPointerMove={dock.onPointerMove}
+          onPointerUp={dock.onPointerUp}
+          title="AI Workflow Trigger (drag to move)"
+          style={{ left: dock.pos.x, top: dock.pos.y, touchAction: 'none' }}
+          className="fixed z-40 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 active:scale-95 transition-[background-color,transform] flex items-center justify-center text-xl cursor-grab active:cursor-grabbing"
+          aria-label="Open AI command bar"
+        >
+          🤖
+        </button>
+      )}
 
       {/* Backdrop + panel */}
       {isOpen && (

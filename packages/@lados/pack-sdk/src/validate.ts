@@ -204,6 +204,26 @@ export function validateOfficialCapabilityPackManifest(manifest: unknown): PackV
     issues.push({ field: 'workflowTemplates', message: 'workflowTemplates must be an array of strings when provided' });
   }
 
+  if (manifest['resourceViews'] !== undefined) {
+    if (!Array.isArray(manifest['resourceViews'])) {
+      issues.push({ field: 'resourceViews', message: 'resourceViews must be an array when provided' });
+    } else {
+      (manifest['resourceViews'] as unknown[]).forEach((rv, i) => {
+        const prefix = `resourceViews[${i}]`;
+        if (!isRecord(rv)) {
+          issues.push({ field: prefix, message: 'resourceView must be an object' });
+          return;
+        }
+        if (typeof rv['type'] !== 'string' || rv['type'].trim() === '') {
+          issues.push({ field: `${prefix}.type`, message: 'type is required and must be a non-empty string' });
+        }
+        if (typeof rv['displayName'] !== 'string' || rv['displayName'].trim() === '') {
+          issues.push({ field: `${prefix}.displayName`, message: 'displayName is required and must be a non-empty string' });
+        }
+      });
+    }
+  }
+
   if (capabilities.length === 0) {
     issues.push({ field: 'capabilities', message: 'Official packs must declare at least one capability' });
   }

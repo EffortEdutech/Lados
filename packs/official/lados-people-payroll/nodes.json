@@ -4,7 +4,7 @@
     "displayName": "Prepare Payroll Run",
     "canonicalCapability": "people_payroll.payroll.prepare",
     "ownerPack": "lados.people-payroll",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Prepare payroll run data from timesheets, expense records, and configured payroll inputs.",
     "inputPattern": [
       "ports",
@@ -70,7 +70,7 @@
     "compatibilityAliases": [
       "contractor.prepare_payroll_run"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "People and Payroll",
     "icon": "UsersRound",
     "searchKeywords": [
@@ -85,7 +85,7 @@
     "displayName": "Record Payroll Approval",
     "canonicalCapability": "people_payroll.payroll.record_approval",
     "ownerPack": "lados.people-payroll",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record a human payroll approval decision with evidence and approval actor metadata.",
     "inputPattern": [
       "ports",
@@ -141,7 +141,7 @@
     "compatibilityAliases": [
       "contractor.approve_payroll"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "People and Payroll",
     "icon": "UsersRound",
     "searchKeywords": [
@@ -156,7 +156,7 @@
     "displayName": "Record Expense Approval",
     "canonicalCapability": "people_payroll.expense.record_approval",
     "ownerPack": "lados.people-payroll",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record a human expense approval decision for reimbursement or payroll handoff.",
     "inputPattern": [
       "ports",
@@ -212,7 +212,7 @@
     "compatibilityAliases": [
       "contractor.approve_expense"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "People and Payroll",
     "icon": "UsersRound",
     "searchKeywords": [

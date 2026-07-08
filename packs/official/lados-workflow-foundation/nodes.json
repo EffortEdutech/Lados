@@ -147,12 +147,12 @@
     "canonicalCapability": "workflow.control.condition",
     "ownerPack": "lados.workflow-foundation",
     "status": "draft",
-    "intent": "Route workflow execution based on an explicit condition.",
+    "intent": "Route workflow execution based on an explicit condition. Phase 22 S22.4: the expression can now reference any named input field (not just the implicit 'value') and chain clauses with a single AND or OR combinator.",
     "inputPattern": [
       "ports",
       "inspector"
     ],
-    "outputPattern": "true and false route flags",
+    "outputPattern": "true and false route flags, plus the full input context for downstream nodes",
     "ports": {
       "inputs": [
         {
@@ -171,6 +171,11 @@
           "id": "false",
           "label": "False",
           "dataType": "boolean"
+        },
+        {
+          "id": "context",
+          "label": "Context",
+          "dataType": "object"
         }
       ]
     },
@@ -478,6 +483,241 @@
           "properties": {
             "message": { "type": "string" },
             "level": { "type": "string" }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "lados.workflow.loop",
+    "displayName": "Loop",
+    "canonicalCapability": "workflow.control.loop",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Iterate over an array of items and collect results.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "processed results array plus count/first/last",
+    "ports": {
+      "inputs": [
+        {
+          "id": "items",
+          "label": "Items",
+          "dataType": "array"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "results",
+          "label": "Results",
+          "dataType": "array"
+        },
+        {
+          "id": "count",
+          "label": "Count",
+          "dataType": "number"
+        },
+        {
+          "id": "first",
+          "label": "First",
+          "dataType": "any"
+        },
+        {
+          "id": "last",
+          "label": "Last",
+          "dataType": "any"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "loop",
+        "label": "Loop",
+        "fields": [
+          "items_key",
+          "extract_key",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Iterates and collects data only; does not approve or certify anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 4
+    },
+    "compatibilityAliases": [
+      "core.loop"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "loop",
+      "iterate",
+      "array"
+    ]
+  },
+  {
+    "type": "lados.workflow.switch",
+    "displayName": "Switch",
+    "canonicalCapability": "workflow.control.switch",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Route to the first matching case out of up to 5 labeled branches, or a Default branch if none match — true multi-way routing without chaining binary Condition nodes. Phase 22 S22.4.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "one of 5 case ports plus a default port; also emits which case matched and the full input context",
+    "ports": {
+      "inputs": [
+        {
+          "id": "value",
+          "label": "Value",
+          "dataType": "any"
+        }
+      ],
+      "outputs": [
+        { "id": "case1", "label": "Case 1", "dataType": "any" },
+        { "id": "case2", "label": "Case 2", "dataType": "any" },
+        { "id": "case3", "label": "Case 3", "dataType": "any" },
+        { "id": "case4", "label": "Case 4", "dataType": "any" },
+        { "id": "case5", "label": "Case 5", "dataType": "any" },
+        { "id": "default", "label": "Default", "dataType": "any" },
+        { "id": "matchedCase", "label": "Matched Case", "dataType": "string" },
+        { "id": "context", "label": "Context", "dataType": "object" }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "cases",
+        "label": "Cases",
+        "fields": [
+          "cases",
+          "label"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Evaluates configured logic only; human review should be modeled with Human Work nodes.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 200,
+      "maxVisiblePortsPerSide": 8
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "switch",
+      "multi-way",
+      "branch",
+      "routing",
+      "case"
+    ]
+  },
+  {
+    "type": "lados.workflow.publish_event",
+    "displayName": "Publish Event",
+    "canonicalCapability": "workflow.event.publish",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Emit a custom domain event to the platform Event Bus. Events can trigger subscribed workflows but never by themselves approve, certify, or release payment.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "event id and published flag",
+    "ports": {
+      "inputs": [
+        {
+          "id": "payload",
+          "label": "Payload",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "eventId",
+          "label": "Event ID",
+          "dataType": "string"
+        },
+        {
+          "id": "published",
+          "label": "Published",
+          "dataType": "boolean"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "event",
+        "label": "Event",
+        "fields": [
+          "eventType",
+          "sourceId"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Publishing is observational only; any consequential action taken by a subscribed workflow still requires a Human Work approval node.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "event.publish"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "event",
+      "publish",
+      "event bus"
+    ],
+    "events": [
+      {
+        "eventType": "event.custom",
+        "description": "Fires when this node successfully publishes a custom event to the Event Bus.",
+        "payloadSchema": {
+          "type": "object",
+          "properties": {
+            "eventType": { "type": "string" },
+            "payload": { "type": "object" }
           }
         }
       }

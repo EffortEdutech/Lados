@@ -10,6 +10,14 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api/client';
 
+interface CoreServiceMetadata {
+  usedByPacks?: string[];
+  usedByNodes?: string[];
+  builtInPhase?: string;
+  reconciledInPhase?: string;
+  note?: string;
+}
+
 interface CoreService {
   id: string;
   name: string;
@@ -19,6 +27,7 @@ interface CoreService {
   sprint_built?: number;
   sprint_planned?: number;
   icon?: string;
+  metadata?: CoreServiceMetadata;
 }
 
 const STATUS_CONFIG = {
@@ -117,6 +126,22 @@ export default function ServicesPage() {
                   </div>
                   {svc.description && (
                     <p className="mt-1 text-xs text-gray-500 leading-relaxed">{svc.description}</p>
+                  )}
+                  {!!svc.metadata?.usedByPacks?.length && (
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] text-gray-400">Used by:</span>
+                      {svc.metadata.usedByPacks.map((pack) => (
+                        <span
+                          key={pack}
+                          className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-mono text-blue-600"
+                        >
+                          {pack}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {svc.metadata?.note && (
+                    <p className="mt-1 text-[10px] text-gray-400 italic">{svc.metadata.note}</p>
                   )}
                   <p className="mt-1.5 text-[10px] font-mono text-gray-300">{svc.id}</p>
                 </div>

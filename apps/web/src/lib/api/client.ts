@@ -72,3 +72,28 @@ export const apiClient = {
   delete:   <T>(path: string) => request<T>(path, { method: 'DELETE' }),
   postForm: <T>(path: string, body: FormData) => requestForm<T>(path, body),
 };
+
+/**
+ * Extracts a user-safe message out of an `ApiResponse.error`.
+ *
+ * `ApiResponse<T>['error']` is always an `ApiError` object
+ * (`{code, message, details?}` — see `@lados/shared-types`), NEVER a bare
+ * string. Several pages (approvals, analytics, departments, the canvas's
+ * paused-run panel) were written checking `typeof res.error === 'string'`
+ * before reading it — a check that can never be true against this API's
+ * actual error shape, so every real failure (a validation error, a
+ * business-rule rejection, a membership check) silently fell through to a
+ * generic hardcoded fallback message instead of the real, user-safe
+ * `error.message` the server provided. Found 2026-07-06 when a delegate()
+ * 400 surfaced as an unhelpful "Delegation failed" with no indication of
+ * why. Use this helper everywhere an `ApiResponse.error` is turned into
+ * display text, instead of re-deriving the (wrong) check locally.
+ */
+export function apiErrorMessage(error: unknown, fallback: string): string {
+  if (!error) return fallback;
+  if (typeof error === 'string') return error;
+  if (typeof error === 'object' && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+    return (error as { message: string }).message;
+  }
+  return fallback;
+}

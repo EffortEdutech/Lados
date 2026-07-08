@@ -15,7 +15,18 @@ interface PackRecord {
   is_enabled: boolean;
   status: 'active' | 'disabled' | 'error';
   node_count: number;
+  // Phase 21 S7.6 — /packs falls back gracefully if migration 0056 (packs.layer)
+  // isn't applied yet on a given environment; treat as absent, not an error.
+  layer?: string | null;
 }
+
+const LAYER_LABELS: Record<string, string> = {
+  L0: 'L0 · Foundation',
+  L1: 'L1 · Domain',
+  L2: 'L2 · Solution',
+  L3: 'L3 · Vendor',
+  L5: 'L5 · Template',
+};
 
 interface PackNode {
   type: string;
@@ -58,7 +69,14 @@ export default function ExplorerPacksTab({ search }: ExplorerPacksTabProps) {
           setError(res.error?.message ?? 'Failed to load packs');
           return;
         }
-        setPacks(res.data ?? []);
+        // GET /packs intentionally returns every pack row (enabled + disabled)
+        // for the /packs management page and /marketplace browse view, which
+        // both render an explicit "Disabled" badge. This Explorer sidebar is
+        // a build-time surface (not a management page), so soft-archived
+        // packs (Phase 21 migration 0063 — legacy prototype packs) should
+        // never surface here at all, and the "N packs installed" count must
+        // only reflect packs actually usable on the canvas right now.
+        setPacks((res.data ?? []).filter((p) => p.is_enabled));
       })
       .catch(() => setError('Failed to load packs'))
       .finally(() => setLoading(false));
@@ -136,6 +154,11 @@ export default function ExplorerPacksTab({ search }: ExplorerPacksTabProps) {
                       {pack.is_official && (
                         <span className="rounded bg-blue-50 px-1 py-0.5 text-[9px] font-medium text-blue-600">
                           Official
+                        </span>
+                      )}
+                      {pack.layer && LAYER_LABELS[pack.layer] && (
+                        <span className="rounded bg-gray-100 px-1 py-0.5 text-[9px] font-medium text-gray-500">
+                          {LAYER_LABELS[pack.layer]}
                         </span>
                       )}
                     </div>

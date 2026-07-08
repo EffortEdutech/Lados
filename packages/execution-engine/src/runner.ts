@@ -22,6 +22,7 @@ import type {
   RunStatus,
   SkipNodeSpec,
   NodeProgressEvent,
+  InputBinding,
 } from './types';
 import { planWorkflow } from './graph-planner';
 import { getMockExecutor } from './mock-registry';
@@ -157,13 +158,21 @@ export class WorkflowRunner {
       ? { ...resume.checkpointOutputs }
       : {};
     if (resume) {
-      nodeOutputs[resume.pausedAtNodeId] = {
-        approved:         resume.approvalResult.approved,
-        rejected:         resume.approvalResult.rejected,
-        comments:         resume.approvalResult.comments,
-        approval_task_id: resume.approvalResult.approvalTaskId,
-        approver_role:    'human',
-      };
+      // Phase 22 S22.2 — request_input nodes have no approve/reject concept;
+      // when a human has submitted structured data instead of a decision,
+      // inject that as the paused node's output instead of the approval shape.
+      nodeOutputs[resume.pausedAtNodeId] = resume.approvalResult.submittedData !== undefined
+        ? {
+            submittedData:    resume.approvalResult.submittedData,
+            approval_task_id: resume.approvalResult.approvalTaskId,
+          }
+        : {
+            approved:         resume.approvalResult.approved,
+            rejected:         resume.approvalResult.rejected,
+            comments:         resume.approvalResult.comments,
+            approval_task_id: resume.approvalResult.approvalTaskId,
+            approver_role:    'human',
+          };
     }
 
     let lastOutputs: Record<string, unknown> = inputs;
@@ -325,7 +334,7 @@ export class WorkflowRunner {
     stepStatus: 'completed' | 'failed' | 'paused' | 'skipped';
   }> {
     const nodeStartedAt = new Date().toISOString();
-    const resolvedInputs = this._resolveInputs(step.nodeId, step.dependsOn, nodeOutputs, workflowInputs);
+    const resolvedInputs = this._resolveInputs(step.dependsOn, nodeOutputs, workflowInputs, step.inputBindings);
 
     const logEntry: NodeLogEntry = {
       nodeId:    step.nodeId,
@@ -469,20 +478,66 @@ export class WorkflowRunner {
   /**
    * Merge outputs from all dependency nodes to form this node's inputs.
    * If a node has no dependencies, it receives the workflow-level inputs.
+   *
+   * Phase 21 (S9 chaining fix): this used to ONLY flat-merge every key of
+   * every upstream dependency's entire output object (Object.assign),
+   * completely ignoring which port was actually connected to which. That
+   * silently breaks (or loudly fails) any two nodes whose "same" data uses
+   * a different key name upstream vs. downstream — discovered via
+   * lados.qs.read_boq (outputs key "boq") -> lados.qs.normalize_boq (reads
+   * key "items"): the array never arrived, and normalize_boq quietly
+   * "succeeded" having processed zero rows. No official multi-node
+   * workflow had ever actually been run through the real engine before
+   * this was found — every wave's own "E2E test" hand-chained executor
+   * calls with manually reshaped data instead (a proxy, not a real graph
+   * run), which is why this went unnoticed since S1.
+   *
+   * Fix: layer a port-aware pass on top of the legacy flat merge. For each
+   * inputBinding with REAL port ids (i.e. not the generic 'out'/'in'
+   * placeholder the frontend defaults to for connections/edges saved
+   * before real port wiring existed — see WorkflowCanvas.tsx/
+   * ExplorerTemplatesTab.tsx's normalizeDefinition), pull the exact
+   * upstream value at that specific source port and place it under the
+   * target port's key. The legacy flat merge runs first and stays
+   * unconditionally — every existing prototype workflow's connections use
+   * the generic 'out'/'in' placeholder today, so this change is a pure
+   * additive overlay for real port ids and changes zero existing
+   * behavior for them.
+   *
+   * This does NOT solve every possible shape mismatch (e.g. an upstream
+   * port whose value is `{items: [...], other: ...}` still needs the
+   * *node* on the receiving end to unwrap `.items` itself if it wants a
+   * bare array under that same port) — that's a per-node concern, fixed
+   * at the node level where needed (see e.g. official-qs-commercial's
+   * normalizeBoq/classifyTrade). This fix specifically corrects the case
+   * where two ports would otherwise line up perfectly except for their
+   * name (e.g. classify_trade's "classified" array -> split_work_packages'
+   * "items" array).
    */
   private _resolveInputs(
-    _nodeId: string,
     dependsOn: string[],
     nodeOutputs: Record<string, Record<string, unknown>>,
     workflowInputs: Record<string, unknown>,
+    inputBindings: InputBinding[] = [],
   ): Record<string, unknown> {
     if (dependsOn.length === 0) return workflowInputs;
 
     const merged: Record<string, unknown> = {};
+
+    // Legacy flat merge — unconditional, preserves existing behavior.
     for (const depId of dependsOn) {
       const depOutputs = nodeOutputs[depId] ?? {};
       Object.assign(merged, depOutputs);
     }
+
+    // Port-aware overlay — only for connections carrying real port ids.
+    for (const binding of inputBindings) {
+      if (binding.sourcePortId === 'out' || binding.targetPortId === 'in') continue;
+      const sourceOutputs = nodeOutputs[binding.sourceNodeId];
+      if (!sourceOutputs || !(binding.sourcePortId in sourceOutputs)) continue;
+      merged[binding.targetPortId] = sourceOutputs[binding.sourcePortId];
+    }
+
     Object.assign(merged, workflowInputs);
     return merged;
   }

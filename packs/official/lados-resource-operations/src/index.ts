@@ -10,10 +10,14 @@
  * "resource.transition") but only 7 nodes and was missing a corresponding
  * node for the transition capability. `lados.resource.transition` was
  * added (to manifest.json, nodes.json, and here) to close that gap — see
- * transition-resource.ts for detail. The pack now has 8 nodes for 8
- * capabilities.
+ * transition-resource.ts for detail.
  *
- * All 8 nodes are backed by the same underlying NestJS ResourceService /
+ * Phase 21 S9.1 (gap closure, 2026-07-04): added `lados.resource.assign`
+ * (successor to the prototype `foundation.assign_user`) as a new
+ * capability — generic user assignment for any Workspace Resource. The
+ * pack now has 9 nodes for 9 capabilities.
+ *
+ * All 9 nodes are backed by the same underlying NestJS ResourceService /
  * ArtifactService, injected here via small structurally-typed interfaces
  * (../types.ts) — no NestJS or prototype-pack imports in this package.
  */
@@ -27,6 +31,7 @@ import { transitionResource } from './nodes/transition-resource';
 import { resolveBinding } from './nodes/resolve-binding';
 import { writeArtifact } from './nodes/write-artifact';
 import { readArtifact } from './nodes/read-artifact';
+import { assignResource } from './nodes/assign-resource';
 
 export {
   createResource,
@@ -37,6 +42,7 @@ export {
   resolveBinding,
   writeArtifact,
   readArtifact,
+  assignResource,
 };
 export {
   type ResourceRecord,
@@ -61,6 +67,8 @@ export interface ResourceOperationsServices {
   transitionService?: import('./types').ITransitionResourceService;
   artifactWriteService?: import('./types').IArtifactWriteService;
   artifactReadService?: import('./types').IArtifactReadService;
+  /** lados.resource.assign reuses the update service — it only writes `data`. */
+  assignService?: import('./types').IUpdateResourceService;
 }
 
 const NO_SERVICE = (code: string, message: string): NodeExecuteResult => ({
@@ -87,6 +95,7 @@ export function resolveNode(
     transitionService,
     artifactWriteService,
     artifactReadService,
+    assignService,
   } = services;
 
   const nodes: Record<string, NodeExecutor> = {
@@ -129,6 +138,11 @@ export function resolveNode(
       artifactReadService
         ? readArtifact(ctx, artifactReadService)
         : Promise.resolve(NO_SERVICE('NO_SERVICE', 'Artifact read service not injected')),
+
+    'lados.resource.assign': (ctx) =>
+      (assignService ?? updateService)
+        ? assignResource(ctx, assignService ?? updateService)
+        : Promise.resolve(NO_SERVICE('NO_SERVICE', 'Resource update service not injected')),
   };
 
   return (nodeType: string) => nodes[nodeType] ?? null;

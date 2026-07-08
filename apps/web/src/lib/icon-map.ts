@@ -173,6 +173,34 @@ export const LUCIDE_TO_EMOJI: Record<string, string> = {
   'chevron-left':   '‹',
   'thumbs-up':      '👍',
   'thumbs-down':    '👎',
+
+  // ── Phase 21 official-pack icons ───────────────────────────────────────────
+  // Official pack/node manifests store the real PascalCase lucide-react
+  // component export name (e.g. "Scale", not "scale"), a different
+  // convention from the prototype packs' lowercase-kebab strings above.
+  // isLucideName() below now accepts both; these keys are matched verbatim
+  // (case-sensitive), so PascalCase names need their own entries here too.
+  'Workflow':          '🔄',
+  'UserCheck':         '✅',
+  'FileSearch':        '🔍',
+  'MessagesSquare':    '💬',
+  'ListChecks':        '✅',
+  'Database':          '🗄️',
+  'ShoppingCart':      '🛒',
+  'ReceiptText':       '🧾',
+  'FileSignature':     '✍️',
+  'HardHat':           '⛑️',
+  'Ruler':             '📏',
+  'Truck':             '🚛',
+  'UsersRound':        '👥',
+  'Clapperboard':      '🎬',
+  'BriefcaseBusiness': '💼',
+  'Calculator':        '🧮',
+  'Scale':             '⚖️',
+  'Bug':               '🐛',
+  'Receipt':           '🧾',
+  'ClipboardList':     '📋',
+  'Landmark':          '🏛️',
 };
 
 /**
@@ -194,10 +222,15 @@ export const PACK_EMOJI: Record<string, string> = {
 
 /**
  * Detects whether a string value is already an emoji (non-ASCII / multi-codepoint)
- * vs a Lucide icon name (only lowercase letters, digits, hyphens).
+ * vs a Lucide icon name. Two naming conventions exist in this DB:
+ *   - prototype packs: lowercase-kebab (e.g. "bar-chart-2")
+ *   - Phase 21 official packs: PascalCase lucide-react export names (e.g. "Scale")
+ * Both are plain ASCII letters/digits/hyphens with no spaces — an emoji value
+ * will always fail this test (non-ASCII codepoints), so this stays a safe way
+ * to tell "icon name to map" apart from "already a renderable emoji/symbol".
  */
 function isLucideName(s: string): boolean {
-  return /^[a-z0-9-]+$/.test(s);
+  return /^[A-Za-z][A-Za-z0-9-]*$/.test(s);
 }
 
 /**

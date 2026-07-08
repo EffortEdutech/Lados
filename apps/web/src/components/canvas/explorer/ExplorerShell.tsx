@@ -42,7 +42,7 @@ const TAB_CONFIG: ExplorerTabConfig[] = [
   { id: 'packs', label: 'Packs', compact: 'P', title: 'Capability packs' },
   { id: 'versions', label: 'Versions', compact: 'V', title: 'Workflow versions' },
   { id: 'documents', label: 'Files', compact: 'F', title: 'Document library' },
-  { id: 'datapacks', label: 'Data', compact: 'D', title: 'Data packs' },
+  { id: 'datapacks', label: 'Knowledge', compact: 'K', title: 'Knowledge Catalogue' },
 ];
 
 const LEGACY_TAB_MAP: Partial<Record<ExplorerTab, ExplorerTab>> = {

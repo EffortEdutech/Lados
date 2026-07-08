@@ -4,7 +4,7 @@
     "displayName": "Create Project",
     "canonicalCapability": "construction.project.create",
     "ownerPack": "lados.construction-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a construction project or site operation resource.",
     "inputPattern": [
       "ports",
@@ -58,7 +58,7 @@
     "compatibilityAliases": [
       "construction.create_project"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Construction Operations",
     "icon": "HardHat",
     "searchKeywords": [
@@ -72,7 +72,7 @@
     "displayName": "Create Inspection",
     "canonicalCapability": "construction.inspection.create",
     "ownerPack": "lados.construction-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a site inspection record with checklist and location context.",
     "inputPattern": [
       "ports",
@@ -138,7 +138,7 @@
     "compatibilityAliases": [
       "construction.create_site_inspection"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Construction Operations",
     "icon": "HardHat",
     "searchKeywords": [
@@ -152,7 +152,7 @@
     "displayName": "Submit Inspection Report",
     "canonicalCapability": "construction.inspection.submit_report",
     "ownerPack": "lados.construction-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Submit a completed inspection report with evidence and review status.",
     "inputPattern": [
       "ports",
@@ -208,7 +208,7 @@
     "compatibilityAliases": [
       "construction.submit_inspection_report"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Construction Operations",
     "icon": "HardHat",
     "searchKeywords": [
@@ -223,7 +223,7 @@
     "displayName": "Log Defect",
     "canonicalCapability": "construction.defect.log",
     "ownerPack": "lados.construction-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Log a construction defect with location, classification, photos, and responsible party.",
     "inputPattern": [
       "ports",
@@ -290,7 +290,7 @@
     "compatibilityAliases": [
       "construction.log_defect"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Construction Operations",
     "icon": "HardHat",
     "searchKeywords": [
@@ -304,7 +304,7 @@
     "displayName": "Create Site Diary",
     "canonicalCapability": "construction.site_diary.create",
     "ownerPack": "lados.construction-operations",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a site diary record for daily progress, labour, plant, weather, and events.",
     "inputPattern": [
       "ports",
@@ -359,7 +359,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Construction Operations",
     "icon": "HardHat",
     "searchKeywords": [
@@ -367,6 +367,72 @@
       "create",
       "site",
       "diary"
+    ]
+  },
+  {
+    "type": "lados.construction.run_handover_checklist",
+    "displayName": "Run Handover Checklist",
+    "canonicalCapability": "construction.handover.checklist",
+    "ownerPack": "lados.construction-operations",
+    "status": "draft",
+    "intent": "Evaluate a handover checklist's completion status and flag outstanding items requiring sign-off.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "knowledge_reference"
+    ],
+    "outputPattern": "checklist completion result with outstanding items",
+    "ports": {
+      "inputs": [
+        {
+          "id": "checklist",
+          "label": "Checklist",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "result",
+          "label": "Result",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "checklist",
+        "label": "Checklist",
+        "fields": [
+          "checklistRefs",
+          "requireAllComplete"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "handover SOP"
+      ]
+    },
+    "humanDecisionBoundary": "Evaluates checklist completion only; handover sign-off must be recorded as a separate human decision.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 128,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Construction Operations",
+    "icon": "HardHat",
+    "searchKeywords": [
+      "construction operations",
+      "handover",
+      "checklist"
     ]
   }
 ]

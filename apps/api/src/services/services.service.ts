@@ -8,7 +8,7 @@ export class ServicesService {
   async findAll() {
     const { data, error } = await this.supabase.admin
       .from('core_services')
-      .select('id, name, description, status, version, sprint_built, sprint_planned, icon')
+      .select('id, name, description, status, version, sprint_built, sprint_planned, icon, metadata')
       .order('name');
 
     if (error) throw new Error(error.message);

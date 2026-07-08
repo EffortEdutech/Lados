@@ -524,5 +524,78 @@
       "read",
       "artifact"
     ]
+  },
+  {
+    "type": "lados.resource.assign",
+    "displayName": "Assign User",
+    "canonicalCapability": "resource.assign",
+    "ownerPack": "lados.resource-operations",
+    "status": "draft",
+    "intent": "Assign a user to any Workspace Resource, writing assignee and assigneeRole into the resource's data.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "assignment confirmation",
+    "ports": {
+      "inputs": [
+        {
+          "id": "resource",
+          "label": "Resource",
+          "dataType": "object"
+        },
+        {
+          "id": "data",
+          "label": "Data",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "assigned",
+          "label": "Assigned",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "assignment",
+        "label": "Assignment",
+        "fields": [
+          "resourceId",
+          "userId",
+          "assigneeRole"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Assigns responsibility only; does not approve or certify anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 240,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "foundation.assign_user"
+    ],
+    "executorStatus": "implemented",
+    "category": "Resource Operations",
+    "icon": "Database",
+    "searchKeywords": [
+      "resource operations",
+      "assign",
+      "user",
+      "owner"
+    ]
   }
 ]

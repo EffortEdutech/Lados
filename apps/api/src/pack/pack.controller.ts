@@ -10,6 +10,9 @@
  * PATCH /packs/:id/nodes/:nodeType/enable            — Phase 14: enable a node type for an org
  * PATCH /packs/:id/nodes/:nodeType/disable           — Phase 14: disable a node type for an org
  * POST /packs/sync                                   — trigger syncAll() (owner/admin only)
+ * POST /packs/official/sync                          — Phase 22 S22.2: re-sync official pack skeletons
+ *                                                       (manifest.json/nodes.json → packs/registered_nodes)
+ *                                                       on demand, without an API restart (owner/admin only)
  * PATCH /packs/:id/enable                            — enable a pack (owner/admin only)
  * PATCH /packs/:id/disable                           — disable a pack (owner/admin only)
  */
@@ -19,19 +22,21 @@ import {
   Param, Query, Request, UseGuards,
   BadRequestException,
 } from '@nestjs/common';
-import { SupabaseJwtGuard }      from '../common/guards/supabase-jwt.guard';
-import { SecurityEngineService } from '../security/security.service';
-import { PackRegistryService }   from './pack-registry.service';
-import { PackInstallerService }  from './pack-installer.service';
+import { SupabaseJwtGuard }        from '../common/guards/supabase-jwt.guard';
+import { SecurityEngineService }   from '../security/security.service';
+import { PackRegistryService }     from './pack-registry.service';
+import { PackInstallerService }    from './pack-installer.service';
+import { OfficialPackLoaderService } from './official-pack-loader.service';
 import type { AuthenticatedRequest } from '../common/types/authenticated-request';
 
 @UseGuards(SupabaseJwtGuard)
 @Controller('packs')
 export class PackController {
   constructor(
-    private readonly registry:   PackRegistryService,
-    private readonly installer:  PackInstallerService,
-    private readonly security:   SecurityEngineService,
+    private readonly registry:     PackRegistryService,
+    private readonly installer:    PackInstallerService,
+    private readonly officialLoader: OfficialPackLoaderService,
+    private readonly security:     SecurityEngineService,
   ) {}
 
   /** List all packs */
@@ -62,6 +67,28 @@ export class PackController {
     return { success: true, data };
   }
 
+  /**
+   * GET /packs/health
+   *
+   * Phase 21 S9.1 (429 fix, 2026-07-05) — bulk health check for every
+   * enabled pack in ONE request. The /packs list page used to call
+   * GET /packs/:id/health once per enabled pack in parallel (~21 requests
+   * for the current official pack set, doubled by React StrictMode's dev
+   * double-effect) which was enough to trip the global 120 req/min
+   * per-IP throttle and 429 the next page that needed its own health
+   * call. This route computes the same per-pack result server-side with
+   * no HTTP round-trips between packs.
+   *
+   * NOTE: This route must appear BEFORE ':id' to avoid being shadowed.
+   *
+   * Response shape: { "<packId>": { packId, status, checkedAt, totalNodes, brokenNodes[] }, ... }
+   */
+  @Get('health')
+  async getAllHealth() {
+    const data = await this.installer.getAllPackHealth();
+    return { success: true, data };
+  }
+
   // ── Phase 14: health + node overrides ────────────────────────────────────
 
   /**
@@ -69,7 +96,8 @@ export class PackController {
    *
    * Returns a real-time health check for the pack — checks each registered
    * node type against its known prefix. Uses the same prefix-based check
-   * as the startup log, so it's fast and safe to call on demand.
+   * as the startup log, so it's fast and safe to call on demand. Prefer
+   * GET /packs/health (bulk) when checking many packs at once — see above.
    *
    * Response: { packId, status, checkedAt, totalNodes, brokenNodes[] }
    */
@@ -173,6 +201,32 @@ export class PackController {
       await this.security.requirePermission(req.user.id, orgId, 'workflow.publish');
     }
     const data = await this.installer.syncAll();
+    return { success: true, data };
+  }
+
+  /**
+   * POST /packs/official/sync?organizationId=<uuid>
+   *
+   * Phase 22 S22.2 — re-syncs official Capability Pack skeletons
+   * (packs/official/*\/manifest.json + nodes.json on disk) into the
+   * `packs`/`registered_nodes` tables on demand, via
+   * OfficialPackLoaderService.syncAll() — the same sync that otherwise only
+   * runs once at API boot (OnModuleInit). Without this, a node added to an
+   * *existing* pack (not a brand-new pack directory) never appears in the
+   * node registry/canvas palette until the API process is restarted, since
+   * nest's watch-mode only recompiles apps/api/src/**, not packs/official's
+   * JSON files. Found via the request_input node going missing from the
+   * palette after S22.2 shipped — see Phase22 plan doc handover.
+   */
+  @Post('official/sync')
+  async syncOfficial(
+    @Query('organizationId') orgId: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    if (orgId) {
+      await this.security.requirePermission(req.user.id, orgId, 'workflow.publish');
+    }
+    const data = await this.officialLoader.syncAll();
     return { success: true, data };
   }
 

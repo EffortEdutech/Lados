@@ -105,8 +105,28 @@ export function planWorkflow(definition: QSWorkflowDefinition): ExecutionPlan {
   // Build node lookup for fast access
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
+  // Phase 21 (S9 chaining fix) — group connections by targetNodeId so each
+  // step knows exactly which upstream (sourceNodeId, sourcePortId) feeds
+  // which of its own input ports. Previously this info was discarded
+  // entirely (only node-level dependsOn survived), forcing the runner to
+  // blindly flat-merge every key of every upstream node's output object —
+  // which silently breaks (or loudly fails) any two nodes whose "same"
+  // data uses a different key name or is nested under a wrapper key. See
+  // runner.ts's _resolveInputs for how this is consumed.
+  const connectionsByTarget = new Map<string, typeof connections>();
+  for (const conn of connections ?? []) {
+    const list = connectionsByTarget.get(conn.targetNodeId) ?? [];
+    list.push(conn);
+    connectionsByTarget.set(conn.targetNodeId, list);
+  }
+
   const steps: ExecutionStep[] = order.map((nodeId) => {
     const node = nodeMap.get(nodeId as NodeInstanceId)!;
+    const inputBindings = (connectionsByTarget.get(nodeId) ?? []).map((conn) => ({
+      sourceNodeId: conn.sourceNodeId,
+      sourcePortId: conn.sourcePortId,
+      targetPortId: conn.targetPortId,
+    }));
     return {
       nodeId:    node.id,
       nodeType:  node.type,
@@ -114,6 +134,7 @@ export function planWorkflow(definition: QSWorkflowDefinition): ExecutionPlan {
       config:    (node.config as Record<string, unknown>) ?? {},
       mode:      node.mode ?? 'active',
       dependsOn: Array.from(adj.get(nodeId) ?? []),
+      inputBindings,
       level:     levels.get(nodeId) ?? 0,
     };
   });

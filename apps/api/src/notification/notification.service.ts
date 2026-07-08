@@ -25,7 +25,15 @@ export type NotificationType =
   | 'execution_failed'
   | 'data_pack_update'
   | 'quota_warning'
-  | 'system';
+  | 'system'
+  // Phase 22 S22.2 — human-in-the-loop upgrade (request_input node + escalation watchdog)
+  | 'input_request'
+  | 'approval_escalated'
+  // Phase 22 S22.2 bugfix (2026-07-06) — delegate() never notified the new
+  // assignee; found while smoke-testing (eff delegated a task, logged in as
+  // the delegate, and got no notification at all despite the task
+  // correctly appearing in their inbox).
+  | 'approval_delegated';
 
 export interface NotifyPayload {
   userId: string;

@@ -1,11 +1,11 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.asset-fleet",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Asset and Fleet Operations",
   "layer": "L2",
-  "status": "skeleton",
-  "runtimeStatus": "manifest_only",
+  "status": "draft",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados asset and fleet operations pack for jobs, dispatch, trip completion, fuel receipts, and maintenance records.",
   "ownerBoundary": [
     "asset/fleet job creation",
@@ -64,8 +64,8 @@
     "contractor-pack"
   ],
   "verification": {
-    "manifest": "draft",
-    "runtime": "not_started",
+    "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 7 declared nodes (no skeleton parity gap)",
+    "runtime": "implemented — all 7 nodes implemented, reusing job/trip/fuel_receipt/maintenance_record resource types from migration 0032_phase9_contractor_edition.sql (no new migration needed). extract_fuel_receipt reuses the real, already-integrated AiService.isConfigured/runVision (same capability contractor-pack's real contractor.extract_fuel_data node uses) — honest reuse, not fabrication; falls back to a confidence:0 advisory stub when AI is not configured. clear_maintenance enforces the MISSING_HUMAN_DECISION contract on clearedBy.",
     "canvas": "not_started",
     "templates": "not_started"
   },
@@ -74,5 +74,157 @@
     "icon": "Truck",
     "color": "#15803d",
     "paletteGroup": "Operations"
-  }
+  },
+  "resourceViews": [
+    {
+      "type": "job",
+      "displayName": "Job",
+      "displayNamePlural": "Jobs",
+      "icon": "💼",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.scheduledDate",
+          "badgeField": "state",
+          "counterField": "data.tripCount",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Dispatch Trip", "node": "lados.asset_fleet.dispatch_trip", "visibleInStates": ["active"], "icon": "🚛" }
+        ]
+      }
+    },
+    {
+      "type": "trip",
+      "displayName": "Trip",
+      "displayNamePlural": "Trips",
+      "icon": "🚛",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.driverId",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Start Trip", "node": "state.change", "visibleInStates": ["pending"], "icon": "▶️" },
+          { "label": "Mark Complete", "node": "lados.asset_fleet.complete_trip", "visibleInStates": ["in_progress"], "icon": "✅" },
+          { "label": "Cancel", "node": "state.change", "visibleInStates": ["pending", "in_progress"], "icon": "✕", "requiresConfirm": true }
+        ]
+      }
+    },
+    {
+      "type": "fuel_receipt",
+      "displayName": "Fuel Receipt",
+      "displayNamePlural": "Fuel Receipts",
+      "icon": "⛽",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.stationName",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Extract Data", "node": "lados.asset_fleet.extract_fuel_receipt", "visibleInStates": ["pending_review"], "icon": "🤖" },
+          { "label": "Approve", "node": "state.change", "visibleInStates": ["pending_review"], "icon": "✅", "requiresConfirm": true },
+          { "label": "Reject", "node": "state.change", "visibleInStates": ["pending_review"], "icon": "❌", "requiresConfirm": true }
+        ]
+      }
+    },
+    {
+      "type": "customer",
+      "displayName": "Customer",
+      "displayNamePlural": "Customers",
+      "icon": "🏢",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.contactPhone",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        }
+      }
+    },
+    {
+      "type": "vehicle",
+      "displayName": "Vehicle",
+      "displayNamePlural": "Vehicles",
+      "icon": "🚛",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.plateNumber",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Send for Service", "node": "lados.asset_fleet.create_maintenance_record", "visibleInStates": ["available", "deployed"], "icon": "🔧" }
+        ]
+      }
+    },
+    {
+      "type": "driver",
+      "displayName": "Driver",
+      "displayNamePlural": "Drivers",
+      "icon": "👤",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.licenseNumber",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        }
+      }
+    },
+    {
+      "type": "equipment",
+      "displayName": "Equipment",
+      "displayNamePlural": "Equipment",
+      "icon": "🏗️",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.serialNumber",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Send for Service", "node": "lados.asset_fleet.create_maintenance_record", "visibleInStates": ["available", "deployed"], "icon": "🔧" }
+        ]
+      }
+    },
+    {
+      "type": "operator",
+      "displayName": "Operator",
+      "displayNamePlural": "Operators",
+      "icon": "⛑️",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.licenseClass",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        }
+      }
+    },
+    {
+      "type": "maintenance_record",
+      "displayName": "Maintenance Record",
+      "displayNamePlural": "Maintenance Records",
+      "icon": "🔧",
+      "views": {
+        "list": {
+          "primaryField": "name",
+          "secondaryField": "data.workshop",
+          "badgeField": "state",
+          "mobileLayout": "card"
+        },
+        "inlineActions": [
+          { "label": "Start Service", "node": "state.change", "visibleInStates": ["scheduled"], "icon": "▶️" },
+          { "label": "Complete Service", "node": "lados.asset_fleet.clear_maintenance", "visibleInStates": ["in_progress"], "icon": "✅", "requiresConfirm": true }
+        ]
+      }
+    }
+  ]
 }

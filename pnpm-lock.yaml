@@ -29,60 +29,57 @@ importers:
 
   apps/api:
     dependencies:
-      '@lados/construction-pack':
-        specifier: workspace:*
-        version: link:../../packs/construction-pack
-      '@lados/contractor-pack':
-        specifier: workspace:*
-        version: link:../../packs/contractor-pack
-      '@lados/core-pack':
-        specifier: workspace:*
-        version: link:../../packs/core-pack
-      '@lados/document-pack':
-        specifier: workspace:*
-        version: link:../../packs/document-pack
       '@lados/execution-engine':
         specifier: workspace:*
         version: link:../../packages/execution-engine
-      '@lados/finance-pack':
-        specifier: workspace:*
-        version: link:../../packs/finance-pack
-      '@lados/foundation-pack':
-        specifier: workspace:*
-        version: link:../../packs/foundation-pack
       '@lados/node-sdk':
         specifier: workspace:*
         version: link:../../packages/@lados/node-sdk
-      '@lados/notifications-pack':
+      '@lados/official-asset-fleet':
         specifier: workspace:*
-        version: link:../../packs/notifications-pack
+        version: link:../../packs/official/lados-asset-fleet
+      '@lados/official-commercial-finance':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-commercial-finance
       '@lados/official-communication':
         specifier: workspace:*
         version: link:../../packs/official/lados-communication
+      '@lados/official-construction-operations':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-construction-operations
+      '@lados/official-contract-admin':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-contract-admin
       '@lados/official-document-intelligence':
         specifier: workspace:*
         version: link:../../packs/official/lados-document-intelligence
       '@lados/official-human-work':
         specifier: workspace:*
         version: link:../../packs/official/lados-human-work
+      '@lados/official-people-payroll':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-people-payroll
+      '@lados/official-procurement':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-procurement
+      '@lados/official-qs-commercial':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-qs-commercial
       '@lados/official-resource-operations':
         specifier: workspace:*
         version: link:../../packs/official/lados-resource-operations
       '@lados/official-task-case':
         specifier: workspace:*
         version: link:../../packs/official/lados-task-case
+      '@lados/official-video-production':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-video-production
       '@lados/official-workflow-foundation':
         specifier: workspace:*
         version: link:../../packs/official/lados-workflow-foundation
       '@lados/pack-sdk':
         specifier: workspace:*
         version: link:../../packages/@lados/pack-sdk
-      '@lados/procurement-pack':
-        specifier: workspace:*
-        version: link:../../packs/procurement-pack
-      '@lados/qs-pack':
-        specifier: workspace:*
-        version: link:../../packs/qs-pack
       '@lados/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -330,159 +327,42 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
-  packs/ai-pack:
+  packs/official/lados-asset-fleet:
     dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
       '@lados/node-sdk':
         specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
+        version: link:../../../packages/@lados/node-sdk
       '@lados/pack-sdk':
         specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
+        version: link:../../../packages/@lados/pack-sdk
     devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
 
-  packs/construction-pack:
+  packs/official/lados-commercial-finance:
     dependencies:
       '@lados/execution-engine':
         specifier: workspace:*
-        version: link:../../packages/execution-engine
+        version: link:../../../packages/execution-engine
       '@lados/node-sdk':
         specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
+        version: link:../../../packages/@lados/node-sdk
       '@lados/pack-sdk':
         specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
+        version: link:../../../packages/@lados/pack-sdk
     devDependencies:
       '@types/node':
         specifier: ^20.16.10
         version: 20.19.43
       typescript:
         specifier: ^5.4.0
-        version: 5.9.3
-
-  packs/contractor-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/foundation-pack':
-        specifier: workspace:*
-        version: link:../foundation-pack
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-    devDependencies:
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-
-  packs/core-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-      '@supabase/supabase-js':
-        specifier: ^2.45.4
-        version: 2.108.2
-    devDependencies:
-      '@types/node':
-        specifier: ^20.16.10
-        version: 20.19.43
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
-
-  packs/document-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-      xlsx:
-        specifier: ^0.18.5
-        version: 0.18.5
-    devDependencies:
-      '@types/node':
-        specifier: ^20.16.10
-        version: 20.19.43
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
-
-  packs/finance-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-    devDependencies:
-      '@types/node':
-        specifier: ^20.16.10
-        version: 20.19.43
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
-
-  packs/foundation-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-      '@supabase/supabase-js':
-        specifier: ^2.45.4
-        version: 2.108.2
-    devDependencies:
-      '@types/node':
-        specifier: ^20.16.10
-        version: 20.19.43
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
-
-  packs/notifications-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-    devDependencies:
-      '@types/node':
-        specifier: ^20.16.10
-        version: 20.19.43
-      typescript:
-        specifier: ^5.5.4
         version: 5.9.3
 
   packs/official/lados-communication:
@@ -499,6 +379,44 @@ importers:
     devDependencies:
       '@types/node':
         specifier: ^20.16.10
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
+  packs/official/lados-construction-operations:
+    dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
+      '@lados/node-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/node-sdk
+      '@lados/pack-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/pack-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
+  packs/official/lados-contract-admin:
+    dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
+      '@lados/node-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/node-sdk
+      '@lados/pack-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/pack-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
         version: 20.19.43
       typescript:
         specifier: ^5.4.0
@@ -548,6 +466,63 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
+  packs/official/lados-people-payroll:
+    dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
+      '@lados/node-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/node-sdk
+      '@lados/pack-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/pack-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
+  packs/official/lados-procurement:
+    dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
+      '@lados/node-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/node-sdk
+      '@lados/pack-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/pack-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
+  packs/official/lados-qs-commercial:
+    dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
+      '@lados/node-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/node-sdk
+      '@lados/pack-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/pack-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
   packs/official/lados-resource-operations:
     dependencies:
       '@lados/execution-engine':
@@ -586,7 +561,7 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
-  packs/official/lados-workflow-foundation:
+  packs/official/lados-video-production:
     dependencies:
       '@lados/execution-engine':
         specifier: workspace:*
@@ -605,42 +580,17 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
-  packs/procurement-pack:
+  packs/official/lados-workflow-foundation:
     dependencies:
       '@lados/execution-engine':
         specifier: workspace:*
-        version: link:../../packages/execution-engine
+        version: link:../../../packages/execution-engine
       '@lados/node-sdk':
         specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
+        version: link:../../../packages/@lados/node-sdk
       '@lados/pack-sdk':
         specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
-      '@lados/qs-pack':
-        specifier: workspace:*
-        version: link:../qs-pack
-      docx:
-        specifier: ^8.6.0
-        version: 8.6.0
-    devDependencies:
-      '@types/node':
-        specifier: ^20.16.10
-        version: 20.19.43
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
-
-  packs/qs-pack:
-    dependencies:
-      '@lados/execution-engine':
-        specifier: workspace:*
-        version: link:../../packages/execution-engine
-      '@lados/node-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/node-sdk
-      '@lados/pack-sdk':
-        specifier: workspace:*
-        version: link:../../packages/@lados/pack-sdk
+        version: link:../../../packages/@lados/pack-sdk
     devDependencies:
       '@types/node':
         specifier: ^20.16.10

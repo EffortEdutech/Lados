@@ -4,7 +4,7 @@
     "displayName": "Submit Invoice",
     "canonicalCapability": "finance.invoice.submit",
     "ownerPack": "lados.commercial-finance",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Submit an invoice resource for verification or approval workflow.",
     "inputPattern": [
       "ports",
@@ -71,7 +71,7 @@
     "compatibilityAliases": [
       "finance.submit_invoice"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Commercial Finance",
     "icon": "ReceiptText",
     "searchKeywords": [
@@ -85,7 +85,7 @@
     "displayName": "Verify Invoice",
     "canonicalCapability": "finance.invoice.verify",
     "ownerPack": "lados.commercial-finance",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Check invoice data against configured rules, references, and evidence.",
     "inputPattern": [
       "ports",
@@ -151,7 +151,7 @@
     "compatibilityAliases": [
       "finance.verify_invoice"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Commercial Finance",
     "icon": "ReceiptText",
     "searchKeywords": [
@@ -165,7 +165,7 @@
     "displayName": "Record Invoice Approval",
     "canonicalCapability": "finance.invoice.approval_record",
     "ownerPack": "lados.commercial-finance",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record a human invoice approval decision with evidence and actor metadata.",
     "inputPattern": [
       "ports",
@@ -221,7 +221,7 @@
     "compatibilityAliases": [
       "finance.approve_invoice"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Commercial Finance",
     "icon": "ReceiptText",
     "searchKeywords": [
@@ -236,7 +236,7 @@
     "displayName": "Record Payment",
     "canonicalCapability": "finance.payment.record",
     "ownerPack": "lados.commercial-finance",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Record payment status and reference after payment has been made or confirmed.",
     "inputPattern": [
       "ports",
@@ -293,7 +293,7 @@
       "finance.process_payment",
       "contractor.record_payment"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Commercial Finance",
     "icon": "ReceiptText",
     "searchKeywords": [
@@ -307,7 +307,7 @@
     "displayName": "Create Purchase Order",
     "canonicalCapability": "finance.po.create",
     "ownerPack": "lados.commercial-finance",
-    "status": "skeleton",
+    "status": "draft",
     "intent": "Create a finance-owned purchase order record from an approved request.",
     "inputPattern": [
       "ports",
@@ -363,7 +363,7 @@
     "compatibilityAliases": [
       "finance.create_purchase_order"
     ],
-    "executorStatus": "not_started",
+    "executorStatus": "implemented",
     "category": "Commercial Finance",
     "icon": "ReceiptText",
     "searchKeywords": [
@@ -371,6 +371,214 @@
       "create",
       "purchase",
       "order"
+    ]
+  },
+  {
+    "type": "lados.finance.record_purchase_order_approval",
+    "displayName": "Record PO Approval",
+    "canonicalCapability": "finance.po.approval_record",
+    "ownerPack": "lados.commercial-finance",
+    "status": "draft",
+    "intent": "Record a human purchase order approval decision with evidence and actor metadata.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "purchase order approval record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "decision",
+          "label": "Decision",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "approval",
+          "label": "Approval",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "approval",
+        "label": "Approval",
+        "fields": [
+          "approvedBy",
+          "approvalDate",
+          "decision",
+          "notes"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "finance approval matrix"
+      ]
+    },
+    "humanDecisionBoundary": "Must record a human decision; system must not decide approval.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 290,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "finance.approve_purchase_order"
+    ],
+    "executorStatus": "implemented",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "record",
+      "purchase order",
+      "approval"
+    ]
+  },
+  {
+    "type": "lados.finance.claim_retention_release",
+    "displayName": "Claim Retention Release",
+    "canonicalCapability": "finance.retention.claim_release",
+    "ownerPack": "lados.commercial-finance",
+    "status": "draft",
+    "intent": "Create a retention release claim record for a completed contract or milestone.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "retention release claim record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "claim",
+          "label": "Claim",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "retention",
+          "label": "Retention",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "retention",
+        "label": "Retention",
+        "fields": [
+          "contractReference",
+          "claimedAmount",
+          "claimPercentage",
+          "currency"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "retention rules"
+      ]
+    },
+    "humanDecisionBoundary": "Records a claim only; release approval and payment are separate.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 124,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "claim",
+      "retention"
+    ]
+  },
+  {
+    "type": "lados.finance.record_retention_release",
+    "displayName": "Record Retention Release",
+    "canonicalCapability": "finance.retention.record_release",
+    "ownerPack": "lados.commercial-finance",
+    "status": "draft",
+    "intent": "Record that a retention claim has been released, with release amount and reference.",
+    "inputPattern": [
+      "ports",
+      "inspector",
+      "resource_binding"
+    ],
+    "outputPattern": "retention release record",
+    "ports": {
+      "inputs": [
+        {
+          "id": "release",
+          "label": "Release",
+          "dataType": "object"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "record",
+          "label": "Record",
+          "dataType": "object"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "release",
+        "label": "Release",
+        "fields": [
+          "releasedAmount",
+          "releaseDate",
+          "reference",
+          "releasedBy"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": true,
+      "required": true
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": [
+        "retention rules"
+      ]
+    },
+    "humanDecisionBoundary": "Records release only; does not itself authorize release.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 270,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [],
+    "executorStatus": "implemented",
+    "category": "Commercial Finance",
+    "icon": "ReceiptText",
+    "searchKeywords": [
+      "commercial finance",
+      "record",
+      "retention",
+      "release"
     ]
   }
 ]

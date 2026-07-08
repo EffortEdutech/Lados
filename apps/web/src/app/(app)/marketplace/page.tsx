@@ -434,6 +434,263 @@ function DataPackCard({
   );
 }
 
+type ViewMode = 'tile' | 'table';
+
+function ViewToggle({ viewMode, onChange }: { viewMode: ViewMode; onChange: (mode: ViewMode) => void }) {
+  // Same ⊞/☰ glyphs as /packs and /resources — keep all three view
+  // toggles visually identical across the app.
+  return (
+    <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+      <button
+        type="button"
+        title="Tile view"
+        onClick={() => onChange('tile')}
+        className={`px-2.5 py-1.5 text-sm transition-colors ${
+          viewMode === 'tile' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'
+        }`}
+      >
+        ⊞
+      </button>
+      <button
+        type="button"
+        title="Table view"
+        onClick={() => onChange('table')}
+        className={`px-2.5 py-1.5 text-sm transition-colors border-l border-gray-200 ${
+          viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'
+        }`}
+      >
+        ☰
+      </button>
+    </div>
+  );
+}
+
+function InstalledPackTable({
+  packs,
+  onToggle,
+  busyId,
+  canManage,
+}: {
+  packs: Pack[];
+  onToggle: (pack: Pack) => void;
+  busyId: string | null;
+  canManage: boolean;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-100 text-sm">
+        <thead className="bg-gray-50">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            <th className="px-4 py-2">Pack</th>
+            <th className="px-4 py-2">Version</th>
+            <th className="px-4 py-2">Nodes</th>
+            <th className="px-4 py-2">Status</th>
+            <th className="px-4 py-2 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {packs.map((pack) => {
+            const isActive = pack.is_enabled && pack.status !== 'disabled';
+            return (
+              <tr key={pack.id}>
+                <td className="px-4 py-2.5">
+                  <Link href={`/packs/${encodeURIComponent(pack.id)}`} className="font-semibold text-gray-900 hover:text-blue-700">
+                    {pack.display_name}
+                  </Link>
+                  <p className="font-mono text-[11px] text-gray-400">{pack.id}</p>
+                </td>
+                <td className="px-4 py-2.5 text-gray-500">v{pack.version}</td>
+                <td className="px-4 py-2.5 text-gray-500">{pack.node_count}</td>
+                <td className="px-4 py-2.5">
+                  <div className="flex gap-1.5">
+                    {pack.is_official && <PackBadge tone="blue">Official</PackBadge>}
+                    <PackBadge tone={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Disabled'}</PackBadge>
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onToggle(pack)}
+                    disabled={busyId === pack.id || !canManage}
+                    className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                      isActive
+                        ? 'border-gray-200 text-gray-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700'
+                        : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                    }`}
+                  >
+                    {busyId === pack.id ? 'Working...' : isActive ? 'Disable' : 'Enable'}
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function RegistryPackTable({
+  packs,
+  installedPackIds,
+  onPreview,
+  onInstall,
+  busyId,
+  canInstall,
+}: {
+  packs: RegistryPack[];
+  installedPackIds: Set<string>;
+  onPreview: (pack: RegistryPack) => void;
+  onInstall: (pack: RegistryPack) => void;
+  busyId: string | null;
+  canInstall: boolean;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-100 text-sm">
+        <thead className="bg-gray-50">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            <th className="px-4 py-2">Pack</th>
+            <th className="px-4 py-2">Version</th>
+            <th className="px-4 py-2">Nodes</th>
+            <th className="px-4 py-2">Installs</th>
+            <th className="px-4 py-2">Author</th>
+            <th className="px-4 py-2">Status</th>
+            <th className="px-4 py-2 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {packs.map((pack) => {
+            const installed = installedPackIds.has(pack.packId);
+            return (
+              <tr key={pack.id}>
+                <td className="px-4 py-2.5">
+                  <p className="font-semibold text-gray-900">{pack.displayName}</p>
+                  <p className="font-mono text-[11px] text-gray-400">{pack.packId}</p>
+                </td>
+                <td className="px-4 py-2.5 text-gray-500">v{pack.version}</td>
+                <td className="px-4 py-2.5 text-gray-500">{pack.manifest.nodes.length}</td>
+                <td className="px-4 py-2.5 text-gray-500">{pack.downloads}</td>
+                <td className="px-4 py-2.5 truncate text-gray-500" title={pack.author}>{pack.author}</td>
+                <td className="px-4 py-2.5">
+                  <div className="flex gap-1.5">
+                    {pack.isOfficial && <PackBadge tone="blue">Official</PackBadge>}
+                    {pack.isVerified ? <PackBadge tone="green">Verified</PackBadge> : <PackBadge tone="amber">Review</PackBadge>}
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onPreview(pack)}
+                      className="rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                    >
+                      Preview
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onInstall(pack)}
+                      disabled={busyId === pack.id || installed || !canInstall}
+                      className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {busyId === pack.id ? 'Installing...' : installed ? 'Installed' : 'Install'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function DataPackTable({
+  packs,
+  onDetail,
+  onInstall,
+  onUninstall,
+  busyId,
+  canManage,
+}: {
+  packs: DataPackSummary[];
+  onDetail: (pack: DataPackSummary) => void;
+  onInstall: (pack: DataPackSummary) => void;
+  onUninstall: (pack: DataPackSummary) => void;
+  busyId: string | null;
+  canManage: boolean;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-100 text-sm">
+        <thead className="bg-gray-50">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            <th className="px-4 py-2">Knowledge Pack</th>
+            <th className="px-4 py-2">Version</th>
+            <th className="px-4 py-2">Region</th>
+            <th className="px-4 py-2">Category</th>
+            <th className="px-4 py-2">Status</th>
+            <th className="px-4 py-2 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {packs.map((pack) => {
+            const version = pack.installedVersion ?? pack.latestVersion;
+            return (
+              <tr key={pack.slug}>
+                <td className="px-4 py-2.5">
+                  <p className="font-semibold text-gray-900">{pack.displayName}</p>
+                  <p className="font-mono text-[11px] text-gray-400">{pack.slug}</p>
+                </td>
+                <td className="px-4 py-2.5 text-gray-500">v{version?.version ?? pack.version}</td>
+                <td className="px-4 py-2.5 text-gray-500">{pack.region ?? 'Global'}</td>
+                <td className="px-4 py-2.5 text-gray-500">{pack.category ?? '—'}</td>
+                <td className="px-4 py-2.5">
+                  <div className="flex gap-1.5">
+                    {pack.isOfficial && <PackBadge tone="blue">Official</PackBadge>}
+                    <PackBadge tone={pack.installed ? 'green' : 'gray'}>{pack.installed ? 'Installed' : 'Available'}</PackBadge>
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onDetail(pack)}
+                      className="rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                    >
+                      Detail
+                    </button>
+                    {pack.installed ? (
+                      <button
+                        type="button"
+                        onClick={() => onUninstall(pack)}
+                        disabled={busyId === pack.slug || !canManage}
+                        className="rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {busyId === pack.slug ? 'Working...' : 'Disable'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onInstall(pack)}
+                        disabled={busyId === pack.slug || !canManage}
+                        className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {busyId === pack.slug ? 'Installing...' : 'Install'}
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function PreviewModal({ pack, onClose }: { pack: RegistryPack; onClose: () => void }) {
   const nodes = pack.manifest.nodes.slice(0, 50);
 
@@ -580,6 +837,10 @@ function DataPackDetailModal({
 
 export default function MarketplacePage() {
   const [tab, setTab] = useState<Tab>('installed');
+  // Plain default on both server and first client render to avoid a
+  // hydration mismatch; the persisted preference is applied client-only
+  // in the effect below (same pattern as /packs and /resources).
+  const [viewMode, setViewMode] = useState<ViewMode>('tile');
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [packs, setPacks] = useState<Pack[]>([]);
@@ -706,6 +967,16 @@ export default function MarketplacePage() {
   useEffect(() => {
     if (tab === 'review' && !canManage) setTab('installed');
   }, [canManage, tab]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('lados_marketplace_view');
+    if (stored === 'tile' || stored === 'table') setViewMode(stored);
+  }, []);
+
+  const changeViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem('lados_marketplace_view', mode);
+  };
 
   const handleToggle = async (pack: Pack) => {
     setBusyId(pack.id);
@@ -929,22 +1200,29 @@ export default function MarketplacePage() {
           </div>
         )}
 
-        <nav className="mb-6 flex gap-1 border-b border-gray-200">
-          {tabs.filter((item) => item.id !== 'review' || canManage).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              className={`border-b-2 px-4 py-2 text-sm font-semibold transition-colors ${
-                tab === item.id
-                  ? 'border-blue-600 text-blue-700'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
+        <div className="mb-6 flex items-end justify-between gap-3 border-b border-gray-200">
+          <nav className="flex gap-1">
+            {tabs.filter((item) => item.id !== 'review' || canManage).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTab(item.id)}
+                className={`border-b-2 px-4 py-2 text-sm font-semibold transition-colors ${
+                  tab === item.id
+                    ? 'border-blue-600 text-blue-700'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          {(tab === 'installed' || tab === 'registry' || tab === 'data') && (
+            <div className="pb-2">
+              <ViewToggle viewMode={viewMode} onChange={changeViewMode} />
+            </div>
+          )}
+        </div>
 
         {tab === 'installed' && (
           <div className="space-y-8">
@@ -955,16 +1233,20 @@ export default function MarketplacePage() {
                 <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
                   Active ({activePacks.length})
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {activePacks.map((pack) => (
-                    <InstalledPackCard
-                      key={pack.id}
-                      pack={pack}
-                      onToggle={handleToggle}
-                      busy={busyId === pack.id || !canManage}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'tile' ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {activePacks.map((pack) => (
+                      <InstalledPackCard
+                        key={pack.id}
+                        pack={pack}
+                        onToggle={handleToggle}
+                        busy={busyId === pack.id || !canManage}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <InstalledPackTable packs={activePacks} onToggle={handleToggle} busyId={busyId} canManage={canManage} />
+                )}
               </section>
             )}
 
@@ -973,16 +1255,20 @@ export default function MarketplacePage() {
                 <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
                   Disabled ({disabledPacks.length})
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {disabledPacks.map((pack) => (
-                    <InstalledPackCard
-                      key={pack.id}
-                      pack={pack}
-                      onToggle={handleToggle}
-                      busy={busyId === pack.id || !canManage}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'tile' ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {disabledPacks.map((pack) => (
+                      <InstalledPackCard
+                        key={pack.id}
+                        pack={pack}
+                        onToggle={handleToggle}
+                        busy={busyId === pack.id || !canManage}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <InstalledPackTable packs={disabledPacks} onToggle={handleToggle} busyId={busyId} canManage={canManage} />
+                )}
               </section>
             )}
 
@@ -1031,19 +1317,30 @@ export default function MarketplacePage() {
             {registryLoading && <p className="py-8 text-center text-sm text-gray-400">Loading registry packs...</p>}
 
             {!registryLoading && registryPacks.length > 0 && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {registryPacks.map((pack) => (
-                  <RegistryPackCard
-                    key={pack.id}
-                    pack={pack}
-                    installed={installedPackIds.has(pack.packId)}
-                    onPreview={setPreview}
-                    onInstall={(item) => void installRegistryPack(item)}
-                    busy={busyId === pack.id}
-                    canInstall={canManage}
-                  />
-                ))}
-              </div>
+              viewMode === 'tile' ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {registryPacks.map((pack) => (
+                    <RegistryPackCard
+                      key={pack.id}
+                      pack={pack}
+                      installed={installedPackIds.has(pack.packId)}
+                      onPreview={setPreview}
+                      onInstall={(item) => void installRegistryPack(item)}
+                      busy={busyId === pack.id}
+                      canInstall={canManage}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <RegistryPackTable
+                  packs={registryPacks}
+                  installedPackIds={installedPackIds}
+                  onPreview={setPreview}
+                  onInstall={(item) => void installRegistryPack(item)}
+                  busyId={busyId}
+                  canInstall={canManage}
+                />
+              )
             )}
 
             {!registryLoading && registryPacks.length === 0 && (
@@ -1088,19 +1385,30 @@ export default function MarketplacePage() {
 
             {!dataPackLoading && installedDataPacks.length > 0 && (
               <section>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {installedDataPacks.map((pack) => (
-                    <DataPackCard
-                      key={pack.slug}
-                      pack={pack}
-                      onDetail={(item) => void openDataPackDetail(item)}
-                      onInstall={(item) => void installDataPack(item)}
-                      onUninstall={(item) => void uninstallDataPack(item)}
-                      busy={busyId === pack.slug}
-                      canManage={canManage}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'tile' ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {installedDataPacks.map((pack) => (
+                      <DataPackCard
+                        key={pack.slug}
+                        pack={pack}
+                        onDetail={(item) => void openDataPackDetail(item)}
+                        onInstall={(item) => void installDataPack(item)}
+                        onUninstall={(item) => void uninstallDataPack(item)}
+                        busy={busyId === pack.slug}
+                        canManage={canManage}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <DataPackTable
+                    packs={installedDataPacks}
+                    onDetail={(item) => void openDataPackDetail(item)}
+                    onInstall={(item) => void installDataPack(item)}
+                    onUninstall={(item) => void uninstallDataPack(item)}
+                    busyId={busyId}
+                    canManage={canManage}
+                  />
+                )}
               </section>
             )}
 
@@ -1129,19 +1437,30 @@ export default function MarketplacePage() {
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {dataPacks.map((pack) => (
-                  <DataPackCard
-                    key={pack.slug}
-                    pack={{ ...pack, installed: pack.installed || installedDataPackSlugs.has(pack.slug) }}
-                    onDetail={(item) => void openDataPackDetail(item)}
-                    onInstall={(item) => void installDataPack(item)}
-                    onUninstall={(item) => void uninstallDataPack(item)}
-                    busy={busyId === pack.slug}
-                    canManage={canManage}
-                  />
-                ))}
-              </div>
+              {viewMode === 'tile' ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {dataPacks.map((pack) => (
+                    <DataPackCard
+                      key={pack.slug}
+                      pack={{ ...pack, installed: pack.installed || installedDataPackSlugs.has(pack.slug) }}
+                      onDetail={(item) => void openDataPackDetail(item)}
+                      onInstall={(item) => void installDataPack(item)}
+                      onUninstall={(item) => void uninstallDataPack(item)}
+                      busy={busyId === pack.slug}
+                      canManage={canManage}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <DataPackTable
+                  packs={dataPacks.map((pack) => ({ ...pack, installed: pack.installed || installedDataPackSlugs.has(pack.slug) }))}
+                  onDetail={(item) => void openDataPackDetail(item)}
+                  onInstall={(item) => void installDataPack(item)}
+                  onUninstall={(item) => void uninstallDataPack(item)}
+                  busyId={busyId}
+                  canManage={canManage}
+                />
+              )}
             </section>
 
             <section className="rounded-lg border border-amber-100 bg-amber-50 px-5 py-4">

@@ -41,6 +41,12 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
   const [items, setItems] = useState<DataPackItem[]>([]);
   const [localSearch, setLocalSearch] = useState('');
   const [collection, setCollection] = useState('');
+  // Phase 21 S7.6 — PD-4's /data-pack-items/search already accepts an
+  // `effectiveOn` (YYYY-MM-DD) param on the backend (data-packs.service.ts),
+  // filtering to items whose effective_from/effective_to window covers the
+  // date. No UI control existed to set it, so every search silently used
+  // "effective now" only — this exposes that existing backend capability.
+  const [effectiveOn, setEffectiveOn] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +76,7 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
     });
     if (query) params.set('q', query);
     if (collection) params.set('collection', collection);
+    if (effectiveOn) params.set('effectiveOn', effectiveOn);
 
     const res = await apiClient.get<DataPackItem[]>(`/data-pack-items/search?${params.toString()}`);
     if (res.success) {
@@ -79,7 +86,7 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
       setError(res.error?.message ?? 'Failed to search Knowledge Pack items');
     }
     setLoading(false);
-  }, [collection, organizationId, query]);
+  }, [collection, effectiveOn, organizationId, query]);
 
   useEffect(() => {
     void loadInstalled();
@@ -117,6 +124,28 @@ export default function DataPackBrowser({ organizationId, search = '' }: DataPac
             <option key={key} value={key}>{key}</option>
           ))}
         </select>
+        <div className="flex items-center gap-1.5">
+          <label htmlFor="dp-effective-on" className="flex-shrink-0 text-[10px] font-medium text-gray-500">
+            Effective on
+          </label>
+          <input
+            id="dp-effective-on"
+            type="date"
+            value={effectiveOn}
+            onChange={(event) => setEffectiveOn(event.target.value)}
+            title="Show only Knowledge Pack items effective on this date (defaults to now)"
+            className="flex-1 rounded border border-gray-200 px-2 py-1 text-[11px] text-gray-700 focus:border-blue-400 focus:outline-none"
+          />
+          {effectiveOn && (
+            <button
+              type="button"
+              onClick={() => setEffectiveOn('')}
+              className="flex-shrink-0 text-[10px] font-medium text-gray-400 hover:text-gray-600"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (

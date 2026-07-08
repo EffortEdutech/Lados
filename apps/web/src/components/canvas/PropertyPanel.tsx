@@ -371,7 +371,7 @@ export default function PropertyPanel({
           ) : null
         )}
 
-        {/* Services + Data Pack dependencies */}
+        {/* Services + Knowledge Pack dependencies */}
         {!loading && nodeDef && (
           (nodeDef.uses_services?.length || nodeDef.data_pack_deps?.length) ? (
             <div className="px-3 py-2 border-b border-gray-100 space-y-1.5">

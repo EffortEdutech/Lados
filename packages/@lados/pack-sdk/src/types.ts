@@ -293,6 +293,14 @@ export interface OfficialCapabilityPackManifest {
   prototypeReferences: string[];
   visual: OfficialPackVisual;
   verification: OfficialVerificationStatus;
+  /**
+   * Optional resource type → view config declarations (S9.1 gap closure,
+   * 2026-07-05). Reuses the same PackResourceDefinition shape prototype
+   * packs used — the generic /resources page renders tabs/icons/inline
+   * actions per type from whichever active pack declares them. Omitted
+   * for packs that own no user-facing Workspace Resource type.
+   */
+  resourceViews?: PackResourceDefinition[];
 }
 
 export interface OfficialNodePort {
