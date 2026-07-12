@@ -295,7 +295,7 @@ export default function RunHistoryPanel({
               {expanded && (
                 <div className="space-y-1 bg-gray-50 px-3 py-2">
                   {logs.length === 0 && (
-                    <p className="text-[10px] text-gray-400">No node logs captured</p>
+                    <p className="text-[10px] text-gray-400">No task logs captured</p>
                   )}
                   {logs.map((log) => (
                     <div key={`${run.id}-${log.nodeId}`} className="rounded border border-gray-200 bg-white px-2 py-1.5">

@@ -78,4 +78,49 @@ export class ApprovalTaskCreator {
 
     return { taskId: task['id'] as string };
   }
+
+  /**
+   * Phase 23 S23.2 (§4.1) — create a Stage Gate task instance (renamed from
+   * createPipelineGate in Phase 24 S24.2). Unlike createTask() above, a
+   * stage_gate task belongs to a program_run, not a single
+   * execution/workflow/project (migration 0075's XOR constraint + migration
+   * 0076's relaxed workflow_id/project_id NOT NULL, both renamed by 0079).
+   * It opens empty — no stage_gate_votes rows exist yet — and is resolved by
+   * ProgramWatchdogService tallying votes against voteThreshold, never by a
+   * single decide() call.
+   */
+  async createStageGate(params: {
+    programRunId: string;
+    programStageId: string;
+    title: string;
+    description?: string;
+    voterUserIds: string[];
+    voteThreshold: number;
+    escalateAfterMinutes?: number;
+    data?: Record<string, unknown>;
+  }): Promise<{ taskId: string }> {
+    const { data: task, error } = await this.supabase.admin
+      .from('approval_tasks')
+      .insert({
+        program_run_id: params.programRunId,
+        task_type:        'stage_gate',
+        node_id:           params.programStageId,
+        node_name:         params.title,
+        title:             params.title,
+        description:       params.description ?? 'Stage gate — awaiting quorum vote',
+        status:            'pending',
+        voter_user_ids:    params.voterUserIds,
+        vote_threshold:    params.voteThreshold,
+        escalate_after_minutes: params.escalateAfterMinutes ?? null,
+        data:              { ...(params.data ?? {}), programStageId: params.programStageId },
+      })
+      .select('id')
+      .single();
+
+    if (error || !task) {
+      throw new Error(error?.message ?? 'Failed to create stage gate task');
+    }
+
+    return { taskId: task['id'] as string };
+  }
 }

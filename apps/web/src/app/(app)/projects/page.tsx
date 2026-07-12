@@ -19,6 +19,16 @@ interface Project {
   status: string;
   currency: string;
   created_at: string;
+  // Phase 24 S24.6 — the real projects.program_id FK (S24.1); resolved to a
+  // name client-side against the org's own programs list, same pattern as
+  // the Departments settings page resolves parent_department_id.
+  program_id?: string | null;
+}
+
+// Only the fields this page needs to resolve program_id → a display name.
+interface Program {
+  id: string;
+  name: string;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -32,6 +42,7 @@ export default function ProjectsPage() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', code: '', description: '', currency: 'MYR' });
@@ -47,13 +58,18 @@ export default function ProjectsPage() {
     }).finally(() => setLoading(false));
   }, []);
 
-  // Load projects when org changes
+  // Load projects (+ programs, to resolve program_id → name) when org changes
   const loadProjects = useCallback(() => {
     if (!selectedOrg) return;
     setLoading(true);
-    apiClient
-      .get<Project[]>(`/organizations/${selectedOrg.id}/projects`)
-      .then((res) => setProjects(res.data ?? []))
+    Promise.all([
+      apiClient.get<Project[]>(`/organizations/${selectedOrg.id}/projects`),
+      apiClient.get<Program[]>(`/organizations/${selectedOrg.id}/programs`),
+    ])
+      .then(([projRes, programRes]) => {
+        setProjects(projRes.data ?? []);
+        setPrograms(programRes.data ?? []);
+      })
       .finally(() => setLoading(false));
   }, [selectedOrg]);
 
@@ -143,30 +159,38 @@ export default function ProjectsPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/projects/${project.id}`}
-              className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm">{project.name}</h3>
-                  <p className="text-xs text-gray-400 mt-0.5 font-mono">{project.code}</p>
+          {projects.map((project) => {
+            const program = programs.find((p) => p.id === project.program_id);
+            return (
+              <Link
+                key={project.id}
+                href={`/projects/${project.id}`}
+                className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">{project.name}</h3>
+                    <p className="text-xs text-gray-400 mt-0.5 font-mono">{project.code}</p>
+                  </div>
+                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                    {project.status}
+                  </span>
                 </div>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[project.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                  {project.status}
-                </span>
-              </div>
-              {project.description && (
-                <p className="text-xs text-gray-500 line-clamp-2 mb-3">{project.description}</p>
-              )}
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>{project.currency}</span>
-                <span>{new Date(project.created_at).toLocaleDateString()}</span>
-              </div>
-            </Link>
-          ))}
+                {project.description && (
+                  <p className="text-xs text-gray-500 line-clamp-2 mb-3">{project.description}</p>
+                )}
+                {program && (
+                  <p className="text-[11px] text-violet-600 mb-2">
+                    🗂️ Program: <span className="font-medium">{program.name}</span>
+                  </p>
+                )}
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span>{project.currency}</span>
+                  <span>{new Date(project.created_at).toLocaleDateString()}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 

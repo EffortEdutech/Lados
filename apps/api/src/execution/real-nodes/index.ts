@@ -25,6 +25,7 @@ import type { ApprovalTaskCreator } from '../../approval/approval-task.creator';
 import type { ArtifactService }     from '../../artifact/artifact.service';
 import type { EmailService }        from '../../notification/email.service';   // Phase 10
 import type { SmsService }          from '../../notification/sms.service';     // Phase 10
+import type { ProgramArtifactService } from '../../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
 
 // Phase 21 S2 (Wave 1) — official Capability Pack executors. Tried first —
 // these are the canonical successors declared in the compatibility alias
@@ -94,6 +95,7 @@ export function buildRealNodeResolver(
   artifactService?: ArtifactService,
   emailService?: EmailService,        // Phase 10
   smsService?: SmsService,            // Phase 10
+  programArtifactService?: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
 ): (nodeType: string) => NodeExecutor | null {
   // ArtifactService satisfies both IArtifactWriteService and IArtifactReadService structurally
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,7 +109,11 @@ export function buildRealNodeResolver(
     // lados.human.request_approval, etc.).
     // Phase 21 S9.1 (gap closure) — lados.workflow.publish_event needs
     // EventBusService; every other node in this pack is self-contained.
-    officialWorkflowFoundationResolve({ eventBusService }),
+    // Phase 24 S24.3: lados-workflow-foundation's WorkflowFoundationServices
+    // interface field renamed pipelineArtifactService→programArtifactService
+    // to match — the S24.2 explicit-remap exception is gone, plain shorthand
+    // now that both sides agree on the name.
+    officialWorkflowFoundationResolve({ eventBusService, programArtifactService }),
     officialHumanWorkResolve({
       approvalTaskService: approvalService,
       notificationService,

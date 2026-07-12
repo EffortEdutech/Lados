@@ -16,11 +16,27 @@
  * condition's extended grammar (named fields + AND/OR combinator, backward
  * compatible with every S2 test above) and the new `switch` node (true
  * multi-way routing, 5 fixed case slots + default).
+ *
+ * Phase 23 S23.3 (Data Handoff Nodes, 2026-07-08): added coverage for
+ * `pipeline_save_artifact` / `pipeline_read_artifact` — the two nodes that
+ * let a pipeline stage write/read keyed handoff data scoped to one
+ * pipeline_run_id (ctx.pipelineRunId, threaded by PipelineExecutionService
+ * via S23.2). Both fail clearly with NOT_IN_PIPELINE_CONTEXT for a
+ * standalone (non-pipeline) run — the manifest node count moves 10 -> 12.
+ *
+ * Phase 24 S24.3 (Node Type Rename, 2026-07-11): renamed throughout to
+ * `program_save_artifact` / `program_read_artifact`, `ctx.programRunId` /
+ * `ctx.programStageId`, `NOT_IN_PROGRAM_CONTEXT`, `IProgramArtifactService` —
+ * matches the pack-layer rename (Pipeline→Program). Node count unchanged.
  */
 import * as fs from 'fs';
 import * as path from 'path';
 import { createMockNodeContext } from '@lados/testing';
-import { resolveNode, type IEventBusService } from '@lados/official-workflow-foundation';
+import {
+  resolveNode,
+  type IEventBusService,
+  type IProgramArtifactService,
+} from '@lados/official-workflow-foundation';
 
 interface NodeManifestLike {
   type: string;
@@ -38,9 +54,21 @@ function fakeEventBusService(id: string | null = 'evt-1'): IEventBusService {
   return { publish: jest.fn().mockResolvedValue(id ? { id } : null) };
 }
 
+function fakeProgramArtifactService(
+  readResult: { value: unknown; found: boolean } = { value: null, found: false },
+): IProgramArtifactService {
+  return {
+    saveArtifact: jest.fn().mockResolvedValue({ id: 'art-1' }),
+    readArtifact: jest.fn().mockResolvedValue(readResult),
+  };
+}
+
 describe('official-workflow-foundation — manifest <-> executor contract', () => {
   it('every node declared in nodes.json resolves to a real executor', () => {
-    const resolve = resolveNode({ eventBusService: fakeEventBusService() });
+    const resolve = resolveNode({
+      eventBusService: fakeEventBusService(),
+      programArtifactService: fakeProgramArtifactService(),
+    });
     for (const m of manifests) {
       expect(typeof resolve(m.type)).toBe('function');
     }
@@ -56,7 +84,7 @@ describe('official-workflow-foundation — manifest <-> executor contract', () =
     expect(resolveNode()('lados.workflow.does_not_exist')).toBeNull();
   });
 
-  it('declares 10 nodes for the 10 capabilities that have a backing node (workflow.trigger.event is capability-only by design)', () => {
+  it('declares 12 nodes for the 12 capabilities that have a backing node (workflow.trigger.event is capability-only by design)', () => {
     const manifest = JSON.parse(
       fs.readFileSync(
         path.join(__dirname, '../../../packs/official/lados-workflow-foundation/manifest.json'),
@@ -66,11 +94,15 @@ describe('official-workflow-foundation — manifest <-> executor contract', () =
     expect(manifest.nodes).toContain('lados.workflow.loop');
     expect(manifest.nodes).toContain('lados.workflow.publish_event');
     expect(manifest.nodes).toContain('lados.workflow.switch');
+    expect(manifest.nodes).toContain('lados.workflow.program_save_artifact');
+    expect(manifest.nodes).toContain('lados.workflow.program_read_artifact');
     expect(manifest.capabilities).toContain('workflow.control.loop');
     expect(manifest.capabilities).toContain('workflow.event.publish');
     expect(manifest.capabilities).toContain('workflow.control.switch');
-    expect(manifest.nodes.length).toBe(10);
-    expect(manifests.length).toBe(10);
+    expect(manifest.capabilities).toContain('workflow.program.save_artifact');
+    expect(manifest.capabilities).toContain('workflow.program.read_artifact');
+    expect(manifest.nodes.length).toBe(12);
+    expect(manifests.length).toBe(12);
   });
 });
 
@@ -477,5 +509,112 @@ describe('lados.workflow.publish_event (S9.1 gap closure)', () => {
     expect(result.status).toBe('success');
     expect(result.outputs['eventId']).toBeNull();
     expect(result.outputs['published']).toBe(false);
+  });
+});
+
+describe('lados.workflow.program_save_artifact (S23.3, renamed S24.3)', () => {
+  it('fails with NOT_IN_PROGRAM_CONTEXT for a standalone (non-program) run', async () => {
+    const programArtifactService = fakeProgramArtifactService();
+    const { ctx } = createMockNodeContext({ config: { artifactKey: 'quote' } });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_save_artifact')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('NOT_IN_PROGRAM_CONTEXT');
+    expect(programArtifactService.saveArtifact).not.toHaveBeenCalled();
+  });
+
+  it('fails with NO_SERVICE when running as a program stage but no service is injected', async () => {
+    const { ctx } = createMockNodeContext({
+      programRunId: 'run-1',
+      programStageId: 'stage-1',
+      config: { artifactKey: 'quote' },
+    });
+    const result = await resolveNode()('lados.workflow.program_save_artifact')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('NO_SERVICE');
+  });
+
+  it('fails with MISSING_INPUT when artifactKey is absent', async () => {
+    const programArtifactService = fakeProgramArtifactService();
+    const { ctx } = createMockNodeContext({ programRunId: 'run-1', programStageId: 'stage-1' });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_save_artifact')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MISSING_INPUT');
+  });
+
+  it('saves the artifact scoped to the program run and stage', async () => {
+    const programArtifactService = fakeProgramArtifactService();
+    const { ctx } = createMockNodeContext({
+      programRunId: 'run-1',
+      programStageId: 'stage-1',
+      executionId: 'exec-1',
+      inputs: { artifactKey: 'quote', value: { amount: 500 } },
+    });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_save_artifact')!(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['saved']).toBe(true);
+    expect(result.outputs['artifactKey']).toBe('quote');
+    expect(programArtifactService.saveArtifact).toHaveBeenCalledWith({
+      programRunId: 'run-1',
+      sourceStageId: 'stage-1',
+      sourceRunId: 'exec-1',
+      artifactKey: 'quote',
+      value: { amount: 500 },
+    });
+  });
+});
+
+describe('lados.workflow.program_read_artifact (S23.3, renamed S24.3)', () => {
+  it('fails with NOT_IN_PROGRAM_CONTEXT for a standalone (non-program) run', async () => {
+    const programArtifactService = fakeProgramArtifactService();
+    const { ctx } = createMockNodeContext({ config: { artifactKey: 'quote' } });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_read_artifact')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('NOT_IN_PROGRAM_CONTEXT');
+  });
+
+  it('fails with NO_SERVICE when running as a program stage but no service is injected', async () => {
+    const { ctx } = createMockNodeContext({ programRunId: 'run-1', config: { artifactKey: 'quote' } });
+    const result = await resolveNode()('lados.workflow.program_read_artifact')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('NO_SERVICE');
+  });
+
+  it('fails with MISSING_INPUT when artifactKey is absent', async () => {
+    const programArtifactService = fakeProgramArtifactService();
+    const { ctx } = createMockNodeContext({ programRunId: 'run-1' });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_read_artifact')!(ctx);
+
+    expect(result.status).toBe('failure');
+    expect(result.error?.code).toBe('MISSING_INPUT');
+  });
+
+  it('returns found:false (not a failure) when the key has not been written yet', async () => {
+    const programArtifactService = fakeProgramArtifactService({ value: null, found: false });
+    const { ctx } = createMockNodeContext({ programRunId: 'run-1', config: { artifactKey: 'quote' } });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_read_artifact')!(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['found']).toBe(false);
+    expect(result.outputs['value']).toBeNull();
+  });
+
+  it('reads back a previously saved value', async () => {
+    const programArtifactService = fakeProgramArtifactService({ value: { amount: 500 }, found: true });
+    const { ctx } = createMockNodeContext({ programRunId: 'run-1', inputs: { artifactKey: 'quote' } });
+    const result = await resolveNode({ programArtifactService })('lados.workflow.program_read_artifact')!(ctx);
+
+    expect(result.status).toBe('success');
+    expect(result.outputs['found']).toBe(true);
+    expect(result.outputs['value']).toEqual({ amount: 500 });
+    expect(programArtifactService.readArtifact).toHaveBeenCalledWith({
+      programRunId: 'run-1',
+      artifactKey: 'quote',
+    });
   });
 });

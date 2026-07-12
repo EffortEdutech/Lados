@@ -311,9 +311,9 @@ export default function DashboardPage() {
                 <p className="mt-2 text-xs text-gray-400">In active project</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <p className="text-sm font-medium text-gray-500">Node Library</p>
+                <p className="text-sm font-medium text-gray-500">Task Library</p>
                 <p className="mt-2 text-3xl font-bold text-green-600">12</p>
-                <p className="mt-2 text-xs text-gray-400">MVP nodes across 5 packs</p>
+                <p className="mt-2 text-xs text-gray-400">MVP tasks across 5 packs</p>
               </div>
             </div>
 

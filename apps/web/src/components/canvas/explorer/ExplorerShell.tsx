@@ -35,7 +35,11 @@ interface ExplorerTabConfig {
 }
 
 const TAB_CONFIG: ExplorerTabConfig[] = [
-  { id: 'nodes', label: 'Nodes', compact: 'N', title: 'Skill nodes' },
+  // compact: 'S' (not 'T') — 'T' collided with the Templates tab below once
+  // "Nodes" became "Tasks" (2026-07-11 Node→Task rename); 'S' for "Skill
+  // tasks" per this row's own title, matches how "Skill nodes" was named
+  // before the rename.
+  { id: 'nodes', label: 'Tasks', compact: 'S', title: 'Skill tasks' },
   { id: 'resources', label: 'Resources', compact: 'R', title: 'Project resources' },
   { id: 'templates', label: 'Templates', compact: 'T', title: 'Workflow templates' },
   { id: 'runs', label: 'Runs', compact: 'U', title: 'Workflow and group runs' },

@@ -30,6 +30,7 @@ import { StateEngineService } from '../state-engine/state-engine.service';
 import { SecurityEngineService } from '../security/security.service';
 import { ApprovalTaskCreator } from '../approval/approval-task.creator';
 import { ArtifactService }  from '../artifact/artifact.service';
+import { ProgramArtifactService } from '../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
 import { DataPacksService } from '../data-packs/data-packs.service';
 import { ExecutionQueueService, parseRedisUrl } from './execution-queue.service';
 import { buildRealNodeResolver } from '../execution/real-nodes';
@@ -67,12 +68,14 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
     private readonly emitter:       EventEmitter2,
     private readonly emailService:  EmailService,    // Phase 10
     private readonly smsService:    SmsService,      // Phase 10
+    private readonly programArtifactService: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
   ) {
     this.nodeResolver = buildRealNodeResolver(
       fileService, libraryService, aiService, documentService,
       notificationService, resourceService, eventBus, stateEngine,
       approvalTaskCreator, artifactService,
       emailService, smsService,
+      programArtifactService,
     );
   }
 
@@ -127,7 +130,7 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
     // Load workflow snapshot from DB (already stored at trigger time)
     const { data: run, error: runErr } = await this.supabase.admin
       .from('execution_runs')
-      .select('workflow_snapshot, inputs')
+      .select('workflow_snapshot, inputs, program_run_id, program_stage_id')
       .eq('id', runId)
       .single();
 
@@ -149,6 +152,12 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       variables:      {},
       nodeResolver:   this.nodeResolver,
       skipNodes:      skipNodes ?? [],
+      // Phase 23 S23.2/S23.3, renamed Phase 24 S24.2 — re-read off the same
+      // row rather than threading through the BullMQ job payload; keeps the
+      // job schema untouched and works identically whether Redis is
+      // configured or not.
+      programRunId:   (run['program_run_id'] as string | null) ?? undefined,
+      programStageId: (run['program_stage_id'] as string | null) ?? undefined,
       // Phase 21 S3 (D4) — bridges the engine's per-node progress hook to the
       // SSE stream. The /runs/:runId/stream endpoint was declared since Phase
       // 12 but nothing ever emitted NODE_STARTED/NODE_DONE — this is the fix.

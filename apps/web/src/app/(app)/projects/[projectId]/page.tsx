@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api/client';
-import PipelineCanvas from '@/components/pipeline/PipelineCanvas';
+// PipelineCanvas (Sprint 11, project-scoped) removed from this page — Phase
+// 23 S23.4 replaces it with the org-level /programs area (renamed from
+// /pipelines in Phase 24 S24.4). Component source is left in place under
+// components/pipeline/, just no longer imported here.
 
 // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -34,6 +37,15 @@ interface ProjectSummary {
   id: string;
   name: string;
   code?: string;
+  // Phase 24 S24.6 — the real projects.program_id FK (S24.1); resolved to a
+  // name client-side against the org's own programs list.
+  program_id?: string | null;
+}
+
+// Only the fields this page needs to resolve program_id → a display name.
+interface ProgramSummary {
+  id: string;
+  name: string;
 }
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -60,9 +72,10 @@ function templateIcon(icon: string): string {
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'workflows' | 'pipeline'>('workflows');
+  const [activeTab] = useState<'workflows'>('workflows');
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [project, setProject] = useState<ProjectSummary | null>(null);
+  const [program, setProgram] = useState<ProgramSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Modal state
@@ -106,6 +119,19 @@ export default function ProjectDetailPage() {
           .get<ProjectSummary>(`/organizations/${orgId}/projects/${projectId}`)
           .then((projectRes) => {
             if (projectRes.success && projectRes.data) setProject(projectRes.data);
+            // Phase 24 S24.6 — resolve the project's program_id to a name.
+            // No single-program GET endpoint is worth adding for a one-line
+            // lookup, so fetch the org's programs list and find it client
+            // side, same pattern as the Departments page resolves parents.
+            const programId = projectRes.data?.program_id;
+            if (programId) {
+              void apiClient
+                .get<ProgramSummary[]>(`/organizations/${orgId}/programs`)
+                .then((programsRes) => {
+                  const match = (programsRes.data ?? []).find((p) => p.id === programId);
+                  if (match) setProgram(match);
+                });
+            }
           });
       });
   }, [projectId]);
@@ -248,6 +274,14 @@ export default function ProjectDetailPage() {
             {project?.code && (
               <p className="mt-1 text-sm text-gray-500">{project.code}</p>
             )}
+            {program && (
+              <Link
+                href={`/programs/${program.id}`}
+                className="mt-1 inline-block text-[11px] text-violet-600 hover:text-violet-800"
+              >
+                🗂️ Program: <span className="font-medium">{program.name}</span>
+              </Link>
+            )}
           </div>
           {activeTab === 'workflows' && (
             <div className="flex gap-2">
@@ -274,34 +308,21 @@ export default function ProjectDetailPage() {
           )}
         </div>
 
-        {/* Tab Bar */}
+        {/* Tab Bar — Phase 23 S23.4: Pipeline tab removed (project-scoped
+            pipelines are retired; see the org-level /programs area, renamed
+            from /pipelines in Phase 24 S24.4). The "Programs →" tab was
+            removed 2026-07-11 (eff feedback) — it just linked out to the
+            unfiltered org-wide /programs list, not this project's own
+            program, and read as a confusing dead-end tab. This project's
+            actual parent Program (if any) is now shown correctly via the
+            header badge above (S24.6, links to /programs/:id). */}
         <div className="flex items-center gap-1 border-b border-gray-200 mb-6">
           <button
-            onClick={() => setActiveTab('workflows')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
-              activeTab === 'workflows'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className="px-4 py-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600 -mb-px"
           >
             Workflows
           </button>
-          <button
-            onClick={() => setActiveTab('pipeline')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
-              activeTab === 'pipeline'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Pipeline
-          </button>
         </div>
-
-        {/* â”€â”€ Pipeline Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        {activeTab === 'pipeline' && (
-          <PipelineCanvas projectId={projectId} />
-        )}
 
         {/* â”€â”€ Workflows Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {activeTab === 'workflows' && (
@@ -528,7 +549,7 @@ export default function ProjectDetailPage() {
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">Workflow Templates</h2>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Start from a pre-built workflow - nodes are wired and ready to configure
+                    Start from a pre-built workflow - tasks are wired and ready to configure
                   </p>
                 </div>
                 <button

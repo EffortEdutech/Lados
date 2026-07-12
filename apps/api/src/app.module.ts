@@ -15,7 +15,6 @@ import { FileModule } from './file/file.module';
 import { LibraryModule } from './library/library.module';
 import { AiModule } from './ai/ai.module';
 import { TemplatesModule } from './templates/templates.module';
-import { PipelineModule } from './pipeline/pipeline.module';
 import { ArtifactModule } from './artifact/artifact.module';
 import { DocumentModule } from './document/document.module';
 import { ServicesModule } from './services/services.module';
@@ -40,6 +39,8 @@ import { ResourceBindingsModule } from './resource-bindings/resource-bindings.mo
 import { DataPacksModule } from './data-packs/data-packs.module';
 import { AnalyticsModule } from './analytics/analytics.module';    // Phase 22 S22.3
 import { RetentionModule } from './retention/retention.module';    // Phase 22 S22.5
+import { ProgramsModule } from './programs/programs.module';    // Phase 23 S23.1, renamed Phase 24 S24.2 -- org-level program definitions (NOT the old project-scoped PipelineModule)
+import { ProgramExecutionModule } from './program-execution/program-execution.module'; // Phase 23 S23.2, renamed Phase 24 S24.2 -- durable server-side program runs + stage gates
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -67,7 +68,13 @@ import { MulterModule } from '@nestjs/platform-express';
     LibraryModule,          // Sprint 8 -- project document library
     AiModule,               // Sprint 9 -- OpenAI wrapper (global, keyword fallback when key absent)
     TemplatesModule,        // Sprint 10 -- workflow templates
-    PipelineModule,         // Sprint 11 -- project pipeline canvas
+    // PipelineModule (Sprint 11, project-scoped pipeline canvas) removed
+    // Phase 23 S23.4 — fully superseded by ProgramsModule/ProgramExecutionModule
+    // below (renamed from PipelinesModule/PipelineExecutionModule in Phase 24
+    // S24.2). Source kept on disk under pipeline/ for reference, not deleted,
+    // since project_pipelines/project_artifacts are covered by a separate
+    // drop migration (0077) eff applies explicitly, not implicitly via
+    // silently orphaning a live route.
     ArtifactModule,         // Sprint 11 -- inter-workflow artifact store
     DocumentModule,         // Sprint 14 -- unified file-parsing service (global)
     ServicesModule,         // Sprint 14 -- core service registry + GET /services
@@ -92,6 +99,8 @@ import { MulterModule } from '@nestjs/platform-express';
     DataPacksModule,        // Phase 19 -- governed Data Pack engine
     AnalyticsModule,        // Phase 22 S22.3 -- cross-run monitoring rollups
     RetentionModule,        // Phase 22 S22.5 -- retention/archival execution job
+    ProgramsModule,        // Phase 23 S23.1, renamed Phase 24 S24.2 -- org-level program definitions (workflows+stage gates+data handoff), CRUD only for now
+    ProgramExecutionModule, // Phase 23 S23.2, renamed Phase 24 S24.2 -- ProgramExecutionService + ProgramWatchdogService (5th watchdog)
     MulterModule.register({ dest: '/tmp/uploads' }),
   ],
   providers: [

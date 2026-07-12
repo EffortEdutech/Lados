@@ -41,6 +41,16 @@ class SubmitInputDto {
   data!: Record<string, unknown>;
 }
 
+class CastVoteDto {
+  @IsIn(['approved', 'rejected'])
+  decision!: 'approved' | 'rejected';
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  comments?: string;
+}
+
 @UseGuards(SupabaseJwtGuard)
 @Controller('approvals')
 export class ApprovalController {
@@ -111,6 +121,21 @@ export class ApprovalController {
     @Request() req: AuthenticatedRequest,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.approvalService.submitInput(taskId, dto.data, req.user.id);
+    return { success: true, data, error: null };
+  }
+
+  /**
+   * Phase 23 S23.2 (§4.4) — cast one committee member's vote on a
+   * stage_gate task (renamed from pipeline_gate, Phase 24 S24.2). Distinct
+   * from /decide, which stays exactly as-is for approval/input tasks.
+   */
+  @Post(':taskId/vote')
+  async castVote(
+    @Param('taskId') taskId: string,
+    @Body() dto: CastVoteDto,
+    @Request() req: AuthenticatedRequest,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.approvalService.castVote(taskId, dto.decision, dto.comments, req.user.id);
     return { success: true, data, error: null };
   }
 }

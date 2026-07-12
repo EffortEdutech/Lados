@@ -111,16 +111,16 @@ function getPackColor(nodeType: string): string {
 
 /** S10-004: User-friendly error code descriptions */
 const ERROR_HINTS: Record<string, string> = {
-  NO_BOQ:             'No BOQ data received. Connect a Read BOQ node above this node.',
+  NO_BOQ:             'No BOQ data received. Connect a Read BOQ task above this task.',
   NO_ITEMS:           'BOQ has no items. Verify the Excel file contains data rows.',
   FILE_NOT_FOUND:     'BOQ file not found. Upload the file via the Library panel first.',
-  NO_FILE_ID:         'No file selected. Open the node properties and choose a BOQ file.',
+  NO_FILE_ID:         'No file selected. Open the task properties and choose a BOQ file.',
   PARSE_ERROR:        'Could not read the Excel file. Ensure it is a valid .xlsx file.',
   AI_UNAVAILABLE:     'AI service not reachable. Using keyword classification as fallback.',
   ALL_PACKAGES_FAILED:'All RFQ documents failed to generate. Check Supabase Storage bucket permissions.',
   CYCLE_DETECTED:     'Workflow has a circular dependency. Remove the looping connection.',
   RUNNER_EXCEPTION:   'An unexpected error stopped the run. Check the API logs.',
-  UNHANDLED_EXCEPTION:'A node threw an unexpected error. See the message below for details.',
+  UNHANDLED_EXCEPTION:'A task threw an unexpected error. See the message below for details.',
 };
 
 const STATUS_STYLES: Record<string, { dot: string; badge: string }> = {
@@ -815,4 +815,3 @@ export default function ExecutionLogPanel({ run, logs, loading, onClose }: Props
     </div>
   );
 }
-

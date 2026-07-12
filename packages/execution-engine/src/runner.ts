@@ -115,6 +115,8 @@ export class WorkflowRunner {
       variables = {},
       skipNodes = [],
       concurrency,
+      programRunId,
+      programStageId,
     } = this.options;
     const workflowGroups = definition.ui?.groups ?? [];
 
@@ -211,7 +213,7 @@ export class WorkflowRunner {
       // Build parallel tasks for this level
       const levelTasks = pendingSteps.map((step) => () => this._executeStep(
         step, nodeOutputs, inputs, variables,
-        { executionId, workflowId, projectId, organizationId, userId },
+        { executionId, workflowId, projectId, organizationId, userId, programRunId, programStageId },
         skipMap,
         workflowGroups,
       ));
@@ -325,6 +327,8 @@ export class WorkflowRunner {
       projectId: string;
       organizationId: string;
       userId: string;
+      programRunId?: string;
+      programStageId?: string;
     },
     skipMap: Map<string, SkipNodeSpec>,
     workflowGroups: WorkflowSkillGroup[],
@@ -412,6 +416,8 @@ export class WorkflowRunner {
       projectId:      ctx.projectId,
       organizationId: ctx.organizationId,
       userId:         ctx.userId,
+      programRunId:  ctx.programRunId,
+      programStageId: ctx.programStageId,
       config:         step.config,
       inputs:         resolvedInputs,
       variables,

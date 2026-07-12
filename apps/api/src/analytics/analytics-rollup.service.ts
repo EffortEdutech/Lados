@@ -19,6 +19,14 @@
  * sort, index) rather than a Postgres percentile_cont() stored procedure —
  * consistent with this codebase's convention of doing aggregation in TS via
  * the Supabase JS client rather than introducing custom SQL functions.
+ *
+ * Phase 23 S23.5 extension: also rolls up program_run_stats_daily (renamed
+ * from pipeline_run_stats_daily, migration 0078, renamed by 0079) from
+ * program_runs. program_runs has no duration_ms column of its own (unlike
+ * execution_runs) — duration is computed here from started_at/completed_at.
+ * Same recompute-not-accumulate tick, same "today AND yesterday" guard.
+ * Phase 24 S24.2: rollupPipelineRunStats() renamed to
+ * rollupProgramRunStats(), table/column names updated to match migration 0079.
  */
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { SupabaseService } from '../common/supabase/supabase.service';
@@ -39,6 +47,15 @@ interface LogRow {
   node_type: string;
   status: string;
   duration_ms: number | null;
+}
+
+interface ProgramRunRow {
+  id: string;
+  organization_id: string;
+  program_id: string;
+  status: string;
+  started_at: string | null;
+  completed_at: string | null;
 }
 
 function dateOnly(d: Date): string {
@@ -114,6 +131,22 @@ export class AnalyticsRollupService implements OnModuleInit, OnModuleDestroy {
 
     await this.rollupWorkflowRunStats(date, start, end, departmentByProject);
     await this.rollupNodeExecutionStats(date, start, end, departmentByProject);
+
+    // ── Resolve program -> department_id once per tick (small table, cheap,
+    // same pattern as departmentByProject above) ──
+    const { data: programs, error: programsError } = await this.supabase.admin
+      .from('programs')
+      .select('id, department_id');
+
+    if (programsError) {
+      this.logger.warn(`AnalyticsRollupService: programs query failed — ${programsError.message}`);
+      return;
+    }
+    const departmentByProgram = new Map<string, string | null>(
+      (programs ?? []).map((p) => [p.id as string, (p.department_id as string | null) ?? null]),
+    );
+
+    await this.rollupProgramRunStats(date, start, end, departmentByProgram);
   }
 
   // ── workflow_run_stats_daily ──────────────────────────────────────────────
@@ -263,5 +296,68 @@ export class AnalyticsRollupService implements OnModuleInit, OnModuleDestroy {
     }
 
     this.logger.debug(`AnalyticsRollupService: rolled up ${rows.length} node-type bucket(s) for ${date}`);
+  }
+
+  // ── program_run_stats_daily (Phase 23 S23.5, renamed Phase 24 S24.2) ─────
+
+  private async rollupProgramRunStats(
+    date: string,
+    start: string,
+    end: string,
+    departmentByProgram: Map<string, string | null>,
+  ): Promise<void> {
+    const { data: runs, error } = await this.supabase.admin
+      .from('program_runs')
+      .select('id, organization_id, program_id, status, started_at, completed_at')
+      .gte('started_at', start)
+      .lt('started_at', end);
+
+    if (error) {
+      this.logger.warn(`AnalyticsRollupService: program_runs query failed for ${date} — ${error.message}`);
+      return;
+    }
+    if (!runs?.length) return;
+
+    const byProgram = new Map<string, ProgramRunRow[]>();
+    for (const run of runs as ProgramRunRow[]) {
+      const list = byProgram.get(run.program_id) ?? [];
+      list.push(run);
+      byProgram.set(run.program_id, list);
+    }
+
+    const rows = [...byProgram.entries()].map(([programId, group]) => {
+      // duration_ms isn't a stored column on program_runs (unlike
+      // execution_runs) — derive it from started_at/completed_at, only for
+      // runs that have actually completed one way or another.
+      const durations = group
+        .map((r) => (r.started_at && r.completed_at ? new Date(r.completed_at).getTime() - new Date(r.started_at).getTime() : null))
+        .filter((d): d is number => d != null && d >= 0);
+      const sortedDurations = [...durations].sort((a, b) => a - b);
+
+      return {
+        organization_id: group[0]!.organization_id,
+        department_id:   departmentByProgram.get(programId) ?? null,
+        program_id:      programId,
+        date,
+        total_runs:      group.length,
+        succeeded:       group.filter((r) => r.status === 'completed').length,
+        failed:          group.filter((r) => r.status === 'failed').length,
+        timed_out:       group.filter((r) => r.status === 'timed_out').length,
+        avg_duration_ms: average(durations),
+        p95_duration_ms: percentile(sortedDurations, 95),
+        updated_at:      new Date().toISOString(),
+      };
+    });
+
+    const { error: upsertError } = await this.supabase.admin
+      .from('program_run_stats_daily')
+      .upsert(rows, { onConflict: 'program_id,date' });
+
+    if (upsertError) {
+      this.logger.warn(`AnalyticsRollupService: program_run_stats_daily upsert failed for ${date} — ${upsertError.message}`);
+      return;
+    }
+
+    this.logger.debug(`AnalyticsRollupService: rolled up ${rows.length} program(s) for ${date}`);
   }
 }

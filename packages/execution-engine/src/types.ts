@@ -204,6 +204,15 @@ export interface RunnerOptions {
    * Purely observational: it cannot affect execution.
    */
   onNodeEvent?: (event: NodeProgressEvent) => void;
+  /**
+   * Phase 23 S23.2/S23.3 — set when this run is executing as a program
+   * stage (threaded from execution_runs.program_run_id/program_stage_id).
+   * Passed through to every node's NodeContext unchanged. See
+   * NodeContext.programRunId's doc comment in @lados/node-sdk. Renamed
+   * from pipelineRunId/pipelineStageId in Phase 24 S24.2.
+   */
+  programRunId?: string;
+  programStageId?: string;
 }
 
 /** Payload passed to RunnerOptions.onNodeEvent — see its doc comment. */

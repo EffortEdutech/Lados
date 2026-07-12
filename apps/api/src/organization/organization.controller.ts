@@ -32,6 +32,16 @@ export class OrganizationController {
     return { success: true, data, error: null };
   }
 
+  /** GET /api/v1/organizations/:id/members — Phase 23 S23.4, Committee Gate voter picker */
+  @Get(':id/members')
+  async listMembers(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<ApiResponse<unknown[]>> {
+    const data = await this.orgService.listMembers(id, user.id);
+    return { success: true, data, error: null };
+  }
+
   /** POST /api/v1/organizations */
   @Post()
   async create(

@@ -321,8 +321,8 @@ export default function PropertyPanel({
             setLabelValue(e.target.value);
             if (selectedNode) onLabelChange?.(selectedNode.id, e.target.value);
           }}
-          placeholder={nodeDef?.name ?? 'Node label'}
-          title="Click to rename this node"
+          placeholder={nodeDef?.name ?? 'Task label'}
+          title="Click to rename this task"
           className="mt-0.5 w-full rounded border border-transparent hover:border-gray-200 focus:border-blue-400 focus:outline-none bg-transparent px-1 py-0.5 font-semibold text-gray-900 text-sm leading-snug"
         />
         {nodeDef?.description && (

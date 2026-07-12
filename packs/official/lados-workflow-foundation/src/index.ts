@@ -18,6 +18,24 @@
  * expression grammar extended (named fields + AND/OR, see
  * ./lib/expression.ts) — no signature change, still self-contained. New
  * `switchNode` added for true multi-way routing (up to 5 cases + default).
+ *
+ * Phase 23 S23.3 (Data Handoff Nodes, 2026-07-08): added
+ * `pipelineSaveArtifact`/`pipelineReadArtifact` — cross-workflow data
+ * handoff within one pipeline run (successor in spirit to the dead
+ * `project.save_artifact`/`project.read_artifact`, architecturally new).
+ * The second node needing an injected service (PipelineArtifactService),
+ * alongside `publishEvent`'s EventBusService.
+ *
+ * Phase 24 S24.3 (Node Type Rename, 2026-07-11): `pipelineSaveArtifact`/
+ * `pipelineReadArtifact` renamed to `programSaveArtifact`/
+ * `programReadArtifact` (files renamed program-save-artifact.ts/
+ * program-read-artifact.ts), node types `lados.workflow.pipeline_save_artifact`/
+ * `pipeline_read_artifact` renamed to `program_save_artifact`/
+ * `program_read_artifact`, `IPipelineArtifactService` renamed to
+ * `IProgramArtifactService`, `WorkflowFoundationServices.pipelineArtifactService`
+ * renamed to `programArtifactService`. Old node type strings preserved as
+ * compatibility aliases (see `@lados/pack-sdk`'s `compatibility-aliases.ts`)
+ * so nothing already built against the old type strings silently breaks.
  */
 import type { NodeContext, NodeExecuteResult } from '@lados/execution-engine';
 
@@ -31,9 +49,14 @@ import { writeLog } from './nodes/write-log';
 import { loop } from './nodes/loop';
 import { publishEvent, type IEventBusService } from './nodes/publish-event';
 import { switchNode } from './nodes/switch';
+import { programSaveArtifact, type IProgramArtifactService } from './nodes/program-save-artifact';
+import { programReadArtifact } from './nodes/program-read-artifact';
 
-export { triggerManual, triggerSchedule, condition, parallel, merge, delay, writeLog, loop, publishEvent, switchNode };
-export { type IEventBusService };
+export {
+  triggerManual, triggerSchedule, condition, parallel, merge, delay, writeLog,
+  loop, publishEvent, switchNode, programSaveArtifact, programReadArtifact,
+};
+export { type IEventBusService, type IProgramArtifactService };
 
 export const PACK_ID = 'lados.workflow-foundation' as const;
 
@@ -41,6 +64,7 @@ type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
 export interface WorkflowFoundationServices {
   eventBusService?: IEventBusService;
+  programArtifactService?: IProgramArtifactService;
 }
 
 const NO_SERVICE = (code: string, message: string): NodeExecuteResult => ({
@@ -58,7 +82,7 @@ const NO_SERVICE = (code: string, message: string): NodeExecuteResult => ({
 export function resolveNode(
   services: WorkflowFoundationServices = {},
 ): (nodeType: string) => NodeExecutor | null {
-  const { eventBusService } = services;
+  const { eventBusService, programArtifactService } = services;
 
   const nodes: Record<string, NodeExecutor> = {
     'lados.workflow.trigger_manual': triggerManual,
@@ -74,6 +98,8 @@ export function resolveNode(
       eventBusService
         ? publishEvent(ctx, eventBusService)
         : Promise.resolve(NO_SERVICE('NO_SERVICE', 'Event bus service not injected')),
+    'lados.workflow.program_save_artifact': (ctx) => programSaveArtifact(ctx, programArtifactService),
+    'lados.workflow.program_read_artifact': (ctx) => programReadArtifact(ctx, programArtifactService),
   };
 
   return (nodeType: string) => nodes[nodeType] ?? null;

@@ -722,5 +722,143 @@
         }
       }
     ]
+  },
+  {
+    "type": "lados.workflow.program_save_artifact",
+    "displayName": "Save Program Artifact",
+    "canonicalCapability": "workflow.program.save_artifact",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Write a keyed value into the parent program run's artifact store so a later stage — potentially a different workflow, in a different project — can read it back. Only meaningful when this workflow is running as a program stage.",
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
+    "outputPattern": "saved flag plus echoed artifact key",
+    "ports": {
+      "inputs": [
+        {
+          "id": "value",
+          "label": "Value",
+          "dataType": "any"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "saved",
+          "label": "Saved",
+          "dataType": "boolean"
+        },
+        {
+          "id": "artifactKey",
+          "label": "Artifact Key",
+          "dataType": "string"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "artifact",
+        "label": "Artifact",
+        "fields": [
+          "artifactKey",
+          "value"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Data handoff only; does not approve, certify, or decide anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "lados.workflow.pipeline_save_artifact"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "program",
+      "pipeline",
+      "artifact",
+      "save",
+      "handoff"
+    ]
+  },
+  {
+    "type": "lados.workflow.program_read_artifact",
+    "displayName": "Read Program Artifact",
+    "canonicalCapability": "workflow.program.read_artifact",
+    "ownerPack": "lados.workflow-foundation",
+    "status": "draft",
+    "intent": "Read a keyed value previously written by Save Program Artifact anywhere else in the same program run. A missing key returns found:false rather than failing — an expected, checkable condition, not an error.",
+    "inputPattern": [
+      "inspector"
+    ],
+    "outputPattern": "the stored value (or null) plus a found flag",
+    "ports": {
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "value",
+          "label": "Value",
+          "dataType": "any"
+        },
+        {
+          "id": "found",
+          "label": "Found",
+          "dataType": "boolean"
+        }
+      ]
+    },
+    "configGroups": [
+      {
+        "id": "artifact",
+        "label": "Artifact",
+        "fields": [
+          "artifactKey"
+        ]
+      }
+    ],
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
+    "humanDecisionBoundary": "Data handoff only; does not approve, certify, or decide anything.",
+    "aiBoundary": "none",
+    "canvasUx": {
+      "minWidth": 230,
+      "minHeight": 104,
+      "maxVisiblePortsPerSide": 2
+    },
+    "compatibilityAliases": [
+      "lados.workflow.pipeline_read_artifact"
+    ],
+    "executorStatus": "implemented",
+    "category": "Workflow Foundation",
+    "icon": "Workflow",
+    "searchKeywords": [
+      "workflow foundation",
+      "program",
+      "pipeline",
+      "artifact",
+      "read",
+      "handoff"
+    ]
   }
 ]

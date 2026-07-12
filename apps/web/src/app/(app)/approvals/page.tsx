@@ -25,6 +25,11 @@ interface InputFieldSpec {
   options?: string[];
 }
 
+interface GateVote {
+  voter_user_id: string;
+  decision: 'approved' | 'rejected';
+}
+
 interface ApprovalTask {
   id: string;
   title: string;
@@ -33,7 +38,7 @@ interface ApprovalTask {
   status: 'pending' | 'approved' | 'rejected' | 'submitted';
   assignee_role: string | null;
   assignee_user_id: string | null;
-  task_type: 'approval' | 'input';
+  task_type: 'approval' | 'input' | 'stage_gate';
   escalate_after_minutes: number | null;
   escalated_at: string | null;
   delegated_to_user_id: string | null;
@@ -43,6 +48,19 @@ interface ApprovalTask {
   execution_id: string;
   workflow_id: string;
   project_id: string;
+  // Phase 23 S23.4 — present only on task_type: 'stage_gate' tasks
+  // (ApprovalService.listPendingGateTasksForVoter's merged shape, field
+  // names renamed pipeline_id/pipeline_name → program_id/program_name and
+  // task_type 'pipeline_gate' → 'stage_gate' in Phase 24 S24.2).
+  program_id?: string | null;
+  program_name?: string | null;
+  voter_user_ids?: string[];
+  vote_threshold?: number;
+  votes?: GateVote[];
+  hasVoted?: boolean;
+  approvedCount?: number;
+  rejectedCount?: number;
+  voterCount?: number;
 }
 
 function fmt(iso: string) {
@@ -115,7 +133,7 @@ function TaskMeta({ task }: { task: ApprovalTask }) {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-400">
       {task.node_name && (
-        <span>Node: <span className="text-gray-600 font-medium">{task.node_name}</span></span>
+        <span>Task: <span className="text-gray-600 font-medium">{task.node_name}</span></span>
       )}
       {task.assignee_user_id ? (
         <span>Assigned to: <span className="text-gray-600 font-medium">{task.assignee_user_id}</span></span>
@@ -340,6 +358,132 @@ function InputTaskCard({
   );
 }
 
+/**
+ * StageGateVoteCard — Phase 23 S23.4 (§6), renamed from GateVoteCard in
+ * Phase 24 S24.4 ("Committee Gate" → "Stage Gate")
+ *
+ * A Stage Gate's own card, deliberately NOT a reuse of ApprovalCard's
+ * single approve/reject control — a gate is voted (N-of-M quorum), not
+ * decided by one person, and delegation doesn't apply to a roster vote
+ * (§3.5). Shows which program + stage, the live tally, each voter's id
+ * with a voted/pending badge, and — only if the signed-in user is on the
+ * roster and hasn't voted yet — a vote control. Resolution (pass/fail)
+ * happens server-side in ProgramWatchdogService (renamed from
+ * PipelineWatchdogService in S24.2), never here; casting a vote just
+ * re-fetches the list so the tally reflects the latest state.
+ */
+function StageGateVoteCard({
+  task,
+  onVote,
+}: {
+  task: ApprovalTask;
+  onVote: (taskId: string, decision: 'approved' | 'rejected', comments: string) => Promise<void>;
+}) {
+  const [comments, setComments] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const votes = task.votes ?? [];
+  const voterIds = task.voter_user_ids ?? [];
+  const voteThreshold = task.vote_threshold ?? 0;
+  const approvedCount = task.approvedCount ?? 0;
+  const rejectedCount = task.rejectedCount ?? 0;
+  const votedCount = approvedCount + rejectedCount;
+
+  async function vote(decision: 'approved' | 'rejected') {
+    setBusy(true);
+    setError(null);
+    try {
+      await onVote(task.id, decision, comments);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Vote failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="bg-white border border-violet-200 rounded-xl p-5 shadow-sm space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">{task.title}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {task.program_name ? `Program: ${task.program_name}` : 'Stage Gate'}
+            {task.node_id ? ` · Stage: ${task.node_id}` : ''}
+          </p>
+        </div>
+        <span className="shrink-0 text-[11px] bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded font-medium">
+          Vote needed
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2 text-[11px] text-gray-500">
+        <span className="bg-violet-50 text-violet-700 border border-violet-200 px-1.5 py-0.5 rounded font-medium">
+          {votedCount} of {voterIds.length} voted · {voteThreshold} needed to pass
+        </span>
+      </div>
+
+      <div className="space-y-1">
+        {voterIds.map((voterId) => {
+          const v = votes.find((vote) => vote.voter_user_id === voterId);
+          return (
+            <div key={voterId} className="flex items-center justify-between text-[11px]">
+              <span className="font-mono text-gray-600 truncate">{voterId}</span>
+              {v ? (
+                <span className={v.decision === 'approved' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                  {v.decision === 'approved' ? '✓ Approved' : '✗ Rejected'}
+                </span>
+              ) : (
+                <span className="text-gray-400">Pending</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {task.escalate_after_minutes && (
+        <p className="text-[11px] text-gray-400">Escalates after {task.escalate_after_minutes}m</p>
+      )}
+
+      {task.hasVoted ? (
+        <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+          You&apos;ve voted — waiting on the rest of the committee.
+        </p>
+      ) : (
+        <>
+          <textarea
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            placeholder="Optional comments…"
+            rows={2}
+            maxLength={1000}
+            className="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-violet-500"
+          />
+
+          {error && <p className="text-xs text-red-600">{error}</p>}
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => void vote('approved')}
+              disabled={busy}
+              className="flex-1 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {busy ? 'Saving…' : '✓ Vote Approve'}
+            </button>
+            <button
+              onClick={() => void vote('rejected')}
+              disabled={busy}
+              className="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              {busy ? 'Saving…' : '✗ Vote Reject'}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function ApprovalsPage() {
   const [tasks, setTasks] = useState<ApprovalTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -385,6 +529,15 @@ export default function ApprovalsPage() {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
   }
 
+  async function handleVote(taskId: string, decision: 'approved' | 'rejected', comments: string) {
+    const res = await apiClient.post<unknown>(`/approvals/${taskId}/vote`, { decision, comments });
+    if (res.error) throw new Error(apiErrorMessage(res.error, 'Vote failed'));
+    // Unlike decide()/submitInput(), a single vote doesn't resolve the gate
+    // — re-fetch so the tally and hasVoted reflect the latest state instead
+    // of just removing the card.
+    await load();
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -421,7 +574,13 @@ export default function ApprovalsPage() {
 
       <div className="space-y-4">
         {tasks.map((task) => (
-          task.task_type === 'input' ? (
+          task.task_type === 'stage_gate' ? (
+            <StageGateVoteCard
+              key={task.id}
+              task={task}
+              onVote={handleVote}
+            />
+          ) : task.task_type === 'input' ? (
             <InputTaskCard
               key={task.id}
               task={task}

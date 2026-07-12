@@ -33,7 +33,10 @@ export type NotificationType =
   // assignee; found while smoke-testing (eff delegated a task, logged in as
   // the delegate, and got no notification at all despite the task
   // correctly appearing in their inbox).
-  | 'approval_delegated';
+  | 'approval_delegated'
+  // Phase 23 S23.2 — Stage Gate escalation (notifies non-voters, never
+  // reassigns). Renamed from pipeline_gate_escalated in Phase 24 S24.2.
+  | 'stage_gate_escalated';
 
 export interface NotifyPayload {
   userId: string;

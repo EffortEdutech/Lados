@@ -40,6 +40,55 @@ export class WorkflowService {
     return data ?? [];
   }
 
+  /**
+   * List every published workflow across every project the org can see —
+   * Phase 23 S23.4 (§6). Needed because a program's (renamed from pipeline,
+   * Phase 24 S24.2) "Workflow Stage" can now reference any workflow in the
+   * organization, not just ones in the same project (today's
+   * auto-populate-from-this-project behavior goes away, per the plan). Only
+   * `status: 'published'` workflows are returned — an unpublished workflow
+   * can't be triggered by ExecutionService anyway (see triggerRun's own
+   * publish check), so listing drafts here would only invite a program
+   * stage that fails immediately on first run.
+   */
+  async findAllInOrg(organizationId: string, userId: string) {
+    const { data: member } = await this.supabase.admin
+      .from('organization_members')
+      .select('role')
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!member) throw new NotFoundException('Organization not found or access denied');
+
+    const { data: projects, error: projErr } = await this.supabase.admin
+      .from('projects')
+      .select('id, name')
+      .eq('organization_id', organizationId);
+
+    if (projErr) throw new Error(projErr.message);
+    const projectIds = (projects ?? []).map((p) => p.id as string);
+    if (projectIds.length === 0) return [];
+
+    const projectNameById = new Map<string, string>(
+      (projects ?? []).map((p) => [p.id as string, p.name as string]),
+    );
+
+    const { data: workflows, error } = await this.supabase.admin
+      .from('workflows')
+      .select('id, name, description, status, version, project_id, updated_at')
+      .in('project_id', projectIds)
+      .eq('status', 'published')
+      .order('updated_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return (workflows ?? []).map((wf) => ({
+      ...wf,
+      project_name: projectNameById.get(wf['project_id'] as string) ?? null,
+    }));
+  }
+
   /** Get one workflow with full definition */
   async findOne(id: string, userId: string) {
     const { data, error } = await this.supabase.admin

@@ -46,7 +46,10 @@ export type LadosEventType =
   // Catch-all for future types
   | (string & NonNullable<unknown>);
 
-export type EventSourceType = 'resource' | 'workflow' | 'approval' | 'node' | 'system';
+// 'pipeline' retained alongside 'program' (Phase 24 S24.2 rename) — widened,
+// not replaced, since LadosEventType's catch-all already accepts any string
+// and no live event rows need a backfill for this cosmetic union member.
+export type EventSourceType = 'resource' | 'workflow' | 'approval' | 'node' | 'system' | 'pipeline' | 'program';
 
 export interface LadosEvent {
   id: string;

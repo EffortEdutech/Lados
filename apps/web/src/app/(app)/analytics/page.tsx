@@ -216,7 +216,7 @@ export default function AnalyticsPage() {
         <div>
           <h1 className="text-xl font-bold text-gray-900">Operations Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Cross-run monitoring, rolled up daily. Phase 22 S22.3. For a single run's live detail, use its own execution log.
+            Cross-run monitoring, rolled up daily. Phase 22 S22.3. For a single run&apos;s live detail, use its own execution log.
           </p>
         </div>
 

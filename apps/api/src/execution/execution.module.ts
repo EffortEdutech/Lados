@@ -12,6 +12,7 @@ import { ArtifactModule } from '../artifact/artifact.module';
 import { PackModule } from '../pack/pack.module';
 import { ResourceBindingsModule } from '../resource-bindings/resource-bindings.module';
 import { DataPacksModule } from '../data-packs/data-packs.module';
+import { ProgramArtifactModule } from '../program-artifact/program-artifact.module'; // Phase 23 S23.3, renamed Phase 24 S24.2
 
 // AiModule, NotificationModule, DocumentModule, EventBusModule are @Global() — available via global scope.
 // Phase 7:  ApprovalCoreModule provides ApprovalTaskCreator (no circular dep with ExecutionModule).
@@ -31,6 +32,7 @@ import { DataPacksModule } from '../data-packs/data-packs.module';
     PackModule,
     ResourceBindingsModule,
     DataPacksModule,
+    ProgramArtifactModule,
   ],
   controllers: [ExecutionController],
   providers: [ExecutionService, ExecutionWorker, RunWatchdogService],

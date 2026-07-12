@@ -221,7 +221,7 @@ export default function DesignStudio({
               {/* Node list */}
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-                  {suggestion.suggestedNodes.length} Node{suggestion.suggestedNodes.length !== 1 ? 's' : ''}
+                  {suggestion.suggestedNodes.length} Task{suggestion.suggestedNodes.length !== 1 ? 's' : ''}
                 </p>
                 <ol className="space-y-1">
                   {suggestion.suggestedNodes.map((node, i) => (
@@ -256,7 +256,7 @@ export default function DesignStudio({
 
               {/* Guardrail notice */}
               <div className="rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-700">
-                ⚠ AI draft only — review all nodes and configure required fields before publishing
+                ⚠ AI draft only — review all tasks and configure required fields before publishing
               </div>
             </div>
           )}
@@ -269,7 +269,7 @@ export default function DesignStudio({
                 <span className="absolute inset-0 flex items-center justify-center text-lg">✨</span>
               </div>
               <p className="text-sm text-gray-600 font-medium">Designing your workflow…</p>
-              <p className="text-xs text-gray-400">Matching nodes from your installed packs</p>
+              <p className="text-xs text-gray-400">Matching tasks from your installed packs</p>
             </div>
           )}
         </div>

@@ -111,32 +111,135 @@ export class ApprovalService {
       (runs ?? []).map((r) => [r.id as string, r.organization_id as string]),
     );
     const runIds = [...orgByRun.keys()];
-    if (runIds.length === 0) return [];
+
+    // Phase 23 S23.4 fix: this used to `return []` immediately here when an
+    // org had zero execution_runs — but a stage_gate task (renamed from
+    // pipeline_gate, Phase 24 S24.2) never has an execution_id at all
+    // (program_run_id set instead, per the XOR constraint), so an org that
+    // only runs programs and no standalone workflows would have
+    // runIds.length === 0 while still having real gate tasks pending. Skip
+    // only the execution-scoped query, don't short-circuit the whole method.
+    let visibleTasks: Record<string, unknown>[] = [];
+    if (runIds.length > 0) {
+      const { data: tasks, error } = await this.supabase.admin
+        .from('approval_tasks')
+        .select(`
+          id, title, description, data, status, assignee_role, assignee_user_id,
+          task_type, submitted_data, escalate_after_minutes, escalated_at,
+          delegated_from_user_id, delegated_to_user_id, delegated_at,
+          created_at, node_id, node_name,
+          execution_id, workflow_id, project_id
+        `)
+        .eq('status', 'pending')
+        .in('execution_id', runIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw new Error(error.message);
+
+      visibleTasks = (tasks ?? []).filter((task) => {
+        const assigneeUserId = task['assignee_user_id'] as string | null;
+        if (assigneeUserId) return assigneeUserId === userId;
+
+        const orgId = orgByRun.get(task['execution_id'] as string);
+        const userRole = orgId ? roleByOrg.get(orgId) : undefined;
+        if (!userRole) return false;
+
+        return userRole === task['assignee_role'] || userRole === 'owner' || userRole === 'admin';
+      });
+    }
+
+    // Phase 23 S23.4 (§6) — stage_gate tasks (renamed from pipeline_gate,
+    // Phase 24 S24.2) are structurally excluded from the query above: they
+    // have execution_id NULL (program_run_id set instead, per the XOR
+    // constraint added in migration 0075/0076, renamed by 0079), so the
+    // `.in('execution_id', runIds)` filter can never match them. Found
+    // while wiring the /approvals third task_type branch — without this,
+    // GateVoteCard would have nothing to render no matter how it's built.
+    // Fetched separately and merged in below.
+    const gateTasks = await this.listPendingGateTasksForVoter(userId, orgIds);
+
+    return [...visibleTasks, ...gateTasks];
+  }
+
+  /**
+   * Pending Stage Gate tasks where the caller is on the voter roster.
+   * Attaches program/stage display context and the live vote tally so
+   * GateVoteCard doesn't need a second round trip. Stays visible (even
+   * after the caller has voted) until ProgramWatchdogService resolves the
+   * gate — resolution intentionally never happens here, matching castVote()
+   * and the watchdog's own division of responsibility (§4.3). Renamed from
+   * this method's own pipeline-prefixed field/table vocabulary in Phase 24
+   * S24.2 — the method name itself is unchanged.
+   */
+  private async listPendingGateTasksForVoter(userId: string, orgIds: string[]) {
+    if (orgIds.length === 0) return [];
 
     const { data: tasks, error } = await this.supabase.admin
       .from('approval_tasks')
       .select(`
-        id, title, description, data, status, assignee_role, assignee_user_id,
-        task_type, submitted_data, escalate_after_minutes, escalated_at,
-        delegated_from_user_id, delegated_to_user_id, delegated_at,
-        created_at, node_id, node_name,
-        execution_id, workflow_id, project_id
+        id, title, description, status, task_type,
+        voter_user_ids, vote_threshold, escalate_after_minutes, escalated_at,
+        created_at, node_id, node_name, program_run_id
       `)
+      .eq('task_type', 'stage_gate')
       .eq('status', 'pending')
-      .in('execution_id', runIds)
-      .order('created_at', { ascending: false });
+      // voter_user_ids is JSONB (migration 0075). Supabase's `.contains()`
+      // array overload serialises for Postgres arrays, which PostgREST then
+      // rejects for JSONB with "invalid input syntax for type json".
+      .filter('voter_user_ids', 'cs', JSON.stringify([userId]));
 
     if (error) throw new Error(error.message);
+    if (!tasks || tasks.length === 0) return [];
 
-    return (tasks ?? []).filter((task) => {
-      const assigneeUserId = task['assignee_user_id'] as string | null;
-      if (assigneeUserId) return assigneeUserId === userId;
+    const runIds = [...new Set(tasks.map((t) => t['program_run_id'] as string))];
+    const { data: runs } = await this.supabase.admin
+      .from('program_runs')
+      .select('id, organization_id, program_id')
+      .in('id', runIds);
 
-      const orgId = orgByRun.get(task['execution_id'] as string);
-      const userRole = orgId ? roleByOrg.get(orgId) : undefined;
-      if (!userRole) return false;
+    const runById = new Map((runs ?? []).map((r) => [r.id as string, r]));
+    const programIds = [...new Set((runs ?? []).map((r) => r['program_id'] as string))];
+    const { data: programs } = programIds.length
+      ? await this.supabase.admin.from('programs').select('id, name').in('id', programIds)
+      : { data: [] as { id: string; name: string }[] };
+    const programNameById = new Map((programs ?? []).map((p) => [p.id as string, p.name as string]));
 
-      return userRole === task['assignee_role'] || userRole === 'owner' || userRole === 'admin';
+    // Only tasks whose parent run actually belongs to an org the caller is
+    // a member of — contains() alone can't express that join.
+    const inOrgTasks = tasks.filter((t) => {
+      const run = runById.get(t['program_run_id'] as string);
+      return run && orgIds.includes(run['organization_id'] as string);
+    });
+    if (inOrgTasks.length === 0) return [];
+
+    const taskIds = inOrgTasks.map((t) => t.id as string);
+    const { data: votes } = await this.supabase.admin
+      .from('stage_gate_votes')
+      .select('approval_task_id, voter_user_id, decision')
+      .in('approval_task_id', taskIds);
+
+    const votesByTask = new Map<string, { voter_user_id: string; decision: string }[]>();
+    for (const v of votes ?? []) {
+      const key = v['approval_task_id'] as string;
+      const list = votesByTask.get(key) ?? [];
+      list.push({ voter_user_id: v['voter_user_id'] as string, decision: v['decision'] as string });
+      votesByTask.set(key, list);
+    }
+
+    return inOrgTasks.map((task) => {
+      const run = runById.get(task['program_run_id'] as string);
+      const taskVotes = votesByTask.get(task.id as string) ?? [];
+      const voterUserIds = (task['voter_user_ids'] as string[] | null) ?? [];
+      return {
+        ...task,
+        program_id: run?.['program_id'] ?? null,
+        program_name: run ? (programNameById.get(run['program_id'] as string) ?? null) : null,
+        votes: taskVotes,
+        hasVoted: taskVotes.some((v) => v.voter_user_id === userId),
+        approvedCount: taskVotes.filter((v) => v.decision === 'approved').length,
+        rejectedCount: taskVotes.filter((v) => v.decision === 'rejected').length,
+        voterCount: voterUserIds.length,
+      };
     });
   }
 
@@ -418,6 +521,101 @@ export class ApprovalService {
     }
 
     // Role-only assignment (no named user) — existing behavior, unchanged.
+  }
+
+  /**
+   * Phase 23 S23.2 (§4.3) — cast one committee member's vote on a
+   * stage_gate task (renamed from pipeline_gate, Phase 24 S24.2). Distinct
+   * from decide(): a gate isn't decided by one call, it accumulates votes.
+   * Resolution/tally-checking is deliberately NOT done here — that stays in
+   * ProgramWatchdogService (§4.2, renamed from PipelineWatchdogService) so
+   * it's evaluated consistently regardless of which vote arrives last, not
+   * duplicated into this endpoint too. Returns the live tally so the
+   * frontend can show "X of N voted, Y needed to pass" immediately.
+   */
+  async castVote(
+    taskId: string,
+    decision: 'approved' | 'rejected',
+    comments: string | undefined,
+    userId: string,
+  ) {
+    const { data: task, error } = await this.supabase.admin
+      .from('approval_tasks')
+      .select('id, task_type, status, voter_user_ids, vote_threshold, program_run_id')
+      .eq('id', taskId)
+      .maybeSingle();
+
+    if (error ?? !task) throw new NotFoundException(`Approval task ${taskId} not found`);
+
+    if (task['task_type'] !== 'stage_gate') {
+      throw new BadRequestException(`Approval task ${taskId} is not a Stage Gate (task_type: ${task['task_type']})`);
+    }
+    if (task['status'] !== 'pending') {
+      throw new BadRequestException(`Stage Gate is already ${task['status']}`);
+    }
+
+    const { data: run } = await this.supabase.admin
+      .from('program_runs')
+      .select('organization_id')
+      .eq('id', task['program_run_id'] as string)
+      .maybeSingle();
+
+    const orgId = run?.['organization_id'] as string | undefined;
+    if (orgId) await this.assertMembership(orgId, userId);
+
+    // Product Safety Rule (§8): only named humans on the roster may vote —
+    // enforced server-side here, not just hidden client-side.
+    const voterUserIds = (task['voter_user_ids'] as string[] | null) ?? [];
+    if (!voterUserIds.includes(userId)) {
+      throw new ForbiddenException("You are not on this Stage Gate's voter roster");
+    }
+
+    const { error: insertErr } = await this.supabase.admin
+      .from('stage_gate_votes')
+      .insert({
+        approval_task_id: taskId,
+        voter_user_id: userId,
+        decision,
+        comments: comments || null,
+      });
+
+    if (insertErr) {
+      // stage_gate_votes_one_per_voter — a retried/duplicate vote request
+      // must not double-count (§8's "one person, one vote" rule).
+      if (insertErr.code === '23505') {
+        throw new BadRequestException('You have already voted on this Stage Gate');
+      }
+      throw new Error(insertErr.message);
+    }
+
+    const { data: votes } = await this.supabase.admin
+      .from('stage_gate_votes')
+      .select('decision')
+      .eq('approval_task_id', taskId);
+
+    const approvedCount = (votes ?? []).filter((v) => v['decision'] === 'approved').length;
+    const rejectedCount = (votes ?? []).filter((v) => v['decision'] === 'rejected').length;
+
+    if (orgId) {
+      void this.eventBus.publish({
+        orgId,
+        type: 'program.gate_vote_cast',
+        sourceType: 'approval',
+        sourceId: taskId,
+        actorId: userId,
+        payload: { taskId, decision, approvedCount, rejectedCount, voterCount: voterUserIds.length },
+      });
+    }
+
+    return {
+      taskId,
+      decision,
+      votedCount: approvedCount + rejectedCount,
+      voterCount: voterUserIds.length,
+      approvedCount,
+      rejectedCount,
+      voteThreshold: task['vote_threshold'] as number,
+    };
   }
 
   /** Phase 6: delegates to SecurityEngineService */

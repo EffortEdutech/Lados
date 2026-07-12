@@ -53,6 +53,33 @@ export class OrganizationService {
     };
   }
 
+  /**
+   * List org members (user id + role only) — Phase 23 S23.4 (§6). Needed
+   * for the Committee Gate node's voter picker. No name/email resolution:
+   * every other member-facing UI in this app (DelegateControl, Departments
+   * page) already works off raw user ids, so this matches the existing
+   * convention rather than inventing a new user-lookup capability.
+   */
+  async listMembers(organizationId: string, userId: string) {
+    const { data: membership } = await this.supabase.admin
+      .from('organization_members')
+      .select('role')
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!membership) throw new NotFoundException('Organization not found or access denied');
+
+    const { data, error } = await this.supabase.admin
+      .from('organization_members')
+      .select('user_id, role, joined_at')
+      .eq('organization_id', organizationId)
+      .order('joined_at', { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
   /** Create an organization and add the creator as owner */
   async create(dto: CreateOrganizationDto, userId: string) {
     // Check slug uniqueness

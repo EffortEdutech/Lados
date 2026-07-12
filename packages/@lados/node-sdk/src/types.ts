@@ -80,6 +80,21 @@ export interface NodeContext {
    * Typed as unknown here; consuming nodes cast to their needed service interface.
    */
   services?: Record<string, unknown>;
+  /**
+   * Phase 23 S23.2/S23.3 — set only when this workflow run is executing as a
+   * stage within a program (execution_runs.program_run_id/program_stage_id
+   * were populated by ProgramExecutionService.triggerRun()). Undefined for
+   * every ordinary standalone run. Read by
+   * lados.workflow.program_save_artifact / program_read_artifact (renamed
+   * from pipeline_save_artifact / pipeline_read_artifact in Phase 24 S24.3)
+   * to know which program_run's artifact store to read/write — those nodes
+   * fail cleanly with NOT_IN_PROGRAM_CONTEXT when this is absent, never a
+   * silent no-op. Field itself renamed from pipelineRunId/pipelineStageId in
+   * Phase 24 S24.2.
+   */
+  programRunId?: string;
+  /** The program layout stage id this workflow run corresponds to. */
+  programStageId?: string;
 }
 
 // ── Execution status ──────────────────────────────────────────────────────────

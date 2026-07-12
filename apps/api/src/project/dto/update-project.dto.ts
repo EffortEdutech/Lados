@@ -16,6 +16,16 @@ export class UpdateProjectDto {
   @IsUuidLike()
   departmentId?: string | null;
 
+  /**
+   * Phase 24 S24.6 — optional parent Program (the real projects.program_id
+   * FK added in S24.1). Pass null to clear (move the project back to
+   * standalone/no program). Ownership of the referenced program (same org)
+   * is enforced in ProjectService.update(), mirroring departmentId exactly.
+   */
+  @IsOptional()
+  @IsUuidLike()
+  programId?: string | null;
+
   @IsOptional()
   @IsString()
   @MaxLength(500)

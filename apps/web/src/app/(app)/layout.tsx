@@ -8,18 +8,58 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 import AiCommandBar from '@/components/AiCommandBar';
 import OwnerAssistantSidebar from '@/components/OwnerAssistantSidebar';
 
-const NAV = [
-  { href: '/dashboard',          label: 'Dashboard',    icon: 'grid' },
-  { href: '/projects',           label: 'Projects',     icon: 'folder' },
-  { href: '/resources',          label: 'Assets',        icon: 'layers' },
-  { href: '/approvals',          label: 'Approvals',    icon: 'check-square' },
-  { href: '/ai',                 label: 'AI Insights',  icon: 'cpu' },
-  { href: '/suppliers',          label: 'Suppliers',    icon: 'truck' },
-  { href: '/packs',              label: 'Packs',        icon: 'package' },
-  { href: '/marketplace',        label: 'Marketplace',  icon: 'shopping-cart' },
-  { href: '/analytics',          label: 'Operations',   icon: 'bar-chart' },
-  { href: '/settings/departments', label: 'Departments', icon: 'building' },
-  { href: '/settings/services',  label: 'Services',     icon: 'settings' },
+// Sidebar grouping (2026-07-11) — the nav was a single flat 12-item list
+// with work items, business-domain data, insights, platform/marketplace,
+// and settings all interleaved with no visual hierarchy. Grouped by what
+// eff actually reaches for together: daily work (Projects/Programs
+// orchestrate work, Approvals is the action queue for both), business data
+// that work operates on, cross-cutting insights, the pack/marketplace
+// platform layer, and org settings — settings-style groups conventionally
+// sit last. `href`/`icon` values are unchanged from the old flat list, so
+// no route or icon-lookup logic needed updating, only the render loop.
+const NAV_GROUPS: { label: string | null; items: { href: string; label: string; icon: string }[] }[] = [
+  {
+    label: null,
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: 'grid' },
+    ],
+  },
+  {
+    label: 'Work',
+    items: [
+      { href: '/projects',  label: 'Projects',  icon: 'folder' },
+      { href: '/programs',  label: 'Programs',  icon: 'git-branch' },
+      { href: '/approvals', label: 'Approvals', icon: 'check-square' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { href: '/resources', label: 'Assets',    icon: 'layers' },
+      { href: '/suppliers', label: 'Suppliers', icon: 'truck' },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
+      { href: '/ai',        label: 'AI Insights', icon: 'cpu' },
+      { href: '/analytics', label: 'Operations',  icon: 'bar-chart' },
+    ],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { href: '/packs',       label: 'Packs',       icon: 'package' },
+      { href: '/marketplace', label: 'Marketplace', icon: 'shopping-cart' },
+    ],
+  },
+  {
+    label: 'Settings',
+    items: [
+      { href: '/settings/departments', label: 'Departments', icon: 'building' },
+      { href: '/settings/services',    label: 'Services',    icon: 'settings' },
+    ],
+  },
 ];
 
 const NAV_ICONS: Record<string, React.ReactNode> = {
@@ -89,6 +129,12 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
       <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
     </svg>
   ),
+  'git-branch': (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+      <path d="M18 9a9 9 0 0 1-9 9"/>
+    </svg>
+  ),
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -146,26 +192,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(item.href + '/');
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  active
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 text-current opacity-70">
-                  {NAV_ICONS[item.icon] ?? null}
-                </span>
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          {NAV_GROUPS.map((group, groupIdx) => (
+            <div key={group.label ?? `group-${groupIdx}`} className={groupIdx > 0 ? 'mt-4' : ''}>
+              {group.label && (
+                <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                  {group.label}
+                </p>
+              )}
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const active = pathname === item.href || pathname.startsWith(item.href + '/');
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        active
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      }`}
+                    >
+                      <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 text-current opacity-70">
+                        {NAV_ICONS[item.icon] ?? null}
+                      </span>
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* User + Notifications + Sign out */}

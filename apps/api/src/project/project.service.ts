@@ -104,6 +104,23 @@ export class ProjectService {
       updates['department_id'] = dto.departmentId;
     }
 
+    // Phase 24 S24.6 — assign/clear parent program scope. Mirrors the
+    // departmentId validation above exactly: `null` clears it, a UUID must
+    // belong to the same org as the project.
+    if (dto.programId !== undefined) {
+      if (dto.programId !== null) {
+        const { data: program } = await this.supabase.admin
+          .from('programs')
+          .select('id')
+          .eq('id', dto.programId)
+          .eq('organization_id', project.organization_id as string)
+          .maybeSingle();
+
+        if (!program) throw new NotFoundException(`Program ${dto.programId} not found in this organization`);
+      }
+      updates['program_id'] = dto.programId;
+    }
+
     const { data, error } = await this.supabase.admin
       .from('projects')
       .update(updates)

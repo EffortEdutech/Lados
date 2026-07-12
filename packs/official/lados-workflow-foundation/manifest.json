@@ -1,7 +1,7 @@
 {
   "contractVersion": "lados.capability-pack.v1",
   "id": "lados.workflow-foundation",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "displayName": "Workflow Foundation",
   "layer": "L0",
   "status": "draft",
@@ -30,7 +30,9 @@
     "workflow.control.merge",
     "workflow.control.delay",
     "workflow.log.write",
-    "workflow.event.publish"
+    "workflow.event.publish",
+    "workflow.program.save_artifact",
+    "workflow.program.read_artifact"
   ],
   "nodes": [
     "lados.workflow.trigger_manual",
@@ -42,7 +44,9 @@
     "lados.workflow.delay",
     "lados.workflow.write_log",
     "lados.workflow.loop",
-    "lados.workflow.publish_event"
+    "lados.workflow.publish_event",
+    "lados.workflow.program_save_artifact",
+    "lados.workflow.program_read_artifact"
   ],
   "knowledgePacks": {
     "required": [],
@@ -58,8 +62,8 @@
     "core-pack"
   ],
   "verification": {
-    "manifest": "verified — S9.1 fix: the skeleton declared \"workflow.control.loop\" and \"workflow.event.publish\" capabilities with no corresponding nodes; added lados.workflow.loop and lados.workflow.publish_event to close both gaps. \"workflow.trigger.event\" remains capability-only by design — event-triggered workflow starts are handled by EventBusService subscription dispatch (see event-bus.service.ts), not by a runnable node; a placeholder node would have no executable behavior of its own. Phase 22 S22.4 (2026-07-06): added \"workflow.control.switch\" + lados.workflow.switch (true multi-way routing, 5 fixed case slots + default — see switch.ts header for why fixed rather than dynamic) and extended lados.workflow.condition's expression grammar (named fields + AND/OR combinator, backward compatible).",
-    "runtime": "implemented — 10 of 11 capabilities have a backing node (see manifest note above for the one intentional exception, workflow.trigger.event)",
+    "manifest": "verified — S9.1 fix: the skeleton declared \"workflow.control.loop\" and \"workflow.event.publish\" capabilities with no corresponding nodes; added lados.workflow.loop and lados.workflow.publish_event to close both gaps. \"workflow.trigger.event\" remains capability-only by design — event-triggered workflow starts are handled by EventBusService subscription dispatch (see event-bus.service.ts), not by a runnable node; a placeholder node would have no executable behavior of its own. Phase 22 S22.4 (2026-07-06): added \"workflow.control.switch\" + lados.workflow.switch (true multi-way routing, 5 fixed case slots + default — see switch.ts header for why fixed rather than dynamic) and extended lados.workflow.condition's expression grammar (named fields + AND/OR combinator, backward compatible). Phase 23 S23.3 (2026-07-08): added \"workflow.pipeline.save_artifact\"/\"workflow.pipeline.read_artifact\" + lados.workflow.pipeline_save_artifact/pipeline_read_artifact — cross-workflow data handoff scoped to one pipeline_run_id (migration 0075's pipeline_artifacts table), successor in spirit to the dead project.save_artifact/project.read_artifact (archived with lados.core-pack in Phase 21 S9) but architecturally new, not a resurrection. Phase 24 S24.3 (2026-07-11): renamed to \"workflow.program.save_artifact\"/\"workflow.program.read_artifact\" + lados.workflow.program_save_artifact/program_read_artifact — corporate-vocabulary rename (Pipeline→Program), same table/column targets as migration 0079 renamed them to (program_run_id, program_artifacts). Old node type strings preserved as compatibility aliases, see @lados/pack-sdk's compatibility-aliases.ts.",
+    "runtime": "implemented — 12 of 13 capabilities have a backing node (see manifest note above for the one intentional exception, workflow.trigger.event)",
     "canvas": "not_started",
     "templates": "not_started"
   },

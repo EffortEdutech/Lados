@@ -343,6 +343,24 @@ export const officialCompatibilityAliases: OfficialCompatibilityAlias[] = [
     migrationMode: 'manual_review',
     notes: 'Expense approval remains an explicit human-boundary record.',
   },
+  {
+    prototypeType: 'lados.workflow.pipeline_save_artifact',
+    officialType: 'lados.workflow.program_save_artifact',
+    officialPack: 'lados.workflow-foundation',
+    canonicalCapability: 'workflow.program.save_artifact',
+    status: 'planned',
+    migrationMode: 'alias',
+    notes: 'Phase 24 S24.3 corporate-vocabulary rename (Pipeline→Program) — not a prototype supersession, an in-pack self-rename. Same executor logic, only the node type string and canonicalCapability changed.',
+  },
+  {
+    prototypeType: 'lados.workflow.pipeline_read_artifact',
+    officialType: 'lados.workflow.program_read_artifact',
+    officialPack: 'lados.workflow-foundation',
+    canonicalCapability: 'workflow.program.read_artifact',
+    status: 'planned',
+    migrationMode: 'alias',
+    notes: 'Phase 24 S24.3 corporate-vocabulary rename (Pipeline→Program) — not a prototype supersession, an in-pack self-rename. Same executor logic, only the node type string and canonicalCapability changed.',
+  },
 ];
 
 export function resolveOfficialCompatibilityAlias(

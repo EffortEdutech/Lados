@@ -38,6 +38,17 @@
  * instruction from the plan doc. Revisit if a real compliance requirement
  * surfaces that audit_log should NEVER be hard-deletable regardless of org
  * preference.
+ *
+ * Phase 23 S23.5 extension: a fourth table, program_runs (renamed from
+ * pipeline_runs, migration 0075, archived_at added 0078, renamed by 0079),
+ * reuses the exact same export-before-archive/delete pattern as
+ * execution_runs — same operational (non-audit) cutoff window, same
+ * terminal-status gate, same fold-children-into-export approach
+ * (program_artifacts has ON DELETE CASCADE from program_runs, 0075/0079).
+ * Unlike approval_tasks, program_runs has organization_id directly, so no
+ * project_id lookup is needed to scope the query to the org.
+ * Phase 24 S24.2: archivePipelineRuns() renamed to archiveProgramRuns(),
+ * table/column names updated to match migration 0079.
  */
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
@@ -53,6 +64,7 @@ const AUDIT_LOG_MIN_RETENTION_DAYS   = 365; // never prune compliance history be
 
 const EXECUTION_RUN_TERMINAL_STATUSES = ['completed', 'failed', 'cancelled', 'timed_out'];
 const APPROVAL_TASK_TERMINAL_STATUSES = ['approved', 'rejected', 'auto_approved', 'submitted'];
+const PROGRAM_RUN_TERMINAL_STATUSES   = ['completed', 'failed', 'cancelled', 'timed_out'];
 
 type RetentionMode = 'archive' | 'delete';
 
@@ -123,6 +135,7 @@ export class RetentionService implements OnModuleInit, OnModuleDestroy {
     await this.archiveExecutionRuns(org, opsCutoff);
     await this.archiveApprovalTasks(org, opsCutoff);
     await this.archiveAuditLog(org, auditCutoff);
+    await this.archiveProgramRuns(org, opsCutoff);
   }
 
   // ── execution_runs (+ cascaded execution_logs) ───────────────────────────
@@ -236,6 +249,65 @@ export class RetentionService implements OnModuleInit, OnModuleDestroy {
 
     const ids = rows.map((r) => r['id'] as string);
     await this.disposeBatch(org, 'audit_log', ids, exported.path, rows.length);
+  }
+
+  // ── program_runs (+ cascaded program_artifacts) ───────────────────────────
+
+  private async archiveProgramRuns(org: RetentionOrg, cutoffIso: string): Promise<void> {
+    const { data: runs, error } = await this.supabase.admin
+      .from('program_runs')
+      .select('*')
+      .eq('organization_id', org.id)
+      .is('archived_at', null)
+      .in('status', PROGRAM_RUN_TERMINAL_STATUSES)
+      .lt('started_at', cutoffIso)
+      .limit(BATCH_LIMIT);
+
+    if (error) {
+      this.logger.warn(`RetentionService: program_runs query failed for org ${org.id} — ${error.message}`);
+      return;
+    }
+    if (!runs?.length) return;
+
+    const runIds = runs.map((r) => r['id'] as string);
+
+    // Fold in child program_artifacts so delete-mode disposal never loses
+    // cross-workflow handoff data (program_artifacts has ON DELETE CASCADE
+    // from program_runs, migration 0075/0079) — same rationale as
+    // archiveExecutionRuns()'s execution_logs fold-in above.
+    const { data: artifacts, error: artifactsError } = await this.supabase.admin
+      .from('program_artifacts')
+      .select('*')
+      .in('program_run_id', runIds);
+
+    if (artifactsError) {
+      this.logger.warn(`RetentionService: program_artifacts query failed for org ${org.id} — ${artifactsError.message}`);
+      return; // don't export/dispose a partial picture
+    }
+
+    const artifactsByRun = new Map<string, unknown[]>();
+    for (const artifact of artifacts ?? []) {
+      const key = artifact['program_run_id'] as string;
+      const list = artifactsByRun.get(key) ?? [];
+      list.push(artifact);
+      artifactsByRun.set(key, list);
+    }
+
+    const exportRows = runs.map((r) => ({ ...r, program_artifacts: artifactsByRun.get(r['id'] as string) ?? [] }));
+
+    const exported = await this.exportBatch(org.id, 'program_runs', exportRows);
+    if (!exported) return; // export failed — do not dispose
+
+    // Design note flagged for eff (mirrors the audit_log note above): in
+    // 'delete' mode, hard-deleting a program_runs row also cascades to any
+    // approval_tasks row referencing it (ON DELETE CASCADE, migration 0075
+    // approval_tasks.program_run_id) — i.e. its stage_gate task(s). This
+    // is only reached for runs already in a terminal status, so any gate on
+    // that run should already be decided (approved/rejected) by then; still,
+    // an in-flight edge case (e.g. a gate task somehow left pending on an
+    // otherwise-terminal run) would lose that task record without its own
+    // export. Revisit if that ever proves reachable in practice.
+    await this.disposeBatch(org, 'program_runs', runIds, exported.path, exportRows.length);
   }
 
   // ── Shared: export + dispose ─────────────────────────────────────────────

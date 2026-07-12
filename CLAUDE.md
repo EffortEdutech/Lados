@@ -57,14 +57,52 @@ archived/packs/        â€” 10 prototype packs (core/foundation/qs/document/
 
 ## Current Phase
 
-Phase 22 (Enterprise Workflow Foundation) complete â€” all 5 sprints delivered
+Phase 24 (Program Restructure) complete — all 7 sprints delivered and
+confirmed green, including a passing live end-to-end smoke test. What
+Phase 23 built as "Pipeline" (an orchestration layer chaining Workflow
+Stages and Committee Gates across Projects) was renamed throughout to
+**Program**/**Stage Gate** to match standard corporate-operations
+vocabulary, and `projects.program_id` was added as a real parent FK
+(Programs now genuinely contain Projects, mirroring `projects.department_id`
+from Phase 22 S22.1). Full rename: DB tables/columns (migration `0079`),
+NestJS modules/services/routes (`programs/`, `program-execution/`,
+`program-artifact/`), the two pack-layer data-handoff nodes in
+`lados-workflow-foundation` (`lados.workflow.program_save_artifact`/
+`program_read_artifact`), and the entire frontend
+(`components/programs/*`, `/programs` pages, `/approvals`'s Stage Gate
+card). S24.6 also surfaced the Program↔Project relationship in the UI
+(Project pages show their parent Program; a new "assign program" screen on
+the Programs page; the Program canvas's Workflow Picker prioritizes
+workflows from the Program's own member projects) and reorganized the
+sidebar nav into grouped sections. A workflow-canvas "Node" → "Task"
+business-facing rename (display text only, no code identifiers touched)
+was folded in alongside the phase. `pnpm typecheck` (25/25 workspaces),
+`pnpm --filter api test` (31 suites/385 passed/2 skipped), and
+`pnpm --filter web typecheck` are all green; the live smoke test (build a
+Program via the real canvas → publish → trigger → approve → vote → submit
+input → confirm resolution) passed end-to-end for the first time in the
+platform's history, 2026-07-11. Full history:
+`docs/Lados/V4/Sprint/Lados_V4_Phase24_Program_Restructure_Master_Plan.md`.
+
+Phase 23 (Pipeline Orchestration Governance — now superseded by Phase 24's
+rename, see above) built the orchestration layer itself: schema
+(`programs`/`program_runs`/`program_artifacts`/`stage_gate_votes`),
+`ProgramExecutionService`/`ProgramWatchdogService`, N-of-M quorum voting,
+the two artifact-handoff pack nodes, and the org-level canvas UI. Full
+history: `docs/Lados/V4/Sprint/Lados_V4_Phase23_Pipeline_Orchestration_Governance_Master_Plan.md`
+(read Phase 24's doc first for the current names — Phase 23's own doc still
+uses "Pipeline"/"Committee Gate" throughout, an accurate historical record
+of what was built and under what name at the time, deliberately left
+unrewritten).
+
+Phase 22 (Enterprise Workflow Foundation) complete — all 5 sprints delivered
 and confirmed: S22.1 departments/idempotency/retention-schema, S22.2
 human-in-the-loop (named assignment, delegation, escalation, request_input),
 S22.3 cross-run analytics rollups + Operations Dashboard, S22.4 richer
 Condition/Switch branching, S22.5 retention/archival execution job. Full
 history: `docs/Lados/V4/Sprint/Lados_V4_Phase22_Enterprise_Workflow_Foundation_Master_Plan.md`.
 Phase 21 (Production Build) is done and superseded by Phase 22 for anything
-touching the shared foundation layer â€” see
+touching the shared foundation layer — see
 `docs/Lados/V4/Sprint/Lados_V4_Phase21_Production_Build_and_Deployment_Master_Plan.md`
 for the earlier build/pack-wave history.
 
@@ -98,4 +136,14 @@ Use Graphify for code navigation:
 Use Obsidian only for architecture rationale, ADRs, roadmap context, research, meetings, and cross-project decisions. Project-specific implementation docs remain in this repository.
 
 Before editing, read AGENTS.md, read docs/ if it exists, query Graphify if graphify-out/graph.json exists, then inspect source files directly.
+
+
+## Graphify Refresh (any OS)
+
+The engine is the PyPI package `graphifyy`; the `.ps1` wrapper is only the Windows launcher.
+
+- Windows: `.\scripts\graphify.ps1 update .`
+- Linux/macOS/Claude sandbox: `./scripts/graphify.sh update .`
+
+Claude can refresh Graphify directly from Linux/macOS by using `./scripts/graphify.sh update .` after meaningful code structure changes. If a broad rebuild is needed, ask Codex/Windows to run the central multi-project build command.
 

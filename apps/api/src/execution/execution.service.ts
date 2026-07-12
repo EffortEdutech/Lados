@@ -33,6 +33,7 @@ import { StateEngineService } from '../state-engine/state-engine.service';
 import { SecurityEngineService } from '../security/security.service';
 import { ApprovalTaskCreator } from '../approval/approval-task.creator';
 import { ArtifactService }     from '../artifact/artifact.service';
+import { ProgramArtifactService } from '../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
 import { ExecutionQueueService } from '../queue/execution-queue.service';
 import { RUN_EVENT } from '../queue/queue.constants';
 import { PackRegistryService }   from '../pack/pack-registry.service';
@@ -57,6 +58,13 @@ interface EnqueueOrRunInlineParams {
   /** Passed through to _executeAndPersist for audit-log/event naming only. */
   workflow?: Record<string, unknown> | null;
   project?: Record<string, unknown> | null;
+  /** Phase 23 S23.2/S23.3 — threaded into RunnerOptions so every node's
+   *  NodeContext carries program context (only the in-process fallback path
+   *  needs this passed explicitly; the BullMQ path has ExecutionWorker
+   *  re-read the same two columns off the execution_runs row itself).
+   *  Renamed from pipelineRunId/pipelineStageId in Phase 24 S24.2. */
+  programRunId?: string;
+  programStageId?: string;
 }
 
 @Injectable()
@@ -84,6 +92,7 @@ export class ExecutionService implements OnModuleInit {
     private readonly emailService: EmailService,    // Phase 10
     private readonly smsService: SmsService,        // Phase 10
     private readonly emitter: EventEmitter2,        // Phase 21 S3 (D4) — SSE node progress
+    private readonly programArtifactService: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
   ) {
     // nodeResolver used only for in-process fallback (no Redis) and executeNodeAction.
     this.nodeResolver = buildRealNodeResolver(
@@ -99,6 +108,7 @@ export class ExecutionService implements OnModuleInit {
       this.artifactService,
       this.emailService,
       this.smsService,
+      this.programArtifactService,
     );
   }
 
@@ -224,6 +234,9 @@ export class ExecutionService implements OnModuleInit {
           const eventName = event.type === 'started' ? RUN_EVENT.NODE_STARTED : RUN_EVENT.NODE_DONE;
           this.emitter.emit(eventName, { runId: params.runId, ...event });
         },
+        // Phase 23 S23.2/S23.3, renamed Phase 24 S24.2
+        programRunId:   params.programRunId,
+        programStageId: params.programStageId,
         ...(params.resumeFromCheckpoint ? { resumeFromCheckpoint: params.resumeFromCheckpoint } : {}),
       };
       this._executeAndPersist(
@@ -243,7 +256,22 @@ export class ExecutionService implements OnModuleInit {
 
   // ── Trigger ────────────────────────────────────────────────────────────────
 
-  async triggerRun(workflowId: string, dto: TriggerRunDto, userId: string) {
+  /**
+   * Phase 23 S23.2 (§4.1) — when triggerRun() is called by
+   * ProgramExecutionService for a program stage, these tag the resulting
+   * execution_runs row so ProgramWatchdogService can find it again
+   * (join on program_run_id + program_stage_id) and the data-handoff nodes
+   * (S23.3) can read ctx.programRunId. NOT part of TriggerRunDto — that DTO
+   * is the public HTTP request body; this is an internal-caller-only param,
+   * never settable by an ordinary POST /workflows/:id/run request. Renamed
+   * from pipelineContext/pipelineRunId/pipelineStageId in Phase 24 S24.2.
+   */
+  async triggerRun(
+    workflowId: string,
+    dto: TriggerRunDto,
+    userId: string,
+    programContext?: { programRunId: string; programStageId: string },
+  ) {
     // Load workflow + verify access
     const { data: workflow, error: wfErr } = await this.supabase.admin
       .from('workflows')
@@ -323,6 +351,10 @@ export class ExecutionService implements OnModuleInit {
         idempotency_key: dto.idempotencyKey ?? null,
         started_by: userId,
         started_at: new Date().toISOString(),
+        ...(programContext && {
+          program_run_id:   programContext.programRunId,
+          program_stage_id: programContext.programStageId,
+        }),
       })
       .select('id')
       .single();
@@ -393,6 +425,8 @@ export class ExecutionService implements OnModuleInit {
       skipNodes,
       workflow,
       project: project as Record<string, unknown>,
+      programRunId:   programContext?.programRunId,
+      programStageId: programContext?.programStageId,
     });
 
     return { runId, status: 'running' };
@@ -561,6 +595,8 @@ export class ExecutionService implements OnModuleInit {
       resumeFromCheckpoint,
       workflow,
       project,
+      programRunId:   (run['program_run_id'] as string | null) ?? undefined,
+      programStageId: (run['program_stage_id'] as string | null) ?? undefined,
     });
 
     return { runId, status: 'running', resumed: true };

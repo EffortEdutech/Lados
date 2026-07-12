@@ -1,0 +1,22 @@
+import { pathToFileURL } from 'node:url';
+
+const mod = await import(pathToFileURL('C:/Users/user/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/@oai/artifact-tool/dist/artifact_tool.mjs').href);
+const { Presentation, PresentationFile } = mod;
+const p = Presentation.create({ slideSize: { width: 1280, height: 720 } });
+const master = p.masters.add({ name: 'Lados Dark Master' });
+master.shapes.add({ geometry: 'rect', position: { left: 0, top: 0, width: 1280, height: 720 }, fill: '#090B10', line: { fill: '#00000000', width: 0 } });
+master.shapes.add({ geometry: 'rect', position: { left: 64, top: 680, width: 520, height: 1 }, fill: '#2B3448', line: { fill: '#00000000', width: 0 } });
+const footer = master.shapes.add({ geometry: 'rect', position: { left: 66, top: 682, width: 760, height: 18 }, fill: '#00000000', line: { fill: '#00000000', width: 0 } });
+footer.text = 'Master footer test';
+footer.text.fontSize = 10;
+footer.text.color = '#657089';
+const layout = p.layouts.add({ name: 'Lados Content Layout' });
+layout.setParentLayoutId(master.id);
+const s = p.slides.add();
+s.setLayout(layout);
+const t = s.shapes.add({ geometry: 'rect', position: { left: 80, top: 80, width: 500, height: 80 }, fill: '#00000000', line: { fill: '#00000000', width: 0 } });
+t.text = 'Content over master';
+t.text.fontSize = 40;
+t.text.color = '#F4F7FB';
+const pptx = await PresentationFile.exportPptx(p);
+await pptx.save('C:/Users/user/Documents/00 CIPAA contract work dairy/QS-WFUI/outputs/manual-20260708-lados-product/presentations/master-test.pptx');
