@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 
 /**
  * SupabaseService — server-side Supabase admin client.
@@ -22,6 +23,14 @@ export class SupabaseService {
         auth: {
           autoRefreshToken: false,
           persistSession: false,
+        },
+        // Node 20 has no native WebSocket global (that lands in Node 22) — without
+        // an explicit transport, @supabase/realtime-js throws synchronously in its
+        // constructor, which createClient() always runs even though this
+        // server-side admin client never opens a realtime channel.
+        realtime: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          transport: WebSocket as any,
         },
       },
     );
