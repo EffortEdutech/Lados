@@ -113,7 +113,7 @@ export default function WorkflowPickerModal({ orgId, programId, onPick, onClose 
           {!loading && !error && memberWorkflows.length > 0 && (
             <>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 px-1">
-                This Program's Projects
+                This Program&apos;s Projects
               </p>
               {memberWorkflows.map((wf) => (
                 <WorkflowRow key={wf.id} wf={wf} onPick={onPick} />
