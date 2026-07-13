@@ -1155,7 +1155,7 @@ export default function MarketplacePage() {
       {preview && <PreviewModal pack={preview} onClose={() => setPreview(null)} />}
       {dataPackPreview && <DataPackDetailModal detail={dataPackPreview} onClose={() => setDataPackPreview(null)} />}
 
-      <main className="mx-auto max-w-6xl p-6">
+      <main className="mx-auto max-w-6xl p-4 md:p-6">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Marketplace</h1>

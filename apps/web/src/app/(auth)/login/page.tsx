@@ -47,7 +47,7 @@ export default function LoginPage() {
           </div>
           <h1 className="mt-4 text-3xl font-bold text-gray-900">Lados</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Workflow Platform for Construction &amp; Contracting
+            Low-code Application Development & Orchestration System
           </p>
         </div>
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Sign in</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Access your QS workspace
+              Access your Lados workspace
             </p>
           </div>
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs text-gray-400">
-          Lados v0.1.0 · AI-powered Workflow Platform
+          Lados v0.1.0 · AI-powered Business Capability Platform
         </p>
       </div>
     </div>

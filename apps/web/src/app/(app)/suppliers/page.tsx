@@ -198,7 +198,7 @@ export default function SuppliersPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
@@ -390,7 +390,7 @@ export default function SuppliersPage() {
               </div>
 
               {/* Email + Phone */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
                   <input
@@ -413,7 +413,7 @@ export default function SuppliersPage() {
               </div>
 
               {/* Registration No + CIDB Grade */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Reg No (SSM/CIDB)</label>
                   <input

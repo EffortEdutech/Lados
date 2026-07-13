@@ -276,7 +276,7 @@ export default function AiInsightsPage() {
 
             {/* Empty state — starter prompts */}
             {messages.length === 0 && !sending && (
-              <div className="p-6 max-w-3xl mx-auto">
+              <div className="p-4 md:p-6 max-w-3xl mx-auto">
                 <p className="text-sm text-gray-500 mb-5 text-center">
                   Ask me anything about your operations. I have live read-only access to your resources and events.
                 </p>
@@ -304,7 +304,7 @@ export default function AiInsightsPage() {
 
             {/* Messages */}
             {messages.length > 0 && (
-              <div className="p-6 max-w-3xl mx-auto space-y-4">
+              <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 
@@ -371,7 +371,7 @@ export default function AiInsightsPage() {
 
             {/* Error on empty state (e.g. first message fails) */}
             {messages.length === 0 && error && (
-              <div className="max-w-3xl mx-auto px-6">
+              <div className="max-w-3xl mx-auto px-4 md:px-6">
                 <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-xs text-red-700">
                   <p className="font-medium mb-0.5">⚠ Request failed</p>
                   <p className="text-red-600">{error}</p>
@@ -384,7 +384,7 @@ export default function AiInsightsPage() {
           </div>
 
           {/* ── Input bar ── */}
-          <div className="flex-shrink-0 border-t border-gray-200 bg-white px-6 py-4">
+          <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-4 md:px-6">
             <div className="max-w-3xl mx-auto flex gap-3">
               <textarea
                 ref={inputRef}

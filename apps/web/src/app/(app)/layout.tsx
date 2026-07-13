@@ -146,6 +146,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // who was logged in at all.
   const [userLabel, setUserLabel] = useState<string | null>(null);
 
+  // Mobile nav (2026-07-13): the sidebar was a permanently-visible flex
+  // child, which is fine on desktop but on a phone-width viewport it either
+  // squeezed <main> to nothing or forced horizontal scroll. Below the `md`
+  // breakpoint the sidebar is now an off-canvas overlay (fixed + translated
+  // out of view) toggled by a hamburger button in a small top bar; at `md`
+  // and up it reverts to the original static/always-visible layout.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
@@ -158,6 +166,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       setUserLabel(displayName ?? user.email ?? null);
     });
   }, []);
+
+  // Close the mobile nav automatically whenever the route changes (e.g.
+  // after tapping a nav link), rather than requiring a second tap to close.
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -174,8 +188,46 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 flex flex-col bg-gray-900 text-white overflow-visible">
+      {/* Mobile top bar — hamburger + logo + notifications, hidden at md+ */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-30 flex items-center justify-between gap-2 bg-gray-900 text-white px-4 py-3 border-b border-gray-700">
+        <button
+          onClick={() => setMobileNavOpen((open) => !open)}
+          aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'}
+          className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-800"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {mobileNavOpen ? (
+              <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
+            ) : (
+              <><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>
+            )}
+          </svg>
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded">
+            <img src="/lados-icon-transparent.png" alt="Lados" className="h-full w-full object-contain" />
+          </div>
+          <p className="text-sm font-semibold leading-none">Lados</p>
+        </div>
+        <NotificationBell />
+      </div>
+
+      {/* Mobile backdrop — tap to close the off-canvas nav */}
+      {mobileNavOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-30 bg-black/50"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar — off-canvas overlay below md, static/always-visible at md+ */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-64 flex-shrink-0 flex flex-col bg-gray-900 text-white overflow-visible
+          transform transition-transform duration-200 ease-in-out
+          ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:static md:z-auto md:w-56 md:translate-x-0`}
+      >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-700">
           <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
@@ -252,8 +304,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main content — top padding clears the fixed mobile top bar below md */}
+      <main className="flex-1 overflow-auto pt-14 md:pt-0 w-full min-w-0">
         {children}
       </main>
 
