@@ -25,6 +25,12 @@ interface ExplorerShellProps {
   onReRun: () => void;
   onApplyTemplate: (definition: QSWorkflowDefinition) => void;
   onVersionRestored: () => void;
+  // Mobile-only off-canvas open state — the panel is fixed+off-screen on
+  // narrow viewports and toggled via a hamburger button in the page header;
+  // on desktop (md+) it's ignored and the panel stays inline/static
+  // (2026-07-13 mobile fix).
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 interface ExplorerTabConfig {
@@ -73,6 +79,8 @@ export default function ExplorerShell({
   onReRun,
   onApplyTemplate,
   onVersionRestored,
+  mobileOpen = false,
+  onMobileClose,
 }: ExplorerShellProps) {
   const explorerTab = useUIStore((state) => state.explorerTab);
   const setExplorerTab = useUIStore((state) => state.setExplorerTab);
@@ -117,43 +125,12 @@ export default function ExplorerShell({
     if (explorerTab !== activeTab) setExplorerTab(activeTab);
   }, [activeTab, explorerTab, setExplorerTab]);
 
-  if (explorerCollapsed) {
-    return (
-      <aside className="flex w-12 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
-        <button
-          type="button"
-          onClick={() => setExplorerCollapsed(false)}
-          title="Expand Explorer"
-          className="border-b border-gray-100 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600"
-        >
-          EX
-        </button>
-        <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-1.5">
-          {TAB_CONFIG.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              title={tab.title}
-              onClick={() => {
-                setExplorerTab(tab.id);
-                setExplorerCollapsed(false);
-              }}
-              className={`h-8 rounded text-[10px] font-bold transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
-              }`}
-            >
-              {tab.compact}
-            </button>
-          ))}
-        </div>
-      </aside>
-    );
-  }
-
-  return (
-    <aside className="flex w-72 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
+  // Shared panel body (search header + tab grid + active tab content) —
+  // rendered once and reused by both the desktop expanded panel and the
+  // mobile off-canvas panel so the two stay in sync automatically
+  // (2026-07-13 mobile fix).
+  const panelBody = (
+    <>
       <div className="flex flex-shrink-0 items-center gap-2 border-b border-gray-100 px-3 py-2">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Explorer</p>
@@ -169,7 +146,7 @@ export default function ExplorerShell({
           type="button"
           onClick={() => setExplorerCollapsed(true)}
           title="Collapse Explorer"
-          className="h-8 w-8 flex-shrink-0 rounded border border-gray-200 text-xs font-bold text-gray-400 hover:bg-gray-50 hover:text-gray-700"
+          className="hidden md:block h-8 w-8 flex-shrink-0 rounded border border-gray-200 text-xs font-bold text-gray-400 hover:bg-gray-50 hover:text-gray-700"
         >
           ‹
         </button>
@@ -238,6 +215,67 @@ export default function ExplorerShell({
           <DataPackBrowser organizationId={organizationId} search={search} />
         )}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop (md+): collapsed icon rail or expanded panel, inline/static.
+          Hidden entirely on mobile — mobile always uses the hamburger-toggled
+          off-canvas panel below instead, independent of this collapsed state. */}
+      {explorerCollapsed ? (
+        <aside className="hidden md:flex w-12 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
+          <button
+            type="button"
+            onClick={() => setExplorerCollapsed(false)}
+            title="Expand Explorer"
+            className="border-b border-gray-100 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600"
+          >
+            EX
+          </button>
+          <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-1.5">
+            {TAB_CONFIG.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                title={tab.title}
+                onClick={() => {
+                  setExplorerTab(tab.id);
+                  setExplorerCollapsed(false);
+                }}
+                className={`h-8 rounded text-[10px] font-bold transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                {tab.compact}
+              </button>
+            ))}
+          </div>
+        </aside>
+      ) : (
+        <aside className="hidden md:flex w-72 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
+          {panelBody}
+        </aside>
+      )}
+
+      {/* Mobile: off-canvas panel + backdrop, toggled via the page header's
+          hamburger button (mobileOpen/onMobileClose props). */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-30 bg-black/50"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`md:hidden fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] flex flex-col border-r border-gray-200 bg-white
+          transform transition-transform duration-200 ease-in-out
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        {panelBody}
+      </aside>
+    </>
   );
 }

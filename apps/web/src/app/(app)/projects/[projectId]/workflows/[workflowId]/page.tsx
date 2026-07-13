@@ -132,6 +132,9 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   const setExplorerTab = useUIStore((state) => state.setExplorerTab);
   const setExplorerCollapsed = useUIStore((state) => state.setExplorerCollapsed);
   const [groupRunRefreshKey, setGroupRunRefreshKey] = useState(0);
+  // Mobile-only off-canvas toggle for the Explorer panel (2026-07-13 mobile
+  // fix) — on desktop the Explorer stays inline/static regardless of this.
+  const [mobileExplorerOpen, setMobileExplorerOpen] = useState(false);
 
   // â”€â”€ Validation state (S18-001) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const hasValidationErrors = useCanvasStore((state) => state.hasValidationErrors);
@@ -306,20 +309,38 @@ export default function WorkflowEditorPage({ params }: PageProps) {
     error: 'text-red-500',
   };
   if (error) {
-    return <div className="flex h-screen items-center justify-center text-red-500">{error}</div>;
+    return (
+      <div className="flex h-[calc(100vh-3.5rem)] md:h-screen items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
   }
   if (!definition) {
     return (
-      <div className="flex h-screen items-center justify-center text-gray-400 text-sm">
+      <div className="flex h-[calc(100vh-3.5rem)] md:h-screen items-center justify-center text-gray-400 text-sm">
         Loading workflow...
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
+    <div className="flex h-[calc(100vh-3.5rem)] md:h-screen flex-col bg-gray-50">
       {/* â”€â”€ Toolbar â”€â”€ */}
       <header className="flex h-12 flex-shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-4">
+        {/* Explorer hamburger â€” mobile only (2026-07-13 mobile fix) */}
+        <button
+          onClick={() => setMobileExplorerOpen((open) => !open)}
+          aria-label={mobileExplorerOpen ? 'Close explorer' : 'Open explorer'}
+          className="md:hidden p-1.5 -ml-1.5 mr-0.5 rounded hover:bg-gray-100 text-gray-500 flex-shrink-0"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {mobileExplorerOpen ? (
+              <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
+            ) : (
+              <><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>
+            )}
+          </svg>
+        </button>
         {/* Breadcrumb */}
         <Link
           href={`/projects/${projectId}`}
@@ -455,6 +476,8 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           readOnly={saveState === 'error'}
           groupRunRefreshKey={groupRunRefreshKey}
           reRunning={running}
+          mobileOpen={mobileExplorerOpen}
+          onMobileClose={() => setMobileExplorerOpen(false)}
           onBulkMode={handleBulkMode}
           onLoadRun={(summary, logs) => {
             setRunSummary(summary);

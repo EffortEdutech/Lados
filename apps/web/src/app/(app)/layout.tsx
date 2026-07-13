@@ -209,7 +209,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <p className="text-sm font-semibold leading-none">Lados</p>
         </div>
-        <NotificationBell />
+        <NotificationBell variant="topbar" />
       </div>
 
       {/* Mobile backdrop — tap to close the off-canvas nav */}

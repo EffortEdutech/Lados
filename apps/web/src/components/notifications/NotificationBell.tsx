@@ -40,7 +40,18 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  // 'sidebar' (default) flies the panel out to the right of the bell, aligned
+  // to its bottom edge — correct when the bell sits in the desktop sidebar
+  // footer (bottom-left of the screen, so opening "below" would run off the
+  // page). 'topbar' opens directly below the bell instead, right-aligned to
+  // it — correct for the mobile top bar, where the bell sits near the
+  // top-right corner and a sideways flyout runs off the right edge of a
+  // narrow viewport (2026-07-13 mobile fix).
+  variant?: 'sidebar' | 'topbar';
+}
+
+export default function NotificationBell({ variant = 'sidebar' }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -104,9 +115,13 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {/* Dropdown — opens to the right of sidebar, aligned to bottom of bell */}
+      {/* Dropdown — position depends on where the bell itself sits, see variant doc above */}
       {open && (
-        <div className="absolute left-full bottom-0 ml-3 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+        <div
+          className={`absolute w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden ${
+            variant === 'topbar' ? 'right-0 top-full mt-2' : 'left-full bottom-0 ml-3'
+          }`}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="text-sm font-semibold text-gray-800">
