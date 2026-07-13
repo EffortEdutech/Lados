@@ -21,6 +21,7 @@
     "@nestjs/core": "^10.4.4",
     "@nestjs/platform-express": "^10.4.4",
     "@nestjs/throttler": "^6.2.1",
+    "express": "^4.21.2",
     "helmet": "^8.0.0",
     "@lados/execution-engine": "workspace:*",
     "@lados/node-sdk": "workspace:*",
