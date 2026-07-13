@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  // deploy-trigger: force Railway webhook to pick up latest commit (2026-07-13)
+  // deploy-trigger: retrigger after Root Directory -> repo root change (2026-07-13)
   const app = await NestFactory.create(AppModule);
 
   // PD-3 — security headers (API-appropriate defaults; CSP is a browser concern
