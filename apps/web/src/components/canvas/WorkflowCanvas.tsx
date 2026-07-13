@@ -1785,6 +1785,7 @@ function WorkflowCanvasInner({
         organizationId={organizationId}
         projectId={projectId}
         workflowId={workflowId}
+        onClose={() => setSelectedNode(null)}
       />
 
       {/* Skill mode context menu */}

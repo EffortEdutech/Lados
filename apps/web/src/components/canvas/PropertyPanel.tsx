@@ -225,6 +225,12 @@ interface PropertyPanelProps {
   organizationId?: string;
   projectId?: string;
   workflowId?: string;
+  // Mobile-only dismiss — the panel becomes a right-hand off-canvas overlay
+  // on narrow viewports (it used to be a permanently-docked w-64 column,
+  // which left almost no room for the actual canvas on a phone); on desktop
+  // (md+) it stays docked inline as before and this is unused
+  // (2026-07-13 mobile fix).
+  onClose?: () => void;
 }
 
 export default function PropertyPanel({
@@ -235,6 +241,7 @@ export default function PropertyPanel({
   organizationId,
   projectId,
   workflowId,
+  onClose,
 }: PropertyPanelProps) {
   const [nodeDef, setNodeDef] = useState<NodeDefinition | null>(null);
   const [config,  setConfig]  = useState<Record<string, unknown>>({});
@@ -282,8 +289,10 @@ export default function PropertyPanel({
 
   // ── Empty state ───────────────────────────────────────────────────────────
   if (!selectedNode) {
+    // Nothing selected — on mobile this occupies zero space (there's nothing
+    // to inspect); on desktop it stays as the docked empty-state rail.
     return (
-      <aside className="w-64 flex-shrink-0 border-l border-gray-200 bg-white p-4">
+      <aside className="hidden md:block w-64 flex-shrink-0 border-l border-gray-200 bg-white p-4">
         <p className="text-xs text-gray-400 text-center mt-8">
           Select a skill to inspect it
         </p>
@@ -301,16 +310,33 @@ export default function PropertyPanel({
   const hasBindingsTab = bindableFields.length > 0;
 
   return (
-    <aside className="w-64 flex-shrink-0 flex flex-col overflow-hidden border-l border-gray-200 bg-white">
+    <>
+      {/* Mobile-only backdrop — tap outside to dismiss the inspector overlay */}
+      <div
+        className="md:hidden fixed inset-0 z-30 bg-black/50"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <aside className="fixed inset-y-0 right-0 z-40 w-72 max-w-[85vw] flex flex-col overflow-hidden border-l border-gray-200 bg-white shadow-2xl md:static md:z-auto md:w-64 md:max-w-none md:shadow-none">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div
         className="flex-shrink-0 p-3 border-b border-gray-100"
         style={{ borderTop: `3px solid ${accentColor}` }}
       >
-        <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
-          Skill Inspector
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
+            Skill Inspector
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close inspector"
+            className="md:hidden -mt-1 -mr-1 p-1 text-gray-300 hover:text-gray-600"
+          >
+            x
+          </button>
+        </div>
         <p className="text-[10px] text-gray-400">
           {nodeDef?.packs?.display_name ?? '—'} · {nodeDef?.version ?? 'v1.0.0'}
         </p>
@@ -507,6 +533,7 @@ export default function PropertyPanel({
         )}
       </div>
 
-    </aside>
+      </aside>
+    </>
   );
 }
