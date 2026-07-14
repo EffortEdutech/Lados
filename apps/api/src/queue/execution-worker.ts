@@ -96,6 +96,23 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       {
         connection:  connectionOptions,
         concurrency: 5,
+        // 2026-07-14 — Upstash free-tier quota (500K commands/month) was
+        // fully exhausted by an otherwise-idle instance. Root cause: BullMQ's
+        // defaults are tuned for a self-hosted always-on Redis, not a
+        // pay-per-command host. With no override, an idle Worker keeps a
+        // blocking "wait for a new job" connection open and re-issues it
+        // every `drainDelay` seconds (default 5) once it times out with
+        // nothing to do, plus a separate stalled-job scan every
+        // `stalledInterval` ms (default 30_000) — combined that's ~518K
+        // commands/month with zero real workflow runs. A new job still wakes
+        // the blocking connection immediately when it's pushed (that's what
+        // "blocking" means), so raising these doesn't add real pickup lag —
+        // it only reduces how often we needlessly re-arm the wait/scan while
+        // idle. NOTE: drainDelay's unit is SECONDS, stalledInterval's is
+        // MILLISECONDS — BullMQ is inconsistent about this, easy to mix up.
+        // Still env-overridable if a future workload needs tighter polling.
+        drainDelay:      parseInt(process.env.QUEUE_DRAIN_DELAY_SECONDS ?? '', 10) || 30,
+        stalledInterval: parseInt(process.env.QUEUE_STALLED_INTERVAL_MS ?? '', 10) || 60_000,
       },
     );
 
