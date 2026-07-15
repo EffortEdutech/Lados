@@ -60,7 +60,12 @@ function isNodeProgressPayload(payload: unknown): payload is NodeProgressPayload
   );
 }
 
-export function useExecutionRunStream(runId: string | null) {
+/**
+ * Phase 25 (2026-07-14) — now scoped by `workflowId` so each open workflow's
+ * live SSE stream writes into its own slice of `useExecutionStore.byWorkflow`
+ * instead of a single global run. See executionStore.ts's RunState doc.
+ */
+export function useExecutionRunStream(workflowId: string, runId: string | null) {
   const upsertNodeLog = useExecutionStore((state) => state.upsertNodeLog);
   const setRunStatus = useExecutionStore((state) => state.setRunStatus);
   const setStreamConnected = useExecutionStore((state) => state.setStreamConnected);
@@ -90,7 +95,7 @@ export function useExecutionRunStream(runId: string | null) {
 
       if (!res.ok || !res.body) return;
 
-      setStreamConnected(true);
+      setStreamConnected(workflowId, true);
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -129,17 +134,17 @@ export function useExecutionRunStream(runId: string | null) {
                 status: payload.type === 'started' ? 'running' : (payload.status ?? 'completed'),
                 durationMs: payload.durationMs,
               };
-              upsertNodeLog(log);
+              upsertNodeLog(workflowId, log);
             } else {
               const terminal = payload as RunTerminalPayload;
-              if (terminal?.status) setRunStatus(terminal.status as RunStatus);
+              if (terminal?.status) setRunStatus(workflowId, terminal.status as RunStatus);
             }
           }
         }
       } catch {
         // Stream aborted/closed — normal on unmount or run completion.
       } finally {
-        if (!cancelled) setStreamConnected(false);
+        if (!cancelled) setStreamConnected(workflowId, false);
       }
     }
 
@@ -148,9 +153,9 @@ export function useExecutionRunStream(runId: string | null) {
     return () => {
       cancelled = true;
       controller.abort();
-      setStreamConnected(false);
+      setStreamConnected(workflowId, false);
     };
-  }, [runId, upsertNodeLog, setRunStatus, setStreamConnected]);
+  }, [workflowId, runId, upsertNodeLog, setRunStatus, setStreamConnected]);
 }
 
 // Re-exported so callers that only need the terminal-event name set (e.g.

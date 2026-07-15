@@ -7,7 +7,12 @@ import type { NodeLog, RunStatus, RunSummary } from '@/stores';
 
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'paused']);
 
-export function useExecutionRunMonitor(runId: string | null) {
+/**
+ * Phase 25 (2026-07-14) — now scoped by `workflowId` so each open workflow's
+ * poll loop writes into its own slice of `useExecutionStore.byWorkflow`
+ * instead of a single global run. See executionStore.ts's RunState doc.
+ */
+export function useExecutionRunMonitor(workflowId: string, runId: string | null) {
   const setRunSummary = useExecutionStore((state) => state.setRunSummary);
   const setNodeLogs = useExecutionStore((state) => state.setNodeLogs);
   const setRunError = useExecutionStore((state) => state.setRunError);
@@ -24,7 +29,7 @@ export function useExecutionRunMonitor(runId: string | null) {
     async function fetchLogs() {
       const logsRes = await apiClient.get<NodeLog[]>(`/runs/${runId}/logs`);
       if (!cancelled && logsRes.success) {
-        setNodeLogs(logsRes.data ?? []);
+        setNodeLogs(workflowId, logsRes.data ?? []);
       }
     }
 
@@ -32,8 +37,8 @@ export function useExecutionRunMonitor(runId: string | null) {
       polls += 1;
       if (polls > maxPolls) {
         if (!cancelled) {
-          setRunError('Run timed out waiting for completion');
-          setPolling(false);
+          setRunError(workflowId, 'Run timed out waiting for completion');
+          setPolling(workflowId, false);
         }
         return;
       }
@@ -42,33 +47,33 @@ export function useExecutionRunMonitor(runId: string | null) {
       if (cancelled) return;
 
       if (!runRes.success || !runRes.data) {
-        setRunError('Could not fetch run status');
-        setPolling(false);
+        setRunError(workflowId, 'Could not fetch run status');
+        setPolling(workflowId, false);
         return;
       }
 
       const run = runRes.data;
-      setRunSummary({
+      setRunSummary(workflowId, {
         ...run,
         status: run.status as RunStatus,
       });
 
       if (TERMINAL_STATUSES.has(run.status)) {
         await fetchLogs();
-        if (!cancelled) setPolling(false);
+        if (!cancelled) setPolling(workflowId, false);
         return;
       }
 
       timer = setTimeout(() => void poll(), 2000);
     }
 
-    setPolling(true);
+    setPolling(workflowId, true);
     void poll();
 
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
-      setPolling(false);
+      setPolling(workflowId, false);
     };
-  }, [runId, setNodeLogs, setPolling, setRunError, setRunSummary]);
+  }, [workflowId, runId, setNodeLogs, setPolling, setRunError, setRunSummary]);
 }

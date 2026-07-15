@@ -15,6 +15,7 @@ import {
   useExecutionStore,
   useUIStore,
   useWorkflowStore,
+  DEFAULT_RUN_STATE,
 } from '@/stores';
 import type { SaveState } from '@/stores';
 import { useExecutionRunMonitor } from '@/hooks/useExecutionRunMonitor';
@@ -106,27 +107,34 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   const setWorkflowName = useWorkflowStore((state) => state.setWorkflowName);
   const setSaveState = useWorkflowStore((state) => state.setSaveState);
   const setLoadError = useWorkflowStore((state) => state.setLoadError);
+  const resetWorkflowStore = useWorkflowStore((state) => state.reset);
   const organizationId = useUIStore((state) => state.organizationId) ?? '';
   const setOrganizationId = useUIStore((state) => state.setOrganizationId);
 
   // â”€â”€ Execution state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const running = useExecutionStore((state) => state.polling || state.runStatus === 'starting' || state.runStatus === 'running');
+  // Phase 25 (2026-07-14) — scoped by workflowId (state.byWorkflow[workflowId])
+  // so this page's run tracking is independent of any other open workflow
+  // tab/page in the same browser session.
+  const running = useExecutionStore((state) => {
+    const run = state.byWorkflow[workflowId];
+    return !!run && (run.polling || run.runStatus === 'starting' || run.runStatus === 'running');
+  });
   const showLogs = useUIStore((state) => state.showExecutionLog);
   const setShowLogs = useUIStore((state) => state.setShowExecutionLog);
-  const runSummary = useExecutionStore((state) => state.runSummary);
-  const runLogs = useExecutionStore((state) => state.nodeLogList);
-  const runError = useExecutionStore((state) => state.runError);
-  const activeRunId = useExecutionStore((state) => state.runId);
+  const runSummary = useExecutionStore((state) => state.byWorkflow[workflowId]?.runSummary ?? DEFAULT_RUN_STATE.runSummary);
+  const runLogs = useExecutionStore((state) => state.byWorkflow[workflowId]?.nodeLogList ?? DEFAULT_RUN_STATE.nodeLogList);
+  const runError = useExecutionStore((state) => state.byWorkflow[workflowId]?.runError ?? DEFAULT_RUN_STATE.runError);
+  const activeRunId = useExecutionStore((state) => state.byWorkflow[workflowId]?.runId ?? DEFAULT_RUN_STATE.runId);
   const startRun = useExecutionStore((state) => state.startRun);
   const setRunSummary = useExecutionStore((state) => state.setRunSummary);
   const setNodeLogs = useExecutionStore((state) => state.setNodeLogs);
   const setRunError = useExecutionStore((state) => state.setRunError);
   const resetRun = useExecutionStore((state) => state.resetRun);
-  useExecutionRunMonitor(activeRunId);
+  useExecutionRunMonitor(workflowId, activeRunId);
   // Phase 21 S7.4 — additive live per-node status via SSE, on top of the
   // poll-based monitor above (which stays the terminal-status/log fetch
   // safety net). See useExecutionRunStream.ts doc comment.
-  useExecutionRunStream(activeRunId);
+  useExecutionRunStream(workflowId, activeRunId);
 
   // â”€â”€ Sidebar tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const setExplorerTab = useUIStore((state) => state.setExplorerTab);
@@ -168,9 +176,29 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   // â”€â”€ Load workflow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   useEffect(() => {
+    // 2026-07-15 — real bug found via the Phase 25 single-tab smoke test.
+    // useWorkflowStore is a single GLOBAL slot (definition/workflowId/etc.),
+    // not keyed per workflow like executionStore now is. Next.js reuses this
+    // same page component instance across client-side nav to a different
+    // workflowId (no remount), so this effect just re-fires. With no guard,
+    // a slow in-flight fetch for the workflow you already navigated AWAY
+    // from could resolve after the new workflow's fetch and silently
+    // overwrite it — you'd be looking at workflow B's URL/run-state while
+    // the canvas quietly still showed workflow A's (possibly smaller) node
+    // set, with nothing thrown to the console. Two-part fix:
+    //  1. `cancelled` flag — any response for a workflowId we've since left
+    //     is ignored instead of applied, no matter which order they resolve.
+    //  2. `resetWorkflowStore()` up front — clears the previous workflow's
+    //     definition immediately (renders the existing "Loading workflow..."
+    //     state below) instead of ever showing stale nodes while the new
+    //     fetch is in flight.
+    let cancelled = false;
+    resetWorkflowStore();
+
     // Load org context for file upload
     apiClient.get<{ id: string; name: string; membership: { role: string } }[]>('/organizations')
       .then((res) => {
+        if (cancelled) return;
         const org = res.data?.[0];
         if (!org) return;
         setOrganizationId(org.id);
@@ -181,6 +209,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
         `/projects/${projectId}/workflows/${workflowId}`,
       )
       .then((res) => {
+        if (cancelled) return; // stale response for a workflow we've since left
         if (res.success && res.data) {
           setWorkflow(
             workflowId,
@@ -192,8 +221,10 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           setLoadError(res.error?.message ?? 'Failed to load workflow');
         }
       })
-      .catch(() => setLoadError('Network error loading workflow'));
-  }, [projectId, setLoadError, setOrganizationId, setWorkflow, workflowId]);
+      .catch(() => { if (!cancelled) setLoadError('Network error loading workflow'); });
+
+    return () => { cancelled = true; };
+  }, [projectId, setLoadError, setOrganizationId, setWorkflow, workflowId, resetWorkflowStore]);
 
   // â”€â”€ Auto-save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -239,10 +270,10 @@ export default function WorkflowEditorPage({ params }: PageProps) {
   }, []);
 
   async function executeRun(fileId?: string) {
-    resetRun();
-    useExecutionStore.getState().setPolling(true);
+    resetRun(workflowId);
+    useExecutionStore.getState().setPolling(workflowId, true);
     setShowLogs(true);
-    setRunError(null);
+    setRunError(workflowId, null);
 
     // Build inputs â€” pass file_id if available
     const inputs: Record<string, unknown> = {};
@@ -259,16 +290,16 @@ export default function WorkflowEditorPage({ params }: PageProps) {
       );
 
       if (!res.success || !res.data) {
-        setRunError(res.error?.message ?? 'Run failed');
-        useExecutionStore.getState().setPolling(false);
+        setRunError(workflowId, res.error?.message ?? 'Run failed');
+        useExecutionStore.getState().setPolling(workflowId, false);
         return;
       }
 
       const { runId } = res.data;
-      startRun(runId);
+      startRun(workflowId, runId);
     } catch (err: unknown) {
-      setRunError(err instanceof Error ? err.message : 'Unexpected error');
-      useExecutionStore.getState().setPolling(false);
+      setRunError(workflowId, err instanceof Error ? err.message : 'Unexpected error');
+      useExecutionStore.getState().setPolling(workflowId, false);
     }
   }
 
@@ -480,8 +511,8 @@ export default function WorkflowEditorPage({ params }: PageProps) {
           onMobileClose={() => setMobileExplorerOpen(false)}
           onBulkMode={handleBulkMode}
           onLoadRun={(summary, logs) => {
-            setRunSummary(summary);
-            setNodeLogs(logs);
+            setRunSummary(workflowId, summary);
+            setNodeLogs(workflowId, logs);
             setShowLogs(true);
           }}
           onReRun={() => void executeRun()}
@@ -540,7 +571,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
             <div className="absolute bottom-4 left-4 right-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm text-red-700 flex items-center gap-2">
               <span className="font-semibold">Warning</span>
               <span>{runError}</span>
-              <button onClick={() => setRunError(null)} className="ml-auto text-red-400 hover:text-red-600">x</button>
+              <button onClick={() => setRunError(workflowId, null)} className="ml-auto text-red-400 hover:text-red-600">x</button>
             </div>
           )}
 
@@ -556,7 +587,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
               >
                 Go to Approvals
               </Link>
-              <button onClick={() => setRunSummary(null)} className="text-amber-400 hover:text-amber-600">x</button>
+              <button onClick={() => setRunSummary(workflowId, null)} className="text-amber-400 hover:text-amber-600">x</button>
             </div>
           )}
 
@@ -567,6 +598,7 @@ export default function WorkflowEditorPage({ params }: PageProps) {
               logs={runLogs}
               loading={running}
               onClose={() => setShowLogs(false)}
+              workflowId={workflowId}
             />
           )}
         </main>

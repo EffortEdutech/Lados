@@ -397,6 +397,27 @@ export default function ProjectDetailPage() {
                 </div>
               </Link>
 
+              {/* Open in new tab â€” always visible (not hover-gated) since this
+                  is the main discoverable way to run two workflows at once;
+                  a real <a target="_blank"> rather than relying on
+                  undiscoverable right-click / Ctrl-click on the row above
+                  (2026-07-15, eff feedback: "how do I open another
+                  workflow?"). Sits left of the delete button so the two
+                  never overlap. */}
+              <a
+                href={`/projects/${projectId}/workflows/${wf.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Open "${wf.name}" in a new tab`}
+                aria-label={`Open ${wf.name} in a new tab`}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-3 right-9 text-gray-300 hover:text-blue-500 hover:bg-blue-50 p-1 rounded z-10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
+
               {/* Delete button â€” sits outside Link, top-right corner */}
               {confirmDeleteId === wf.id ? (
                 <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white border border-red-200 rounded-lg px-2 py-1 shadow-sm z-10">

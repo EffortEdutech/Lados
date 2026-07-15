@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient, apiErrorMessage } from '@/lib/api/client';
-import { useExecutionStore } from '@/stores';
+import { useExecutionStore, DEFAULT_RUN_STATE } from '@/stores';
 
 interface RfqArtifact {
   trade: string;
@@ -76,6 +76,11 @@ interface Props {
   logs?: NodeLog[];
   loading?: boolean;
   onClose: () => void;
+  // Phase 25 (2026-07-14) — only used to scope the store-fallback reads
+  // below when `run`/`logs`/`loading` aren't passed explicitly (today's one
+  // call site, the workflow editor page, always passes them — this is
+  // defensive scoping for any future caller that relies on the fallback).
+  workflowId?: string;
 }
 
 // â”€â”€ Pack label map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -736,10 +741,16 @@ function PausedApprovalBanner({ runId, onDecided }: { runId: string; onDecided: 
 
 // â”€â”€ Main panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export default function ExecutionLogPanel({ run, logs, loading, onClose }: Props) {
-  const storeRun = useExecutionStore((state) => state.runSummary);
-  const storeLogs = useExecutionStore((state) => state.nodeLogList);
-  const storeLoading = useExecutionStore((state) => state.polling);
+export default function ExecutionLogPanel({ run, logs, loading, onClose, workflowId }: Props) {
+  const storeRun = useExecutionStore((state) =>
+    workflowId ? (state.byWorkflow[workflowId]?.runSummary ?? DEFAULT_RUN_STATE.runSummary) : DEFAULT_RUN_STATE.runSummary,
+  );
+  const storeLogs = useExecutionStore((state) =>
+    workflowId ? (state.byWorkflow[workflowId]?.nodeLogList ?? DEFAULT_RUN_STATE.nodeLogList) : DEFAULT_RUN_STATE.nodeLogList,
+  );
+  const storeLoading = useExecutionStore((state) =>
+    workflowId ? (state.byWorkflow[workflowId]?.polling ?? DEFAULT_RUN_STATE.polling) : DEFAULT_RUN_STATE.polling,
+  );
   const activeRun = run ?? storeRun;
   const activeLogs = logs ?? storeLogs;
   const activeLoading = loading ?? storeLoading;

@@ -10,7 +10,8 @@ export type ExplorerTab =
   | 'templates'
   | 'runs'
   | 'packs'
-  | 'versions';
+  | 'versions'
+  | 'workflows';
 
 interface UIState {
   explorerTab: ExplorerTab;

@@ -9,6 +9,7 @@ import ExplorerResourcesTab from './ExplorerResourcesTab';
 import ExplorerTemplatesTab from './ExplorerTemplatesTab';
 import ExplorerPacksTab from './ExplorerPacksTab';
 import ExplorerVersionsTab from './ExplorerVersionsTab';
+import ExplorerWorkflowsTab from './ExplorerWorkflowsTab';
 import { useUIStore } from '@/stores';
 import type { ExplorerTab, NodeLog, RunSummary } from '@/stores';
 import type { QSWorkflowDefinition, SkillMode } from '@lados/shared-types';
@@ -46,6 +47,7 @@ const TAB_CONFIG: ExplorerTabConfig[] = [
   // tasks" per this row's own title, matches how "Skill nodes" was named
   // before the rename.
   { id: 'nodes', label: 'Tasks', compact: 'S', title: 'Skill tasks' },
+  { id: 'workflows', label: 'Workflows', compact: 'W', title: 'Other workflows in this project — open in a new tab to run alongside this one' },
   { id: 'resources', label: 'Resources', compact: 'R', title: 'Project resources' },
   { id: 'templates', label: 'Templates', compact: 'T', title: 'Workflow templates' },
   { id: 'runs', label: 'Runs', compact: 'U', title: 'Workflow and group runs' },
@@ -172,6 +174,9 @@ export default function ExplorerShell({
 
       <div className="min-h-0 flex-1 overflow-hidden">
         {activeTab === 'nodes' && <NodePalette onBulkMode={onBulkMode} searchOverride={search} />}
+        {activeTab === 'workflows' && (
+          <ExplorerWorkflowsTab projectId={projectId} workflowId={workflowId} search={search} />
+        )}
         {activeTab === 'resources' && (
           <ExplorerResourcesTab
             organizationId={organizationId}

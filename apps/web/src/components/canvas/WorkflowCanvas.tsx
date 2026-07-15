@@ -51,7 +51,7 @@ import { ConditionNode } from './ConditionNode';
 import SkillGroupNode from './SkillGroupNode';
 import FastGroupBypasserNode from './FastGroupBypasserNode';
 import RunGroupModal from './RunGroupModal';
-import { useCanvasStore, useExecutionStore } from '@/stores';
+import { useCanvasStore, useExecutionStore, DEFAULT_RUN_STATE } from '@/stores';
 import type { NodeRunStatus } from '@/stores';
 
 // ── Custom SkillNode (V2) ─────────────────────────────────────────────────────
@@ -775,7 +775,12 @@ function WorkflowCanvasInner({
   // arrive; this effect merges that live status onto each matching canvas
   // node's data.runStatus so SkillNode can colour it in real time, instead
   // of only learning final status once the whole run completes.
-  const nodeLogs = useExecutionStore((state) => state.nodeLogs);
+  // Phase 25 (2026-07-14) — scoped by workflowId; falls back to the stable
+  // shared empty-object default when this canvas has no workflowId (e.g. a
+  // template preview) or no run has started yet for it.
+  const nodeLogs = useExecutionStore((state) =>
+    workflowId ? (state.byWorkflow[workflowId]?.nodeLogs ?? DEFAULT_RUN_STATE.nodeLogs) : DEFAULT_RUN_STATE.nodeLogs,
+  );
 
   useEffect(() => {
     if (Object.keys(nodeLogs).length === 0) return;

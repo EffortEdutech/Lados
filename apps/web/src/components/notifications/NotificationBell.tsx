@@ -118,7 +118,7 @@ export default function NotificationBell({ variant = 'sidebar' }: NotificationBe
       {/* Dropdown — position depends on where the bell itself sits, see variant doc above */}
       {open && (
         <div
-          className={`absolute w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden ${
+          className={`absolute w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200 bg-white shadow-xl z-[1400] overflow-hidden ${
             variant === 'topbar' ? 'right-0 top-full mt-2' : 'left-full bottom-0 ml-3'
           }`}
         >

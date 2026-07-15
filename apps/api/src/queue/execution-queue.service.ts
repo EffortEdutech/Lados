@@ -35,6 +35,29 @@ import {
 /** Any individual Redis command (including the startup healthcheck) waits at most this long. */
 const REDIS_COMMAND_TIMEOUT_MS = parseInt(process.env.REDIS_COMMAND_TIMEOUT_MS ?? '', 10) || 8_000;
 
+/**
+ * 2026-07-14 (follow-up to the drainDelay/stalledInterval fix) — with no
+ * `retryStrategy` override, ioredis uses its built-in default,
+ * `Math.min(times * 50, 2000)`, i.e. reconnect almost immediately and never
+ * wait longer than 2s between attempts. Combined with `maxRetriesPerRequest:
+ * null` (required by BullMQ — never give up on a command), this is fine for a
+ * normal transient network blip, but turns into a self-inflicted flood once
+ * Upstash starts hard-rejecting every command for being over the monthly
+ * quota ("ERR max requests limit exceeded"): the client treats each rejection
+ * as a connection error, reconnects in 50-2000ms, immediately retries the
+ * queued command, gets rejected again, repeat — tens of retries per second,
+ * each one itself a counted command, which both floods the logs and actively
+ * delays recovery (still consuming quota while already over it). This is a
+ * distinct bug from the idle-polling one fixed earlier the same day: that fix
+ * only reduces command volume while the connection is healthy and idle; it
+ * does nothing to slow down retries once Redis is actively erroring.
+ * Fix: back off much slower and cap much higher once retries are needed, so
+ * an over-quota / outage period fails a few times and then goes quiet instead
+ * of hammering the endpoint until the next monthly reset or a plan upgrade.
+ */
+const REDIS_RETRY_BASE_MS = parseInt(process.env.REDIS_RETRY_BASE_MS ?? '', 10) || 1_000;
+const REDIS_RETRY_MAX_MS  = parseInt(process.env.REDIS_RETRY_MAX_MS ?? '', 10) || 30_000;
+
 /** Parse a Redis URL into BullMQ ConnectionOptions (no ioredis import needed). */
 export function parseRedisUrl(url: string): ConnectionOptions {
   const parsed = new URL(url);
@@ -50,6 +73,10 @@ export function parseRedisUrl(url: string): ConnectionOptions {
     // makes ioredis commands (including BullMQ's own .add()) hang indefinitely
     // instead of rejecting. This is the "Redis commands hang silently" defect.
     commandTimeout:      REDIS_COMMAND_TIMEOUT_MS,
+    // See comment above REDIS_RETRY_BASE_MS/REDIS_RETRY_MAX_MS: slow,
+    // capped backoff instead of ioredis's fast 50-2000ms default, so a
+    // sustained error (e.g. over-quota) doesn't become a retry storm.
+    retryStrategy:       (times: number) => Math.min(times * REDIS_RETRY_BASE_MS, REDIS_RETRY_MAX_MS),
   } as ConnectionOptions;
 }
 

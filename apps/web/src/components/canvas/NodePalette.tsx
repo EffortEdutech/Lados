@@ -167,11 +167,16 @@ function PackSection({ packId, packName, packColor, packIconName, nodes, onDragS
           </span>
         </button>
 
-        {/* Bulk mode controls — visible on hover when onBulkMode is provided */}
+        {/* Bulk mode controls — full opacity on hover (mouse), but never fully
+            hidden: opacity-0 relied on onMouseEnter/onMouseLeave, which never
+            fire on touch devices, so these were invisible AND unreachable on
+            mobile/tablet (2026-07-14 report). Dim-but-visible by default
+            keeps them tappable everywhere; hover still sharpens them to full
+            opacity for mouse users. */}
         {onBulkMode && (
           <div
             className={`flex items-center gap-0.5 flex-shrink-0 transition-opacity ${
-              hoverHeader ? 'opacity-100' : 'opacity-0'
+              hoverHeader ? 'opacity-100' : 'opacity-40'
             }`}
           >
             {BULK_ACTIONS.map(({ mode, icon, title }) => (
