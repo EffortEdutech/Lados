@@ -226,7 +226,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         className={`fixed inset-y-0 left-0 z-40 w-64 flex-shrink-0 flex flex-col bg-gray-900 text-white overflow-visible
           transform transition-transform duration-200 ease-in-out
           ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:static md:z-auto md:w-56 md:translate-x-0`}
+          md:static md:z-auto md:w-56 md:translate-x-0 md:transform-none`}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-5 border-b border-gray-700">
