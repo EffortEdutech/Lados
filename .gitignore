@@ -61,3 +61,8 @@ packages/execution-engine/src/*.d.ts.map
 # Graphify generated graph output
 graphify-out/
 .graphify-work/
+
+# QMCP local dev/test religious-source dataset (staged from 00 RAFIQ raw
+# data by scripts/stage-qmcp-local-religious-source.mjs). Real Quran/
+# translation/tafsir content — never commit, per QMCP's own governance rule.
+local-data/

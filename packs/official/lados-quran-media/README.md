@@ -25,7 +25,7 @@ content without human approval.
 | Current Issue Research module | ❌ Phase D (`apps/api/src/current-issue-research/`) |
 | Tests (`official-quran-media.spec.ts` / e2e) | ❌ not yet written — Volume 2 §7/§8 specify the full matrix; two tests are flagged critical (Gate 2 enforcement in `compose_reflection`, deterministic checks in `validate_dakwah_content` must never no-op if AI is down) |
 | Test fixtures | ✅ `apps/api/test/fixtures/qul/` — small, obviously-placeholder dataset (Blueprint §21.3), safe for exercising the pipeline without real QUL content |
-| Real QUL dataset selection | ❌ still open — Blueprint §7.3's `TO_BE_SELECTED` rows are a content decision for eff, not an engineering blocker (translationId/tafsirIds are per-node config inputs with a manifest-registered "primary" fallback, so coding did not wait on this) |
+| Real QUL dataset selection | 🟡 production pick still open (Blueprint §7.3 `TO_BE_SELECTED`) — but a **local dev/test dataset** is now staged from `00 RAFIQ`'s already-downloaded, checksummed QUL/Tanzil data via `scripts/stage-qmcp-local-religious-source.mjs` + `scripts/export-qul-topics-sqlite.mjs` (run once, output gitignored under `local-data/`, never committed). Verified end-to-end against real Quran/translation/tafsir/topic text through the actual `QulQuranAdapter`/`QulTafsirAdapter` code. The Malay translation entry is explicitly flagged DEV/TEST ONLY — RAFIQ's own audit found its rights/attribution unresolved. This is an interim source; eff's plan is to migrate to RAFIQ's own "Dakwah PKA" content pipeline once that stabilizes — see `scripts/stage-qmcp-local-religious-source.mjs`'s header for full notes. |
 
 Delivery phases A–F are defined in Blueprint §23. Node-level implementation
 detail lives in **QMCP Volume 2**
@@ -80,3 +80,22 @@ See Blueprint §18: `LADOS_RELIGIOUS_DATA_PATH`, `LADOS_QUL_*` dataset ids,
 `QMCP_ALLOW_HADITH=false`, `QMCP_ALLOW_AUTOPUBLISH=false` (frozen).
 
 None of these are read yet in Phase A.
+
+## Local dev/test dataset (interim, not production)
+
+`LADOS_RELIGIOUS_DATA_PATH` can point at a local dataset staged from
+`00 RAFIQ`'s already-downloaded QUL/Tanzil raw data instead of needing a
+fresh QUL download:
+
+```
+node scripts/export-qul-topics-sqlite.mjs        # optional, needs Node 22+ (node:sqlite)
+node scripts/stage-qmcp-local-religious-source.mjs
+# then add to apps/api/.env (never commit):
+# LADOS_RELIGIOUS_DATA_PATH=<repo>/local-data/religious-source
+```
+
+Output goes under `local-data/` (gitignored). This stages the Quran script
+(Uthmani), two translations (Malay "Abdullah Basamia" — DEV/TEST ONLY, rights
+unresolved; English Saheeh International), three tafsir (As-Saadi Arabic,
+Ibn Kathir English, Al-Mukhtasar English), and topic/theme search data. See
+the scripts' header comments for full provenance and licensing caveats.
