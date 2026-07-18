@@ -63,7 +63,8 @@
     "lados.quran_media.prepare_media_brief"
   ],
   "workflowTemplates": [
-    "templates/issue-to-dakwah-video.template.json"
+    "templates/issue-to-dakwah-video.template.json",
+    "templates/issue-to-dakwah-video-revision.template.json"
   ],
   "knowledgePacks": {
     "required": [],
@@ -84,7 +85,7 @@
     "manifest": "draft — Phase A skeleton per QMCP Blueprint V1.0, not yet reviewed by eff",
     "runtime": "13/13 executors implemented (Phase B deterministic evidence nodes + Phase C AI editorial nodes + Phase D current-issue research, wired to ReligiousSourceService/AiService/CurrentIssueResearchService in apps/api/src/execution/real-nodes/index.ts per QMCP Volume 2). discover_current_issues degrades to the honest RESEARCH_SERVICE_NOT_CONFIGURED stub whenever no approved RSS/news source is registered (CURRENT_ISSUE_RESEARCH_SOURCES) — the source allowlist is a content-governance decision for eff, same posture as the QUL dataset pick. Verified via sandbox tsc build against a real local HTTP fixture feed (not reimplemented logic). Not yet typechecked/tested on a live install (sandbox cross-mount symlink limitation — pending eff's Windows pnpm build:packs/typecheck/test pass).",
     "canvas": "not_started",
-    "templates": "draft — issue-to-dakwah-video descriptor plus an importable graph body wiring the main chain with the three human gates; hadith verification and Video Production handoff nodes are standalone examples (see templates/README.md); not yet sanity-checked with a real import + trigger"
+    "templates": "draft — two importable templates. issue-to-dakwah-video: the main chain with all three human gates wired, plus a real Video Production handoff (prepare_media_brief -> read_script -> draft_scenes, via new scriptText/title ports) and a real human-facing Gate R on the revision branch (replacing a passive log). issue-to-dakwah-video-revision: companion template that re-runs only compose_reflection->write_short_video_script->validate_dakwah_content against an already Gate-2-approved bundle -- the execution engine is a strict DAG (verified via graph-planner.ts's Kahn's-algorithm cycle detection, CYCLE_DETECTED blocks the whole run), so a same-graph loop-back edge is not possible; this is the real substitute, re-triggerable by an operator. Both graphs verified structurally (zero cycles, zero unknown node types, zero port-id mismatches, every node reachable) via the real compiled graph-planner.ts against the real cross-pack port registry (workflow-foundation + human-work + video-production + quran-media). Optional hadith verification remains a standalone example node (see templates/README.md). Not yet sanity-checked with a real live import + trigger on eff's Windows install."
   },
   "visual": {
     "category": "Quran Media",

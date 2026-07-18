@@ -15,6 +15,14 @@
  * lados.human.request_approval upstream). EDITORIAL_APPROVAL_REQUIRED stays
  * catalogued (Volume 2 §5) for a future revision that threads an approval
  * marker through the port contract without breaking existing workflows.
+ *
+ * Phase E addition: also outputs `scriptText`/`title` as their own flat
+ * ports (alongside `brief`) so the Video Production handoff
+ * (lados.video.read_script) can be wired for real — it takes a flat string,
+ * not the structured `brief` object. `scriptText` is the approved script's
+ * own hook/scene-voiceover/callToAction text concatenated in order — never
+ * paraphrased or regenerated, same "copied through unmodified" rule as
+ * brief.approvedScript.
  */
 import type { NodeContext, NodeExecuteResult } from '@lados/execution-engine';
 import type { ITextGenerationService, ShortVideoScript } from '../types';
@@ -93,9 +101,20 @@ export async function prepareMediaBrief(
     requiresHumanReview: true,
   };
 
+  // Video Production handoff (Phase E): flatten the approved script's own
+  // text into a single string for lados.video.read_script, which takes
+  // scriptText/title rather than a structured object. Order matches how the
+  // script reads aloud: hook, then each scene's voiceover by sceneNumber,
+  // then the call to action. Never regenerated — the exact approved words.
+  const orderedVoiceover = [...script.scenes]
+    .sort((a, b) => a.sceneNumber - b.sceneNumber)
+    .map((s) => s.voiceover)
+    .join('\n\n');
+  const scriptText = [script.hook, orderedVoiceover, script.callToAction].filter(Boolean).join('\n\n');
+
   return {
     status: 'success',
-    outputs: { brief },
+    outputs: { brief, scriptText, title: script.title },
     summary: `Prepared media brief: ${subtitlePackage.length} subtitle segment(s), ${visualRestrictions.length} visual restriction(s)`,
   };
 }

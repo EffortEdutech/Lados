@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0",
+  "workflow": {
+    "id": "lados.quran-media.issue-to-dakwah-video-revision",
+    "name": "Issue to Dakwah Video — Revision",
+    "description": "Companion to issue-to-dakwah-video for Blueprint §14's 'Revision path' after a validate_dakwah_content block. Re-runs only the AI-authored content stage against the SAME already Gate-2-approved evidence bundle: trigger → human resubmits the confirmed bundle → compose reflection → write script → validate content → publication-blocked condition → true: Gate 3 (editorial approval) → prepare media brief → Video Production handoff → log; false: Gate R (revision required again — re-trigger this same template) → log. See templates/README.md for why this is a separate template rather than a loop-back edge in the main graph (the execution engine is a strict DAG, no cycles allowed).",
+    "version": "0.1.0",
+    "status": "draft",
+    "tags": ["quran-media", "dakwah", "revision", "sample"],
+    "createdAt": "2026-07-19T00:00:00.000Z",
+    "updatedAt": "2026-07-19T00:00:00.000Z",
+    "createdBy": "lados.quran-media"
+  },
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "type": "lados.workflow.trigger_manual",
+      "label": "Start Revision Run",
+      "position": { "x": 80, "y": 320 },
+      "config": { "label": "Start dakwah content revision run" }
+    },
+    {
+      "id": "gate-resubmit-bundle",
+      "type": "lados.human.request_input",
+      "label": "Resubmit Approved Evidence Bundle",
+      "position": { "x": 320, "y": 320 },
+      "config": {
+        "title": "Resubmit the Gate-2-approved evidence bundle",
+        "instructions": "Paste the SAME evidence bundle that was already confirmed at Gate 2 in the original issue-to-dakwah-video run (including religiousReview.status: 'approved') — do not re-review the religious evidence here, it was already approved. This run only redoes the reflection/script/validation stage that was blocked."
+      }
+    },
+    {
+      "id": "reflect-1",
+      "type": "lados.quran_media.compose_reflection",
+      "label": "Compose Reflection (revised)",
+      "position": { "x": 560, "y": 320 },
+      "config": { "language": "ms", "tone": "reflective" }
+    },
+    {
+      "id": "script-1",
+      "type": "lados.quran_media.write_short_video_script",
+      "label": "Write Short Video Script (revised)",
+      "position": { "x": 800, "y": 320 },
+      "config": { "durationSeconds": 45, "language": "ms" }
+    },
+    {
+      "id": "validate-1",
+      "type": "lados.quran_media.validate_dakwah_content",
+      "label": "Validate Dakwah Content (revised)",
+      "position": { "x": 1040, "y": 320 },
+      "config": { "strictMode": true }
+    },
+    {
+      "id": "cond-publication",
+      "type": "lados.workflow.condition",
+      "label": "Publication Blocked?",
+      "position": { "x": 1280, "y": 320 },
+      "config": { "expression": "publicationBlocked == false", "label": "Publication not blocked" }
+    },
+    {
+      "id": "gate3-editorial-approval",
+      "type": "lados.human.request_approval",
+      "label": "Gate 3 — Editorial Publication Approval",
+      "position": { "x": 1520, "y": 200 },
+      "config": {
+        "title": "Gate 3 — Editorial publication approval",
+        "instructions": "Confirm script tone, visual sensitivity, wording, evidence appendix, and production suitability. Approval here is editorial and separate from the Gate 2 religious review, which already happened on the original bundle before this revision run."
+      }
+    },
+    {
+      "id": "gateR-revision",
+      "type": "lados.human.request_input",
+      "label": "Gate R — Still Blocked",
+      "position": { "x": 1520, "y": 440 },
+      "config": {
+        "title": "Gate R — Revision still required",
+        "instructions": "Validation still blocks publication (see attached validation result). Review the warnings, and re-trigger this same revision template again once ready — as many times as needed. Submit any note you want recorded against this run to continue."
+      }
+    },
+    {
+      "id": "log-revision",
+      "type": "lados.workflow.write_log",
+      "label": "Log Revision Still Blocked",
+      "position": { "x": 1760, "y": 440 },
+      "config": { "message": "Revision run still blocked publication — re-trigger this template again after further correction", "level": "warn" }
+    },
+    {
+      "id": "brief-1",
+      "type": "lados.quran_media.prepare_media_brief",
+      "label": "Prepare Media Brief",
+      "position": { "x": 1760, "y": 200 },
+      "config": { "visualRestrictions": "No graphic suffering, no identifiable victims, dignity-first visuals", "voiceDirection": "Calm, reflective, compassionate" }
+    },
+    {
+      "id": "video-read-1",
+      "type": "lados.video.read_script",
+      "label": "Video Production Handoff — Read Script",
+      "position": { "x": 2000, "y": 200 },
+      "config": {}
+    },
+    {
+      "id": "video-scenes-1",
+      "type": "lados.video.draft_scenes",
+      "label": "Video Production Handoff — Draft Scenes",
+      "position": { "x": 2240, "y": 200 },
+      "config": { "splitStrategy": "paragraph" }
+    },
+    {
+      "id": "log-complete",
+      "type": "lados.workflow.write_log",
+      "label": "Log Production Package Ready",
+      "position": { "x": 2480, "y": 200 },
+      "config": { "message": "QMCP revised media brief prepared and handed off to Video Production", "level": "info" }
+    }
+  ],
+  "connections": [
+    { "id": "conn-1", "sourceNodeId": "gate-resubmit-bundle", "sourcePortId": "submittedData", "targetNodeId": "reflect-1", "targetPortId": "bundle" },
+    { "id": "conn-2", "sourceNodeId": "reflect-1", "sourcePortId": "reflection", "targetNodeId": "script-1", "targetPortId": "reflection" },
+    { "id": "conn-3", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "validate-1", "targetPortId": "script" },
+    { "id": "conn-4", "sourceNodeId": "validate-1", "sourcePortId": "validation", "targetNodeId": "cond-publication", "targetPortId": "value" },
+    { "id": "conn-5", "sourceNodeId": "cond-publication", "sourcePortId": "context", "targetNodeId": "gate3-editorial-approval", "targetPortId": "context" },
+    { "id": "conn-6", "sourceNodeId": "cond-publication", "sourcePortId": "false", "targetNodeId": "gateR-revision", "targetPortId": "context" },
+    { "id": "conn-7", "sourceNodeId": "gateR-revision", "sourcePortId": "submittedData", "targetNodeId": "log-revision", "targetPortId": "data" },
+    { "id": "conn-8", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "brief-1", "targetPortId": "script" },
+    { "id": "conn-9", "sourceNodeId": "gate3-editorial-approval", "sourcePortId": "approvalTask", "targetNodeId": "brief-1", "targetPortId": "validation" },
+    { "id": "conn-10", "sourceNodeId": "brief-1", "sourcePortId": "scriptText", "targetNodeId": "video-read-1", "targetPortId": "scriptText" },
+    { "id": "conn-11", "sourceNodeId": "brief-1", "sourcePortId": "title", "targetNodeId": "video-read-1", "targetPortId": "title" },
+    { "id": "conn-12", "sourceNodeId": "video-read-1", "sourcePortId": "script", "targetNodeId": "video-scenes-1", "targetPortId": "script" },
+    { "id": "conn-13", "sourceNodeId": "video-scenes-1", "sourcePortId": "scenes", "targetNodeId": "log-complete", "targetPortId": "data" }
+  ],
+  "metadata": {
+    "packId": "lados.quran-media",
+    "author": "lados.quran-media"
+  }
+}

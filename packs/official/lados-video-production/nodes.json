@@ -10,7 +10,9 @@
     "outputPattern": "script text with word/line/paragraph counts",
     "ports": {
       "inputs": [
-        { "id": "file", "label": "Script File", "dataType": "file", "required": false }
+        { "id": "file", "label": "Script File", "dataType": "file", "required": false },
+        { "id": "scriptText", "label": "Script Text", "dataType": "string", "required": false },
+        { "id": "title", "label": "Title", "dataType": "string", "required": false }
       ],
       "outputs": [
         { "id": "script", "label": "Script", "dataType": "object" }

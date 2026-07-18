@@ -836,6 +836,16 @@
           "id": "brief",
           "label": "Media Brief",
           "dataType": "object"
+        },
+        {
+          "id": "scriptText",
+          "label": "Script Text (flattened)",
+          "dataType": "string"
+        },
+        {
+          "id": "title",
+          "label": "Script Title",
+          "dataType": "string"
         }
       ]
     },

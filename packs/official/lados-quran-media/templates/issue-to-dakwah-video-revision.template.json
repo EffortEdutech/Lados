@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.quran_media.issue_to_dakwah_video_revision",
+  "displayName": "Issue to Dakwah Video — Revision",
+  "ownerPack": "lados.quran-media",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.workflow-foundation", "lados.human-work", "lados.video-production"],
+  "recommendedKnowledgePacks": [],
+  "summary": "Companion template to issue-to-dakwah-video for the Blueprint §14 'Revision path' after a validate_dakwah_content block. The main execution engine is a strict DAG (cycle detection blocks any workflow containing a real loop-back edge — verified in packages/execution-engine/src/graph-planner.ts), so this pack cannot wire a literal loop back into the main template's graph. This template is the real, re-triggerable substitute: a human resubmits the SAME already Gate-2-approved evidence bundle (no need to repeat issue discovery or either evidence review), and only the AI-authored content stage (compose_reflection → write_short_video_script → validate_dakwah_content) re-runs. If validation still blocks publication, Gate R fires again and the operator can re-trigger this same template as many times as needed — an operator-driven loop across separate runs, not a same-graph cycle. See issue-to-dakwah-video-revision.workflow.json for the importable graph body."
+}

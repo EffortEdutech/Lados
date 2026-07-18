@@ -3,12 +3,12 @@
   "workflow": {
     "id": "lados.quran-media.issue-to-dakwah-video",
     "name": "Issue to Dakwah Video",
-    "description": "QMCP end-to-end chain per Blueprint §14: trigger → discover → rank → Gate 1 (human issue selection) → analyze impact → map themes → find Quran candidates → retrieve Quran evidence → retrieve tafsir → build evidence bundle → Gate 2 (religious evidence review) → compose reflection → write script → validate content → publication-blocked condition → Gate 3 (editorial approval) → prepare media brief → log. Optional hadith verification and the Video Production handoff (read_script / draft_scenes) are standalone example nodes — see README.md in this folder. All QMCP executors are Phase A stubs; a live run stops at discover_current_issues with RESEARCH_SERVICE_NOT_CONFIGURED until Phases B–D.",
-    "version": "0.1.0",
+    "description": "QMCP end-to-end chain per Blueprint §14: trigger → discover → rank → Gate 1 (human issue selection) → analyze impact → map themes → find Quran candidates → retrieve Quran evidence → retrieve tafsir → build evidence bundle → Gate 2 (religious evidence review) → compose reflection → write script → validate content → publication-blocked condition → true: Gate 3 (editorial approval) → prepare media brief → real Video Production handoff (read_script → draft_scenes) → log; false: Gate R (revision required, human-acknowledged) → log. Optional hadith verification is a standalone example node — see README.md in this folder. All 13 QMCP executors are implemented (Phases B–D); a live run stops only at discover_current_issues with RESEARCH_SERVICE_NOT_CONFIGURED until at least one approved RSS source is registered (CURRENT_ISSUE_RESEARCH_SOURCES) — a content-governance decision, not an engineering gap.",
+    "version": "0.2.0",
     "status": "draft",
     "tags": ["quran-media", "dakwah", "sample"],
     "createdAt": "2026-07-18T00:00:00.000Z",
-    "updatedAt": "2026-07-18T00:00:00.000Z",
+    "updatedAt": "2026-07-19T00:00:00.000Z",
     "createdBy": "lados.quran-media"
   },
   "nodes": [
@@ -134,11 +134,21 @@
       }
     },
     {
+      "id": "gateR-revision",
+      "type": "lados.human.request_input",
+      "label": "Gate R — Revision Required",
+      "position": { "x": 3680, "y": 620 },
+      "config": {
+        "title": "Gate R — Revision required",
+        "instructions": "Dakwah content validation blocked publication (see the attached validation result for the specific warnings/errors). Review what needs to change, then use the companion 'Issue to Dakwah Video — Revision' template to resubmit corrected reflection/script against the SAME already-reviewed evidence bundle, without repeating issue discovery or the Gate 1/Gate 2 human reviews. Submit any note you want recorded against this run to continue."
+      }
+    },
+    {
       "id": "log-revision",
       "type": "lados.workflow.write_log",
-      "label": "Log Revision Required",
-      "position": { "x": 3680, "y": 620 },
-      "config": { "message": "Dakwah content validation blocked publication — route back for revision", "level": "warn" }
+      "label": "Log Revision Acknowledged",
+      "position": { "x": 3920, "y": 620 },
+      "config": { "message": "Dakwah content validation blocked publication — revision acknowledged by reviewer, resubmit via the revision template", "level": "warn" }
     },
     {
       "id": "brief-1",
@@ -151,8 +161,8 @@
       "id": "log-complete",
       "type": "lados.workflow.write_log",
       "label": "Log Production Package Ready",
-      "position": { "x": 4160, "y": 360 },
-      "config": { "message": "QMCP media brief prepared — hand off to Video Production", "level": "info" }
+      "position": { "x": 4640, "y": 360 },
+      "config": { "message": "QMCP media brief prepared and handed off to Video Production (script read + scenes drafted)", "level": "info" }
     },
     {
       "id": "hadith-1",
@@ -164,15 +174,15 @@
     {
       "id": "video-read-1",
       "type": "lados.video.read_script",
-      "label": "Example: Video Production Handoff — Read Script",
-      "position": { "x": 3920, "y": 160 },
-      "config": { "title": "Dakwah short video script", "scriptText": "" }
+      "label": "Video Production Handoff — Read Script",
+      "position": { "x": 4160, "y": 360 },
+      "config": {}
     },
     {
       "id": "video-scenes-1",
       "type": "lados.video.draft_scenes",
-      "label": "Example: Video Production Handoff — Draft Scenes",
-      "position": { "x": 4160, "y": 160 },
+      "label": "Video Production Handoff — Draft Scenes",
+      "position": { "x": 4400, "y": 360 },
       "config": { "splitStrategy": "paragraph" }
     }
   ],
@@ -191,11 +201,15 @@
     { "id": "conn-12", "sourceNodeId": "reflect-1", "sourcePortId": "reflection", "targetNodeId": "script-1", "targetPortId": "reflection" },
     { "id": "conn-13", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "validate-1", "targetPortId": "script" },
     { "id": "conn-14", "sourceNodeId": "validate-1", "sourcePortId": "validation", "targetNodeId": "cond-publication", "targetPortId": "value" },
-    { "id": "conn-15", "sourceNodeId": "cond-publication", "sourcePortId": "true", "targetNodeId": "gate3-editorial-approval", "targetPortId": "context" },
-    { "id": "conn-16", "sourceNodeId": "cond-publication", "sourcePortId": "false", "targetNodeId": "log-revision", "targetPortId": "data" },
+    { "id": "conn-15", "sourceNodeId": "cond-publication", "sourcePortId": "context", "targetNodeId": "gate3-editorial-approval", "targetPortId": "context" },
+    { "id": "conn-16", "sourceNodeId": "cond-publication", "sourcePortId": "false", "targetNodeId": "gateR-revision", "targetPortId": "context" },
+    { "id": "conn-16b", "sourceNodeId": "gateR-revision", "sourcePortId": "submittedData", "targetNodeId": "log-revision", "targetPortId": "data" },
     { "id": "conn-17", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "brief-1", "targetPortId": "script" },
     { "id": "conn-18", "sourceNodeId": "gate3-editorial-approval", "sourcePortId": "approvalTask", "targetNodeId": "brief-1", "targetPortId": "validation" },
-    { "id": "conn-19", "sourceNodeId": "brief-1", "sourcePortId": "brief", "targetNodeId": "log-complete", "targetPortId": "data" }
+    { "id": "conn-19", "sourceNodeId": "brief-1", "sourcePortId": "scriptText", "targetNodeId": "video-read-1", "targetPortId": "scriptText" },
+    { "id": "conn-20", "sourceNodeId": "brief-1", "sourcePortId": "title", "targetNodeId": "video-read-1", "targetPortId": "title" },
+    { "id": "conn-21", "sourceNodeId": "video-read-1", "sourcePortId": "script", "targetNodeId": "video-scenes-1", "targetPortId": "script" },
+    { "id": "conn-22", "sourceNodeId": "video-scenes-1", "sourcePortId": "scenes", "targetNodeId": "log-complete", "targetPortId": "data" }
   ],
   "metadata": {
     "packId": "lados.quran-media",

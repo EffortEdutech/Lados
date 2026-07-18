@@ -12,13 +12,13 @@ QMCP is **not** an autonomous religious authority. It does not issue fatwa,
 certify interpretations, determine divine intent behind an event, or publish
 content without human approval.
 
-## Status — Phase A/B/C/D implemented, Phase E/F pending
+## Status — Phase A/B/C/D/E implemented, Phase F pending
 
 | Area | Status |
 |---|---|
 | Manifest + nodes.json (13 nodes) | ✅ validated by `validate:official-packs` |
 | Executors | ✅ 13/13 **implemented** (Phase B deterministic evidence nodes + Phase C AI editorial nodes + Phase D current-issue research) per QMCP Volume 2's node contracts. `discover_current_issues` degrades to the honest `RESEARCH_SERVICE_NOT_CONFIGURED` stub whenever no approved RSS source is registered — see Current Issue Research module row below. |
-| Workflow template | ✅ descriptor + importable graph body (`templates/`) — now runs through the full 13-node chain against real/fixture datasets and at least one configured RSS source |
+| Workflow templates | ✅ two importable templates (`templates/`): the main chain with all three human gates + a real Video Production handoff + a real human-facing revision Gate; and a companion revision template that re-triggers just the AI-content stage against an already-approved evidence bundle (the execution engine is a strict DAG — no same-graph loop-back edge is possible, verified via `graph-planner.ts`). Both verified structurally (zero cycles, zero unknown node types, zero port-id mismatches) via the real compiled planner against the real cross-pack port registry. |
 | API resolver wiring | ✅ `apps/api/src/execution/real-nodes/index.ts` (`officialQuranMediaResolve`) |
 | Religious source module (QUL adapters) | ✅ `apps/api/src/religious-source/` — JSON-dataset adapters (SQLite is an approved future format, same interface) |
 | Neutral AI service wiring | ✅ the existing `AiService` is passed directly — it already structurally satisfies `ITextGenerationService` (`isConfigured` + `runCompletion`), no wrapper class needed |
