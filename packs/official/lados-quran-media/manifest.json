@@ -1,0 +1,95 @@
+{
+  "contractVersion": "lados.capability-pack.v1",
+  "id": "lados.quran-media",
+  "version": "0.1.0",
+  "displayName": "Quran Media Creator",
+  "layer": "L2",
+  "status": "draft",
+  "runtimeStatus": "stub_executors",
+  "description": "Evidence-grounded AI-assisted workflow for transforming current issues into Quran-centred short-form dakwah media under mandatory human review. Sources: approved QUL downloaded datasets (Quran, translation, tafsir, topics) and human-assisted SemakHadis.com verification. Evidence first, reflection second, publication only after human review.",
+  "ownerBoundary": [
+    "assess current issues for reflective dakwah content",
+    "map human issues to Islamic themes",
+    "retrieve Quran and tafsir evidence from approved QUL datasets",
+    "record optional hadith verification from Semak Hadis",
+    "build traceable religious evidence bundles",
+    "draft reflective dakwah scripts",
+    "validate scripts against evidence and safety rules",
+    "prepare media production briefs"
+  ],
+  "mustNotOwn": [
+    "fatwa or religious rulings",
+    "scholarly certification",
+    "Quran translation or tafsir authorship",
+    "hadith grading",
+    "final publication approval",
+    "automatic social publishing",
+    "generic video rendering",
+    "Knowledge Factory storage"
+  ],
+  "dependencies": [
+    "lados.workflow-foundation",
+    "lados.human-work",
+    "lados.video-production"
+  ],
+  "capabilities": [
+    "quran_media.issue.discover",
+    "quran_media.issue.rank",
+    "quran_media.impact.analyze",
+    "quran_media.theme.map",
+    "quran_media.quran.find",
+    "quran_media.quran.retrieve",
+    "quran_media.tafsir.retrieve",
+    "quran_media.hadith.verify",
+    "quran_media.evidence.build",
+    "quran_media.reflection.compose",
+    "quran_media.script.write",
+    "quran_media.content.validate",
+    "quran_media.media.prepare"
+  ],
+  "nodes": [
+    "lados.quran_media.discover_current_issues",
+    "lados.quran_media.rank_issue_candidates",
+    "lados.quran_media.analyze_human_impact",
+    "lados.quran_media.map_islamic_themes",
+    "lados.quran_media.find_quran_candidates",
+    "lados.quran_media.retrieve_quran_evidence",
+    "lados.quran_media.retrieve_tafsir_context",
+    "lados.quran_media.verify_hadith_reference",
+    "lados.quran_media.build_evidence_bundle",
+    "lados.quran_media.compose_reflection",
+    "lados.quran_media.write_short_video_script",
+    "lados.quran_media.validate_dakwah_content",
+    "lados.quran_media.prepare_media_brief"
+  ],
+  "workflowTemplates": [
+    "templates/issue-to-dakwah-video.template.json"
+  ],
+  "knowledgePacks": {
+    "required": [],
+    "recommended": []
+  },
+  "guardrails": [
+    "Arabic Quran text must come from the configured QUL dataset.",
+    "AI must not invent a Quran reference, translation, tafsir quotation, hadith, source, or news fact.",
+    "AI thematic matching is advisory and must be verified by a human.",
+    "No hadith may appear in a final script while verification is pending.",
+    "AI must not claim that a modern event is the direct reason for revelation of an ayah.",
+    "AI must not claim that a disaster or tragedy is divine punishment.",
+    "Religious review and editorial publication approval are mandatory and separate.",
+    "The pack must not publish automatically in v1."
+  ],
+  "prototypeReferences": [],
+  "verification": {
+    "manifest": "draft — Phase A skeleton per QMCP Blueprint V1.0, not yet reviewed by eff",
+    "runtime": "stub — all 13 executors are honest stubs: they validate inputs and fail with catalogued error codes because no religious-source, research, or AI service is wired yet (Phases B–D)",
+    "canvas": "not_started",
+    "templates": "draft — issue-to-dakwah-video descriptor plus an importable graph body wiring the main chain with the three human gates; hadith verification and Video Production handoff nodes are standalone examples (see templates/README.md); not yet sanity-checked with a real import + trigger"
+  },
+  "visual": {
+    "category": "Quran Media",
+    "icon": "BookOpen",
+    "color": "#0f766e",
+    "paletteGroup": "Content Production"
+  }
+}

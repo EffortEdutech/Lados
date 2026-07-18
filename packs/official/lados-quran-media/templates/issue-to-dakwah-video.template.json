@@ -1,0 +1,10 @@
+{
+  "templateId": "lados.quran_media.issue_to_dakwah_video",
+  "displayName": "Issue to Dakwah Video",
+  "ownerPack": "lados.quran-media",
+  "status": "skeleton",
+  "maturity": "draft",
+  "requiredPacks": ["lados.workflow-foundation", "lados.human-work", "lados.video-production"],
+  "recommendedKnowledgePacks": [],
+  "summary": "End-to-end QMCP chain: discover and rank current issues, Gate 1 human issue selection, impact analysis, Islamic theme mapping, QUL Quran + tafsir evidence retrieval, evidence bundle, Gate 2 religious evidence review, reflection, short-video script, content validation, publication-blocked condition, Gate 3 editorial approval, and media brief. Optional hadith verification and the Video Production handoff nodes are included standalone (see templates/README.md). See issue-to-dakwah-video.workflow.json for the importable graph body — note every QMCP executor is a Phase A stub, so a live run will stop at discover_current_issues with RESEARCH_SERVICE_NOT_CONFIGURED until Phases B–D wire the services."
+}

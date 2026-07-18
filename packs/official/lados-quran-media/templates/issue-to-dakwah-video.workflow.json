@@ -1,0 +1,204 @@
+{
+  "schemaVersion": "1.0",
+  "workflow": {
+    "id": "lados.quran-media.issue-to-dakwah-video",
+    "name": "Issue to Dakwah Video",
+    "description": "QMCP end-to-end chain per Blueprint §14: trigger → discover → rank → Gate 1 (human issue selection) → analyze impact → map themes → find Quran candidates → retrieve Quran evidence → retrieve tafsir → build evidence bundle → Gate 2 (religious evidence review) → compose reflection → write script → validate content → publication-blocked condition → Gate 3 (editorial approval) → prepare media brief → log. Optional hadith verification and the Video Production handoff (read_script / draft_scenes) are standalone example nodes — see README.md in this folder. All QMCP executors are Phase A stubs; a live run stops at discover_current_issues with RESEARCH_SERVICE_NOT_CONFIGURED until Phases B–D.",
+    "version": "0.1.0",
+    "status": "draft",
+    "tags": ["quran-media", "dakwah", "sample"],
+    "createdAt": "2026-07-18T00:00:00.000Z",
+    "updatedAt": "2026-07-18T00:00:00.000Z",
+    "createdBy": "lados.quran-media"
+  },
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "type": "lados.workflow.trigger_manual",
+      "label": "Start Dakwah Content Run",
+      "position": { "x": 80, "y": 400 },
+      "config": { "label": "Start dakwah content run" }
+    },
+    {
+      "id": "discover-1",
+      "type": "lados.quran_media.discover_current_issues",
+      "label": "Discover Current Issues",
+      "position": { "x": 320, "y": 400 },
+      "config": { "topics": ["kemanusiaan", "masyarakat"], "sinceHours": 48, "limit": 10 }
+    },
+    {
+      "id": "rank-1",
+      "type": "lados.quran_media.rank_issue_candidates",
+      "label": "Rank Issue Candidates",
+      "position": { "x": 560, "y": 400 },
+      "config": { "maxCandidates": 5 }
+    },
+    {
+      "id": "gate1-select-issue",
+      "type": "lados.human.request_input",
+      "label": "Gate 1 — Select One Issue",
+      "position": { "x": 800, "y": 400 },
+      "config": {
+        "title": "Gate 1 — Issue selection",
+        "instructions": "Review the ranked issue candidates. Confirm source quality, dakwah suitability, and non-exploitative framing, then submit the single selected issue object."
+      }
+    },
+    {
+      "id": "impact-1",
+      "type": "lados.quran_media.analyze_human_impact",
+      "label": "Analyze Human Impact",
+      "position": { "x": 1040, "y": 400 },
+      "config": { "language": "ms" }
+    },
+    {
+      "id": "themes-1",
+      "type": "lados.quran_media.map_islamic_themes",
+      "label": "Map Islamic Themes",
+      "position": { "x": 1280, "y": 400 },
+      "config": { "maxThemes": 5 }
+    },
+    {
+      "id": "find-1",
+      "type": "lados.quran_media.find_quran_candidates",
+      "label": "Find Quran Candidates",
+      "position": { "x": 1520, "y": 400 },
+      "config": { "limit": 10, "language": "ms" }
+    },
+    {
+      "id": "quran-1",
+      "type": "lados.quran_media.retrieve_quran_evidence",
+      "label": "Retrieve Quran Evidence",
+      "position": { "x": 1760, "y": 400 },
+      "config": {}
+    },
+    {
+      "id": "tafsir-1",
+      "type": "lados.quran_media.retrieve_tafsir_context",
+      "label": "Retrieve Tafsir Context",
+      "position": { "x": 2000, "y": 400 },
+      "config": { "tafsirIds": [] }
+    },
+    {
+      "id": "bundle-1",
+      "type": "lados.quran_media.build_evidence_bundle",
+      "label": "Build Evidence Bundle",
+      "position": { "x": 2240, "y": 480 },
+      "config": { "requireTafsir": true }
+    },
+    {
+      "id": "gate2-religious-review",
+      "type": "lados.human.request_input",
+      "label": "Gate 2 — Religious Evidence Review",
+      "position": { "x": 2480, "y": 480 },
+      "config": {
+        "title": "Gate 2 — Religious evidence review",
+        "instructions": "Confirm each Quran reference, Arabic text, translation, tafsir context, optional hadith status, and contextual suitability. Submit the confirmed evidence bundle to continue."
+      }
+    },
+    {
+      "id": "reflect-1",
+      "type": "lados.quran_media.compose_reflection",
+      "label": "Compose Reflection",
+      "position": { "x": 2720, "y": 480 },
+      "config": { "language": "ms", "tone": "reflective" }
+    },
+    {
+      "id": "script-1",
+      "type": "lados.quran_media.write_short_video_script",
+      "label": "Write Short Video Script",
+      "position": { "x": 2960, "y": 480 },
+      "config": { "durationSeconds": 45, "language": "ms" }
+    },
+    {
+      "id": "validate-1",
+      "type": "lados.quran_media.validate_dakwah_content",
+      "label": "Validate Dakwah Content",
+      "position": { "x": 3200, "y": 480 },
+      "config": { "strictMode": true }
+    },
+    {
+      "id": "cond-publication",
+      "type": "lados.workflow.condition",
+      "label": "Publication Blocked?",
+      "position": { "x": 3440, "y": 480 },
+      "config": { "expression": "publicationBlocked == false", "label": "Publication not blocked" }
+    },
+    {
+      "id": "gate3-editorial-approval",
+      "type": "lados.human.request_approval",
+      "label": "Gate 3 — Editorial Publication Approval",
+      "position": { "x": 3680, "y": 360 },
+      "config": {
+        "title": "Gate 3 — Editorial publication approval",
+        "instructions": "Confirm script tone, visual sensitivity, wording, evidence appendix, and production suitability. Approval here is editorial and separate from the Gate 2 religious review."
+      }
+    },
+    {
+      "id": "log-revision",
+      "type": "lados.workflow.write_log",
+      "label": "Log Revision Required",
+      "position": { "x": 3680, "y": 620 },
+      "config": { "message": "Dakwah content validation blocked publication — route back for revision", "level": "warn" }
+    },
+    {
+      "id": "brief-1",
+      "type": "lados.quran_media.prepare_media_brief",
+      "label": "Prepare Media Brief",
+      "position": { "x": 3920, "y": 360 },
+      "config": { "visualRestrictions": "No graphic suffering, no identifiable victims, dignity-first visuals", "voiceDirection": "Calm, reflective, compassionate" }
+    },
+    {
+      "id": "log-complete",
+      "type": "lados.workflow.write_log",
+      "label": "Log Production Package Ready",
+      "position": { "x": 4160, "y": 360 },
+      "config": { "message": "QMCP media brief prepared — hand off to Video Production", "level": "info" }
+    },
+    {
+      "id": "hadith-1",
+      "type": "lados.quran_media.verify_hadith_reference",
+      "label": "Example: Verify Hadith Reference (optional)",
+      "position": { "x": 2000, "y": 160 },
+      "config": { "sourceUrl": "", "submittedBy": "" }
+    },
+    {
+      "id": "video-read-1",
+      "type": "lados.video.read_script",
+      "label": "Example: Video Production Handoff — Read Script",
+      "position": { "x": 3920, "y": 160 },
+      "config": { "title": "Dakwah short video script", "scriptText": "" }
+    },
+    {
+      "id": "video-scenes-1",
+      "type": "lados.video.draft_scenes",
+      "label": "Example: Video Production Handoff — Draft Scenes",
+      "position": { "x": 4160, "y": 160 },
+      "config": { "splitStrategy": "paragraph" }
+    }
+  ],
+  "connections": [
+    { "id": "conn-1", "sourceNodeId": "discover-1", "sourcePortId": "issues", "targetNodeId": "rank-1", "targetPortId": "issues" },
+    { "id": "conn-2", "sourceNodeId": "rank-1", "sourcePortId": "ranked", "targetNodeId": "gate1-select-issue", "targetPortId": "context" },
+    { "id": "conn-3", "sourceNodeId": "gate1-select-issue", "sourcePortId": "submittedData", "targetNodeId": "impact-1", "targetPortId": "issue" },
+    { "id": "conn-4", "sourceNodeId": "impact-1", "sourcePortId": "impact", "targetNodeId": "themes-1", "targetPortId": "impact" },
+    { "id": "conn-5", "sourceNodeId": "themes-1", "sourcePortId": "themes", "targetNodeId": "find-1", "targetPortId": "themes" },
+    { "id": "conn-6", "sourceNodeId": "find-1", "sourcePortId": "candidates", "targetNodeId": "quran-1", "targetPortId": "candidates" },
+    { "id": "conn-7", "sourceNodeId": "quran-1", "sourcePortId": "quranEvidence", "targetNodeId": "tafsir-1", "targetPortId": "quranEvidence" },
+    { "id": "conn-8", "sourceNodeId": "quran-1", "sourcePortId": "quranEvidence", "targetNodeId": "bundle-1", "targetPortId": "quranEvidence" },
+    { "id": "conn-9", "sourceNodeId": "tafsir-1", "sourcePortId": "tafsirEvidence", "targetNodeId": "bundle-1", "targetPortId": "tafsirEvidence" },
+    { "id": "conn-10", "sourceNodeId": "bundle-1", "sourcePortId": "bundle", "targetNodeId": "gate2-religious-review", "targetPortId": "context" },
+    { "id": "conn-11", "sourceNodeId": "gate2-religious-review", "sourcePortId": "submittedData", "targetNodeId": "reflect-1", "targetPortId": "bundle" },
+    { "id": "conn-12", "sourceNodeId": "reflect-1", "sourcePortId": "reflection", "targetNodeId": "script-1", "targetPortId": "reflection" },
+    { "id": "conn-13", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "validate-1", "targetPortId": "script" },
+    { "id": "conn-14", "sourceNodeId": "validate-1", "sourcePortId": "validation", "targetNodeId": "cond-publication", "targetPortId": "value" },
+    { "id": "conn-15", "sourceNodeId": "cond-publication", "sourcePortId": "true", "targetNodeId": "gate3-editorial-approval", "targetPortId": "context" },
+    { "id": "conn-16", "sourceNodeId": "cond-publication", "sourcePortId": "false", "targetNodeId": "log-revision", "targetPortId": "data" },
+    { "id": "conn-17", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "brief-1", "targetPortId": "script" },
+    { "id": "conn-18", "sourceNodeId": "gate3-editorial-approval", "sourcePortId": "approvalTask", "targetNodeId": "brief-1", "targetPortId": "validation" },
+    { "id": "conn-19", "sourceNodeId": "brief-1", "sourcePortId": "brief", "targetNodeId": "log-complete", "targetPortId": "data" }
+  ],
+  "metadata": {
+    "packId": "lados.quran-media",
+    "author": "lados.quran-media"
+  }
+}
