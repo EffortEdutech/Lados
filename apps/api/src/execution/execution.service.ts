@@ -35,6 +35,7 @@ import { ApprovalTaskCreator } from '../approval/approval-task.creator';
 import { ArtifactService }     from '../artifact/artifact.service';
 import { ProgramArtifactService } from '../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
 import { ReligiousSourceService } from '../religious-source/religious-source.service'; // Phase B (QMCP)
+import { CurrentIssueResearchService } from '../current-issue-research/current-issue-research.service'; // Phase D (QMCP)
 import { ExecutionQueueService } from '../queue/execution-queue.service';
 import { RUN_EVENT } from '../queue/queue.constants';
 import { PackRegistryService }   from '../pack/pack-registry.service';
@@ -95,6 +96,7 @@ export class ExecutionService implements OnModuleInit {
     private readonly emitter: EventEmitter2,        // Phase 21 S3 (D4) — SSE node progress
     private readonly programArtifactService: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
     private readonly religiousSourceService: ReligiousSourceService, // Phase B (QMCP)
+    private readonly currentIssueResearchService: CurrentIssueResearchService, // Phase D (QMCP)
   ) {
     // nodeResolver used only for in-process fallback (no Redis) and executeNodeAction.
     this.nodeResolver = buildRealNodeResolver(
@@ -112,6 +114,7 @@ export class ExecutionService implements OnModuleInit {
       this.smsService,
       this.programArtifactService,
       this.religiousSourceService,
+      this.currentIssueResearchService,
     );
   }
 

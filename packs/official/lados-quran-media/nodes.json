@@ -47,7 +47,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
     "searchKeywords": [

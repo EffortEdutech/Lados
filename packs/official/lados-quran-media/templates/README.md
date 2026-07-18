@@ -41,18 +41,20 @@ including all three mandatory human gates:
   standalone with realistic config to show the handoff contract; an operator
   (or a Phase E revision of the video pack's ports) completes the connection.
 
-### `discover_current_issues` still stops the chain — by design, for now
+### `discover_current_issues` still stops the chain by default — governance, not engineering
 
-12/13 QMCP executors are implemented (Phase B deterministic evidence nodes +
-Phase C AI editorial nodes, wired to `ReligiousSourceService`/`AiService`).
-Running this template today still stops at `discover_current_issues` with
-`RESEARCH_SERVICE_NOT_CONFIGURED` — the same honest-stub pattern as
-`lados.video.render_scenes`'s `RENDER_BACKEND_NOT_CONFIGURED` — because
-Phase D's `current-issue-research` module doesn't exist yet. Feeding a
-hand-built `issues[]` fixture directly into `rank_issue_candidates` (skipping
-`discover_current_issues`) already exercises the rest of the chain end to
-end. Phase D wires the research service without changing any node contract
-in this graph.
+13/13 QMCP executors are implemented (Phase B deterministic evidence nodes +
+Phase C AI editorial nodes + Phase D current-issue research, wired to
+`ReligiousSourceService`/`AiService`/`CurrentIssueResearchService`). Running
+this template today still stops at `discover_current_issues` with
+`RESEARCH_SERVICE_NOT_CONFIGURED` by default — the same honest-stub pattern
+as `lados.video.render_scenes`'s `RENDER_BACKEND_NOT_CONFIGURED` — because no
+`CURRENT_ISSUE_RESEARCH_SOURCES` entry has been approved yet (a content-
+governance decision, same class as the QUL dataset pick, not an engineering
+gap). Registering at least one approved RSS/Atom feed unblocks it
+immediately, no code change needed. Feeding a hand-built `issues[]` fixture
+directly into `rank_issue_candidates` (skipping `discover_current_issues`)
+still works too and exercises the rest of the chain end to end.
 
 ### Revision loop
 

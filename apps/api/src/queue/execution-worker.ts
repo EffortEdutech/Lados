@@ -32,6 +32,7 @@ import { ApprovalTaskCreator } from '../approval/approval-task.creator';
 import { ArtifactService }  from '../artifact/artifact.service';
 import { ProgramArtifactService } from '../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
 import { ReligiousSourceService } from '../religious-source/religious-source.service'; // Phase B (QMCP)
+import { CurrentIssueResearchService } from '../current-issue-research/current-issue-research.service'; // Phase D (QMCP)
 import { DataPacksService } from '../data-packs/data-packs.service';
 import { ExecutionQueueService, parseRedisUrl } from './execution-queue.service';
 import { buildRealNodeResolver } from '../execution/real-nodes';
@@ -71,6 +72,7 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
     private readonly smsService:    SmsService,      // Phase 10
     private readonly programArtifactService: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
     private readonly religiousSourceService: ReligiousSourceService, // Phase B (QMCP)
+    private readonly currentIssueResearchService: CurrentIssueResearchService, // Phase D (QMCP)
   ) {
     this.nodeResolver = buildRealNodeResolver(
       fileService, libraryService, aiService, documentService,
@@ -79,6 +81,7 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       emailService, smsService,
       programArtifactService,
       religiousSourceService,
+      currentIssueResearchService,
     );
   }
 

@@ -12,20 +12,21 @@ QMCP is **not** an autonomous religious authority. It does not issue fatwa,
 certify interpretations, determine divine intent behind an event, or publish
 content without human approval.
 
-## Status — Phase B + C implemented, Phase D pending
+## Status — Phase A/B/C/D implemented, Phase E/F pending
 
 | Area | Status |
 |---|---|
 | Manifest + nodes.json (13 nodes) | ✅ validated by `validate:official-packs` |
-| Executors | ✅ 12/13 **implemented** (Phase B deterministic evidence nodes + Phase C AI editorial nodes) per QMCP Volume 2's node contracts. `discover_current_issues` remains an **honest stub** (`RESEARCH_SERVICE_NOT_CONFIGURED`) — Phase D. |
-| Workflow template | ✅ descriptor + importable graph body (`templates/`) — will now run through the full chain against real/fixture datasets, stopping only at `discover_current_issues` |
+| Executors | ✅ 13/13 **implemented** (Phase B deterministic evidence nodes + Phase C AI editorial nodes + Phase D current-issue research) per QMCP Volume 2's node contracts. `discover_current_issues` degrades to the honest `RESEARCH_SERVICE_NOT_CONFIGURED` stub whenever no approved RSS source is registered — see Current Issue Research module row below. |
+| Workflow template | ✅ descriptor + importable graph body (`templates/`) — now runs through the full 13-node chain against real/fixture datasets and at least one configured RSS source |
 | API resolver wiring | ✅ `apps/api/src/execution/real-nodes/index.ts` (`officialQuranMediaResolve`) |
 | Religious source module (QUL adapters) | ✅ `apps/api/src/religious-source/` — JSON-dataset adapters (SQLite is an approved future format, same interface) |
 | Neutral AI service wiring | ✅ the existing `AiService` is passed directly — it already structurally satisfies `ITextGenerationService` (`isConfigured` + `runCompletion`), no wrapper class needed |
-| Current Issue Research module | ❌ Phase D (`apps/api/src/current-issue-research/`) |
+| Current Issue Research module | ✅ Phase D (`apps/api/src/current-issue-research/`) — allowlisted RSS/Atom fetch (dependency-free parser, timeout + retry), date normalization, duplicate detection (by link and normalized headline), provenance. Source allowlist (`CURRENT_ISSUE_RESEARCH_SOURCES`) is a content-governance decision for eff — ships empty by default (same posture as the QUL dataset pick), `isConfigured` false until at least one source is registered. |
 | Tests (`official-quran-media.spec.ts` / e2e) | ❌ not yet written — Volume 2 §7/§8 specify the full matrix; two tests are flagged critical (Gate 2 enforcement in `compose_reflection`, deterministic checks in `validate_dakwah_content` must never no-op if AI is down) |
 | Test fixtures | ✅ `apps/api/test/fixtures/qul/` — small, obviously-placeholder dataset (Blueprint §21.3), safe for exercising the pipeline without real QUL content |
 | Real QUL dataset selection | 🟡 production pick still open (Blueprint §7.3 `TO_BE_SELECTED`) — but a **local dev/test dataset** is now staged from `00 RAFIQ`'s already-downloaded, checksummed QUL/Tanzil data via `scripts/stage-qmcp-local-religious-source.mjs` + `scripts/export-qul-topics-sqlite.mjs` (run once, output gitignored under `local-data/`, never committed). Verified end-to-end against real Quran/translation/tafsir/topic text through the actual `QulQuranAdapter`/`QulTafsirAdapter` code. The Malay translation entry is explicitly flagged DEV/TEST ONLY — RAFIQ's own audit found its rights/attribution unresolved. This is an interim source; eff's plan is to migrate to RAFIQ's own "Dakwah PKA" content pipeline once that stabilizes — see `scripts/stage-qmcp-local-religious-source.mjs`'s header for full notes. |
+| Approved news source allowlist | ❌ open — same class of content-governance decision as the QUL dataset pick; `CURRENT_ISSUE_RESEARCH_SOURCES` needs at least one real, eff-approved RSS/Atom feed before `discover_current_issues` runs against live data. |
 
 Delivery phases A–F are defined in Blueprint §23. Node-level implementation
 detail lives in **QMCP Volume 2**
