@@ -532,6 +532,25 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
+  packs/official/lados-quran-media:
+    dependencies:
+      '@lados/execution-engine':
+        specifier: workspace:*
+        version: link:../../../packages/execution-engine
+      '@lados/node-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/node-sdk
+      '@lados/pack-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/@lados/pack-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.16.10
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
   packs/official/lados-resource-operations:
     dependencies:
       '@lados/execution-engine':
