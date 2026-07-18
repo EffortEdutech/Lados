@@ -82,7 +82,7 @@
   "prototypeReferences": [],
   "verification": {
     "manifest": "draft — Phase A skeleton per QMCP Blueprint V1.0, not yet reviewed by eff",
-    "runtime": "stub — all 13 executors are honest stubs: they validate inputs and fail with catalogued error codes because no religious-source, research, or AI service is wired yet (Phases B–D)",
+    "runtime": "12/13 executors implemented (Phase B deterministic evidence nodes + Phase C AI editorial nodes, wired to ReligiousSourceService/AiService in apps/api/src/execution/real-nodes/index.ts per QMCP Volume 2). discover_current_issues remains an honest stub — RESEARCH_SERVICE_NOT_CONFIGURED — until Phase D's current-issue-research module exists. Not yet typechecked/tested on a live install (sandbox cross-mount symlink limitation — pending eff's Windows pnpm build:packs/typecheck/test pass).",
     "canvas": "not_started",
     "templates": "draft — issue-to-dakwah-video descriptor plus an importable graph body wiring the main chain with the three human gates; hadith verification and Video Production handoff nodes are standalone examples (see templates/README.md); not yet sanity-checked with a real import + trigger"
   },

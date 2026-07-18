@@ -1,5 +1,5 @@
 /**
- * lados.quran_media.verify_hadith_reference — STUB (real logic: Phase B)
+ * lados.quran_media.verify_hadith_reference — Phase B (real logic)
  *
  * Records human-assisted SemakHadis.com verification evidence: the human
  * supplies the exact record URL; the adapter records provider, status label,
@@ -9,7 +9,7 @@
  */
 import type { NodeContext, NodeExecuteResult } from '@lados/execution-engine';
 import type { IHadithVerificationService } from '../types';
-import { fail, notImplemented } from './stub-helpers';
+import { fail, failFromError } from './stub-helpers';
 
 const NODE = 'lados.quran_media.verify_hadith_reference';
 
@@ -19,6 +19,7 @@ export async function verifyHadithReference(
 ): Promise<NodeExecuteResult> {
   const cfg = ctx.config as Record<string, unknown>;
   const sourceUrl = typeof cfg['sourceUrl'] === 'string' ? (cfg['sourceUrl'] as string).trim() : '';
+  const submittedBy = typeof cfg['submittedBy'] === 'string' ? (cfg['submittedBy'] as string).trim() : '';
 
   if (!sourceUrl) {
     return fail(
@@ -32,5 +33,15 @@ export async function verifyHadithReference(
       `${NODE}: no hadith verification service is wired — the Semak Hadis adapter (apps/api/src/religious-source/) is Phase B.`,
     );
   }
-  return notImplemented(NODE, 'Phase B (deterministic evidence nodes)');
+
+  try {
+    const hadithEvidence = await hadithVerificationService.createManualVerification({ sourceUrl, submittedBy });
+    return {
+      status: 'success',
+      outputs: { hadithEvidence },
+      summary: `Recorded hadith verification submission (${hadithEvidence.humanReviewStatus}) — a human reviewer must confirm title, status, and references before use.`,
+    };
+  } catch (e: unknown) {
+    return failFromError('HADITH_VERIFICATION_SERVICE_NOT_CONFIGURED', e);
+  }
 }

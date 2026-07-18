@@ -12,22 +12,24 @@ QMCP is **not** an autonomous religious authority. It does not issue fatwa,
 certify interpretations, determine divine intent behind an event, or publish
 content without human approval.
 
-## Status — Phase A skeleton (`stub_executors`)
+## Status — Phase B + C implemented, Phase D pending
 
 | Area | Status |
 |---|---|
 | Manifest + nodes.json (13 nodes) | ✅ validated by `validate:official-packs` |
-| Executors | ⚠️ All 13 are **honest stubs**: deterministic input validation, then a catalogued failure (Blueprint §16) — no service is wired yet |
-| Workflow template | ✅ descriptor + importable graph body (`templates/`) — will stop at the first stub when run |
-| API resolver wiring | ❌ not yet (`apps/api/src/execution/real-nodes/index.ts` — Phase B) |
-| Religious source module (QUL adapters) | ❌ Phase B (`apps/api/src/religious-source/`) |
-| Neutral AI service wiring | ❌ Phase C |
+| Executors | ✅ 12/13 **implemented** (Phase B deterministic evidence nodes + Phase C AI editorial nodes) per QMCP Volume 2's node contracts. `discover_current_issues` remains an **honest stub** (`RESEARCH_SERVICE_NOT_CONFIGURED`) — Phase D. |
+| Workflow template | ✅ descriptor + importable graph body (`templates/`) — will now run through the full chain against real/fixture datasets, stopping only at `discover_current_issues` |
+| API resolver wiring | ✅ `apps/api/src/execution/real-nodes/index.ts` (`officialQuranMediaResolve`) |
+| Religious source module (QUL adapters) | ✅ `apps/api/src/religious-source/` — JSON-dataset adapters (SQLite is an approved future format, same interface) |
+| Neutral AI service wiring | ✅ the existing `AiService` is passed directly — it already structurally satisfies `ITextGenerationService` (`isConfigured` + `runCompletion`), no wrapper class needed |
 | Current Issue Research module | ❌ Phase D (`apps/api/src/current-issue-research/`) |
-| Tests (`official-quran-media.spec.ts` / e2e) | ❌ Phase B+ |
+| Tests (`official-quran-media.spec.ts` / e2e) | ❌ not yet written — Volume 2 §7/§8 specify the full matrix; two tests are flagged critical (Gate 2 enforcement in `compose_reflection`, deterministic checks in `validate_dakwah_content` must never no-op if AI is down) |
+| Test fixtures | ✅ `apps/api/test/fixtures/qul/` — small, obviously-placeholder dataset (Blueprint §21.3), safe for exercising the pipeline without real QUL content |
+| Real QUL dataset selection | ❌ still open — Blueprint §7.3's `TO_BE_SELECTED` rows are a content decision for eff, not an engineering blocker (translationId/tafsirIds are per-node config inputs with a manifest-registered "primary" fallback, so coding did not wait on this) |
 
-Delivery phases A–F are defined in Blueprint §23. The next document per
-Blueprint §27 is **QMCP Volume 2** (node contracts, schemas, prompts,
-executors, test spec).
+Delivery phases A–F are defined in Blueprint §23. Node-level implementation
+detail lives in **QMCP Volume 2**
+(`test-data/LADOS_Quran_Media_Creator_Pack_QMCP_Volume2_Node_Contracts_V1.0.md`).
 
 ## Nodes (namespace `lados.quran_media.*`)
 

@@ -6,27 +6,58 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Retrieve and normalize current issues from approved, allowlisted news sources via the Current Issue Research Service, with provenance and duplicate detection.",
-    "inputPattern": ["inspector"],
+    "inputPattern": [
+      "inspector"
+    ],
     "outputPattern": "array of normalized issue candidates with source provenance",
     "ports": {
       "inputs": [],
       "outputs": [
-        { "id": "issues", "label": "Issues", "dataType": "array" }
+        {
+          "id": "issues",
+          "label": "Issues",
+          "dataType": "array"
+        }
       ]
     },
     "configGroups": [
-      { "id": "sources", "label": "Sources", "fields": ["topics", "sinceHours", "limit"] }
+      {
+        "id": "sources",
+        "label": "Sources",
+        "fields": [
+          "topics",
+          "sinceHours",
+          "limit"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Retrieves and normalizes approved sources only; it does not decide which issue becomes content — that is Gate 1 (human issue selection).",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
     "executorStatus": "stub",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "dakwah", "issue", "news", "discover", "research"]
+    "searchKeywords": [
+      "quran",
+      "dakwah",
+      "issue",
+      "news",
+      "discover",
+      "research"
+    ]
   },
   {
     "type": "lados.quran_media.rank_issue_candidates",
@@ -35,29 +66,64 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Rank discovered issues for reflective dakwah suitability (relevance, sensitivity, non-exploitative framing). Ranking is advisory input to the human issue-selection gate.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "ranked array of issue candidates with advisory scores and warnings",
     "ports": {
       "inputs": [
-        { "id": "issues", "label": "Issues", "dataType": "array", "required": true }
+        {
+          "id": "issues",
+          "label": "Issues",
+          "dataType": "array",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "ranked", "label": "Ranked Issues", "dataType": "array" }
+        {
+          "id": "ranked",
+          "label": "Ranked Issues",
+          "dataType": "array"
+        }
       ]
     },
     "configGroups": [
-      { "id": "ranking", "label": "Ranking", "fields": ["maxCandidates", "audienceNote"] }
+      {
+        "id": "ranking",
+        "label": "Ranking",
+        "fields": [
+          "maxCandidates",
+          "audienceNote"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Produces an advisory ranking only; a human selects the issue at Gate 1 and confirms source quality and framing.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "dakwah", "issue", "rank", "suitability"]
+    "searchKeywords": [
+      "quran",
+      "dakwah",
+      "issue",
+      "rank",
+      "suitability"
+    ]
   },
   {
     "type": "lados.quran_media.analyze_human_impact",
@@ -66,29 +132,63 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Separate verified facts, human impact, uncertainty, and sensitivity flags for the selected issue. Output is advisory and feeds theme mapping.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "impact analysis object with facts, uncertainties, and sensitivity flags",
     "ports": {
       "inputs": [
-        { "id": "issue", "label": "Selected Issue", "dataType": "object", "required": true }
+        {
+          "id": "issue",
+          "label": "Selected Issue",
+          "dataType": "object",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "impact", "label": "Impact Analysis", "dataType": "object" }
+        {
+          "id": "impact",
+          "label": "Impact Analysis",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "analysis", "label": "Analysis", "fields": ["language"] }
+      {
+        "id": "analysis",
+        "label": "Analysis",
+        "fields": [
+          "language"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Separates facts from interpretation as advisory analysis; it does not assert divine meaning behind an event and does not approve content.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "dakwah", "impact", "facts", "sensitivity"]
+    "searchKeywords": [
+      "quran",
+      "dakwah",
+      "impact",
+      "facts",
+      "sensitivity"
+    ]
   },
   {
     "type": "lados.quran_media.map_islamic_themes",
@@ -97,29 +197,63 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Map the analyzed issue to candidate Islamic themes (e.g. patience, compassion, trust in Allah) used to search approved QUL topic/theme datasets. Advisory only.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "array of candidate Islamic themes with rationale",
     "ports": {
       "inputs": [
-        { "id": "impact", "label": "Impact Analysis", "dataType": "object", "required": true }
+        {
+          "id": "impact",
+          "label": "Impact Analysis",
+          "dataType": "object",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "themes", "label": "Themes", "dataType": "array" }
+        {
+          "id": "themes",
+          "label": "Themes",
+          "dataType": "array"
+        }
       ]
     },
     "configGroups": [
-      { "id": "mapping", "label": "Mapping", "fields": ["maxThemes"] }
+      {
+        "id": "mapping",
+        "label": "Mapping",
+        "fields": [
+          "maxThemes"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Proposes themes as advisory search input only; thematic suitability is confirmed by the human religious reviewer at Gate 2.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "dakwah", "theme", "islamic", "map"]
+    "searchKeywords": [
+      "quran",
+      "dakwah",
+      "theme",
+      "islamic",
+      "map"
+    ]
   },
   {
     "type": "lados.quran_media.find_quran_candidates",
@@ -128,29 +262,65 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Search the configured QUL topic and theme datasets for candidate ayah references matching the mapped themes. AI may refine search terms; every candidate comes from deterministic dataset retrieval, never model memory.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "array of candidate ayah references from the configured QUL datasets",
     "ports": {
       "inputs": [
-        { "id": "themes", "label": "Themes", "dataType": "array", "required": true }
+        {
+          "id": "themes",
+          "label": "Themes",
+          "dataType": "array",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "candidates", "label": "Quran Candidates", "dataType": "array" }
+        {
+          "id": "candidates",
+          "label": "Quran Candidates",
+          "dataType": "array"
+        }
       ]
     },
     "configGroups": [
-      { "id": "search", "label": "Search", "fields": ["limit", "language"] }
+      {
+        "id": "search",
+        "label": "Search",
+        "fields": [
+          "limit",
+          "language"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Surfaces dataset-backed candidates only; it never invents a reference and never decides which ayah is used — that is confirmed at Gate 2.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "ayah", "search", "theme", "qul", "candidates"]
+    "searchKeywords": [
+      "quran",
+      "ayah",
+      "search",
+      "theme",
+      "qul",
+      "candidates"
+    ]
   },
   {
     "type": "lados.quran_media.retrieve_quran_evidence",
@@ -159,29 +329,64 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Deterministically retrieve Arabic text, configured translation, and full provenance for validated ayah references from the configured QUL datasets. No AI involvement.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "array of Quran evidence items with Arabic text, translation, and provenance",
     "ports": {
       "inputs": [
-        { "id": "candidates", "label": "Quran Candidates", "dataType": "array", "required": true }
+        {
+          "id": "candidates",
+          "label": "Quran Candidates",
+          "dataType": "array",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "quranEvidence", "label": "Quran Evidence", "dataType": "array" }
+        {
+          "id": "quranEvidence",
+          "label": "Quran Evidence",
+          "dataType": "array"
+        }
       ]
     },
     "configGroups": [
-      { "id": "retrieval", "label": "Retrieval", "fields": ["translationId"] }
+      {
+        "id": "retrieval",
+        "label": "Retrieval",
+        "fields": [
+          "translationId"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Retrieves configured dataset content only; contextual suitability of the evidence is a human decision at Gate 2.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "ayah", "arabic", "translation", "evidence", "qul"]
+    "searchKeywords": [
+      "quran",
+      "ayah",
+      "arabic",
+      "translation",
+      "evidence",
+      "qul"
+    ]
   },
   {
     "type": "lados.quran_media.retrieve_tafsir_context",
@@ -190,29 +395,63 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Deterministically retrieve configured tafsir context for retrieved ayah evidence from the configured QUL tafsir datasets, keeping each tafsir source identified and separate. No AI involvement.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "array of tafsir evidence items with exact source identification",
     "ports": {
       "inputs": [
-        { "id": "quranEvidence", "label": "Quran Evidence", "dataType": "array", "required": true }
+        {
+          "id": "quranEvidence",
+          "label": "Quran Evidence",
+          "dataType": "array",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "tafsirEvidence", "label": "Tafsir Evidence", "dataType": "array" }
+        {
+          "id": "tafsirEvidence",
+          "label": "Tafsir Evidence",
+          "dataType": "array"
+        }
       ]
     },
     "configGroups": [
-      { "id": "tafsir", "label": "Tafsir", "fields": ["tafsirIds"] }
+      {
+        "id": "tafsir",
+        "label": "Tafsir",
+        "fields": [
+          "tafsirIds"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Retrieves configured tafsir text only; it does not merge tafsir views into a consensus and does not interpret them — interpretation review is human work.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["quran", "tafsir", "context", "qul", "evidence"]
+    "searchKeywords": [
+      "quran",
+      "tafsir",
+      "context",
+      "qul",
+      "evidence"
+    ]
   },
   {
     "type": "lados.quran_media.verify_hadith_reference",
@@ -221,27 +460,56 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Record human-assisted SemakHadis.com verification evidence for an optional hadith: exact record URL, exact status label, references, and pending human-review status. Never generates hadith content.",
-    "inputPattern": ["inspector"],
+    "inputPattern": [
+      "inspector"
+    ],
     "outputPattern": "hadith verification record with exact source status and pending review flag",
     "ports": {
       "inputs": [],
       "outputs": [
-        { "id": "hadithEvidence", "label": "Hadith Evidence", "dataType": "object" }
+        {
+          "id": "hadithEvidence",
+          "label": "Hadith Evidence",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "verification", "label": "Verification", "fields": ["sourceUrl", "submittedBy"] }
+      {
+        "id": "verification",
+        "label": "Verification",
+        "fields": [
+          "sourceUrl",
+          "submittedBy"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Records verification evidence a human obtained from SemakHadis.com; it never grades a hadith and never approves its use — suitability is confirmed by the human reviewer.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 250, "minHeight": 112, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 112,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["hadith", "semak hadis", "verify", "reference", "evidence"]
+    "searchKeywords": [
+      "hadith",
+      "semak hadis",
+      "verify",
+      "reference",
+      "evidence"
+    ]
   },
   {
     "type": "lados.quran_media.build_evidence_bundle",
@@ -250,33 +518,88 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Assemble the issue, themes, Quran evidence, tafsir evidence, and optional hadith evidence into the validated religious evidence bundle contract (bundleVersion 1.0) with pending religious-review status.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "religious evidence bundle object conforming to the bundleVersion 1.0 contract",
     "ports": {
       "inputs": [
-        { "id": "issue", "label": "Issue", "dataType": "object", "required": false },
-        { "id": "themes", "label": "Themes", "dataType": "array", "required": false },
-        { "id": "quranEvidence", "label": "Quran Evidence", "dataType": "array", "required": true },
-        { "id": "tafsirEvidence", "label": "Tafsir Evidence", "dataType": "array", "required": false },
-        { "id": "hadithEvidence", "label": "Hadith Evidence", "dataType": "object", "required": false }
+        {
+          "id": "issue",
+          "label": "Issue",
+          "dataType": "object",
+          "required": false
+        },
+        {
+          "id": "themes",
+          "label": "Themes",
+          "dataType": "array",
+          "required": false
+        },
+        {
+          "id": "quranEvidence",
+          "label": "Quran Evidence",
+          "dataType": "array",
+          "required": true
+        },
+        {
+          "id": "tafsirEvidence",
+          "label": "Tafsir Evidence",
+          "dataType": "array",
+          "required": false
+        },
+        {
+          "id": "hadithEvidence",
+          "label": "Hadith Evidence",
+          "dataType": "object",
+          "required": false
+        }
       ],
       "outputs": [
-        { "id": "bundle", "label": "Evidence Bundle", "dataType": "object" }
+        {
+          "id": "bundle",
+          "label": "Evidence Bundle",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "bundle", "label": "Bundle", "fields": ["requireTafsir"] }
+      {
+        "id": "bundle",
+        "label": "Bundle",
+        "fields": [
+          "requireTafsir"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Assembles and structurally validates evidence only; the bundle always starts with religiousReview.status = pending and publicationReady = false — approval is exclusively human.",
     "aiBoundary": "none",
-    "canvasUx": { "minWidth": 260, "minHeight": 140, "maxVisiblePortsPerSide": 5 },
+    "canvasUx": {
+      "minWidth": 260,
+      "minHeight": 140,
+      "maxVisiblePortsPerSide": 5
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["evidence", "bundle", "quran", "tafsir", "hadith", "provenance"]
+    "searchKeywords": [
+      "evidence",
+      "bundle",
+      "quran",
+      "tafsir",
+      "hadith",
+      "provenance"
+    ]
   },
   {
     "type": "lados.quran_media.compose_reflection",
@@ -285,29 +608,64 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Create an evidence-grounded reflective dakwah passage from the human-confirmed evidence bundle, in the reflective register (\"Marilah kita renungkan...\"), never punitive framing. Output requires human review.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "reflection object with advisory and requiresHumanReview flags and evidence refs",
     "ports": {
       "inputs": [
-        { "id": "bundle", "label": "Evidence Bundle", "dataType": "object", "required": true }
+        {
+          "id": "bundle",
+          "label": "Evidence Bundle",
+          "dataType": "object",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "reflection", "label": "Reflection", "dataType": "object" }
+        {
+          "id": "reflection",
+          "label": "Reflection",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "reflection", "label": "Reflection", "fields": ["language", "tone"] }
+      {
+        "id": "reflection",
+        "label": "Reflection",
+        "fields": [
+          "language",
+          "tone"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Drafts a reflection for human review only; it must not present reflection as tafsir, claim divine intent behind events, or approve its own output.",
     "aiBoundary": "requires_human_review",
-    "canvasUx": { "minWidth": 250, "minHeight": 116, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["dakwah", "reflection", "compose", "quran", "script"]
+    "searchKeywords": [
+      "dakwah",
+      "reflection",
+      "compose",
+      "quran",
+      "script"
+    ]
   },
   {
     "type": "lados.quran_media.write_short_video_script",
@@ -316,29 +674,64 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Produce a short-form video script (hook, timed scenes, voiceover, on-screen text, caption, call to action, source appendix) from the reviewed reflection, per the short video script contract. Output requires human review.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "short video script object conforming to the script contract with source appendix",
     "ports": {
       "inputs": [
-        { "id": "reflection", "label": "Reflection", "dataType": "object", "required": true }
+        {
+          "id": "reflection",
+          "label": "Reflection",
+          "dataType": "object",
+          "required": true
+        }
       ],
       "outputs": [
-        { "id": "script", "label": "Script", "dataType": "object" }
+        {
+          "id": "script",
+          "label": "Script",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "script", "label": "Script", "fields": ["durationSeconds", "language"] }
+      {
+        "id": "script",
+        "label": "Script",
+        "fields": [
+          "durationSeconds",
+          "language"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Drafts a script for human editorial review only; every scene must carry evidence refs and the script cannot approve or publish itself.",
     "aiBoundary": "requires_human_review",
-    "canvasUx": { "minWidth": 250, "minHeight": 116, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 116,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["dakwah", "video", "script", "short-form", "scenes"]
+    "searchKeywords": [
+      "dakwah",
+      "video",
+      "script",
+      "short-form",
+      "scenes"
+    ]
   },
   {
     "type": "lados.quran_media.validate_dakwah_content",
@@ -347,30 +740,69 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Detect evidence, religious-safety, editorial, and sensitivity risks in the drafted script (missing evidence refs, prohibited framing, unverified hadith) and emit the validation contract with publicationBlocked.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "validation object with passed, riskLevel, issues, requiredHumanActions, publicationBlocked",
     "ports": {
       "inputs": [
-        { "id": "script", "label": "Script", "dataType": "object", "required": true },
-        { "id": "bundle", "label": "Evidence Bundle", "dataType": "object", "required": false }
+        {
+          "id": "script",
+          "label": "Script",
+          "dataType": "object",
+          "required": true
+        },
+        {
+          "id": "bundle",
+          "label": "Evidence Bundle",
+          "dataType": "object",
+          "required": false
+        }
       ],
       "outputs": [
-        { "id": "validation", "label": "Validation", "dataType": "object" }
+        {
+          "id": "validation",
+          "label": "Validation",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "validation", "label": "Validation", "fields": ["strictMode"] }
+      {
+        "id": "validation",
+        "label": "Validation",
+        "fields": [
+          "strictMode"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Flags risks as advisory findings only; passing validation does not constitute religious approval — Gates 2 and 3 remain mandatory.",
     "aiBoundary": "advisory",
-    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["dakwah", "validate", "safety", "risk", "publication"]
+    "searchKeywords": [
+      "dakwah",
+      "validate",
+      "safety",
+      "risk",
+      "publication"
+    ]
   },
   {
     "type": "lados.quran_media.prepare_media_brief",
@@ -379,29 +811,69 @@
     "ownerPack": "lados.quran-media",
     "status": "draft",
     "intent": "Prepare the production handoff for the Video Production pack: approved script, scene intent, visual restrictions, voice direction, subtitle package, and evidence appendix. Output requires human review.",
-    "inputPattern": ["ports", "inspector"],
+    "inputPattern": [
+      "ports",
+      "inspector"
+    ],
     "outputPattern": "media production brief object for the lados.video-production handoff",
     "ports": {
       "inputs": [
-        { "id": "script", "label": "Approved Script", "dataType": "object", "required": true },
-        { "id": "validation", "label": "Validation", "dataType": "object", "required": false }
+        {
+          "id": "script",
+          "label": "Approved Script",
+          "dataType": "object",
+          "required": true
+        },
+        {
+          "id": "validation",
+          "label": "Validation",
+          "dataType": "object",
+          "required": false
+        }
       ],
       "outputs": [
-        { "id": "brief", "label": "Media Brief", "dataType": "object" }
+        {
+          "id": "brief",
+          "label": "Media Brief",
+          "dataType": "object"
+        }
       ]
     },
     "configGroups": [
-      { "id": "brief", "label": "Brief", "fields": ["visualRestrictions", "voiceDirection"] }
+      {
+        "id": "brief",
+        "label": "Brief",
+        "fields": [
+          "visualRestrictions",
+          "voiceDirection"
+        ]
+      }
     ],
-    "resourceBindings": { "supported": false, "required": false },
-    "knowledgePackRequirements": { "required": [], "recommended": [] },
+    "resourceBindings": {
+      "supported": false,
+      "required": false
+    },
+    "knowledgePackRequirements": {
+      "required": [],
+      "recommended": []
+    },
     "humanDecisionBoundary": "Packages an already human-approved script for production only; it does not render video, publish, or bypass the editorial approval gate.",
     "aiBoundary": "requires_human_review",
-    "canvasUx": { "minWidth": 250, "minHeight": 120, "maxVisiblePortsPerSide": 2 },
+    "canvasUx": {
+      "minWidth": 250,
+      "minHeight": 120,
+      "maxVisiblePortsPerSide": 2
+    },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Quran Media",
     "icon": "BookOpen",
-    "searchKeywords": ["media", "brief", "production", "handoff", "video"]
+    "searchKeywords": [
+      "media",
+      "brief",
+      "production",
+      "handoff",
+      "video"
+    ]
   }
 ]
