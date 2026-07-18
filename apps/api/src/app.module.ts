@@ -41,6 +41,7 @@ import { AnalyticsModule } from './analytics/analytics.module';    // Phase 22 S
 import { RetentionModule } from './retention/retention.module';    // Phase 22 S22.5
 import { ProgramsModule } from './programs/programs.module';    // Phase 23 S23.1, renamed Phase 24 S24.2 -- org-level program definitions (NOT the old project-scoped PipelineModule)
 import { ProgramExecutionModule } from './program-execution/program-execution.module'; // Phase 23 S23.2, renamed Phase 24 S24.2 -- durable server-side program runs + stage gates
+import { ReligiousSourceModule } from './religious-source/religious-source.module'; // Phase B (QMCP) -- QUL/Semak Hadis governed adapters (@Global)
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -101,6 +102,7 @@ import { MulterModule } from '@nestjs/platform-express';
     RetentionModule,        // Phase 22 S22.5 -- retention/archival execution job
     ProgramsModule,        // Phase 23 S23.1, renamed Phase 24 S24.2 -- org-level program definitions (workflows+stage gates+data handoff), CRUD only for now
     ProgramExecutionModule, // Phase 23 S23.2, renamed Phase 24 S24.2 -- ProgramExecutionService + ProgramWatchdogService (5th watchdog)
+    ReligiousSourceModule,  // Phase B (QMCP) -- QUL/Semak Hadis governed adapters (@Global)
     MulterModule.register({ dest: '/tmp/uploads' }),
   ],
   providers: [

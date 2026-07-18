@@ -42,6 +42,7 @@
     "@lados/official-asset-fleet": "workspace:*",
     "@lados/official-people-payroll": "workspace:*",
     "@lados/official-video-production": "workspace:*",
+    "@lados/official-quran-media": "workspace:*",
     "@nestjs/event-emitter": "^2.0.4",
     "@supabase/supabase-js": "^2.45.4",
     "bullmq": "^5.13.2",

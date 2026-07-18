@@ -26,6 +26,7 @@ import type { ArtifactService }     from '../../artifact/artifact.service';
 import type { EmailService }        from '../../notification/email.service';   // Phase 10
 import type { SmsService }          from '../../notification/sms.service';     // Phase 10
 import type { ProgramArtifactService } from '../../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
+import type { ReligiousSourceService } from '../../religious-source/religious-source.service'; // Phase B (QMCP)
 
 // Phase 21 S2 (Wave 1) — official Capability Pack executors. Tried first —
 // these are the canonical successors declared in the compatibility alias
@@ -59,6 +60,14 @@ import { resolveNode as officialPeoplePayrollResolve }  from '@lados/official-pe
 // Orchestrates and validates the Claude + Remotion motion-graphics
 // production workflow; render_scenes is a stub (no render backend wired).
 import { resolveNode as officialVideoProductionResolve } from '@lados/official-video-production';
+
+// Quran Media Creator Pack (QMCP, Content Production line of business).
+// Phase A shipped 13 honest-stub executors; Phase B/C wired real logic
+// against ReligiousSourceService (QUL/Semak Hadis) and AiService — see
+// test-data/LADOS_Quran_Media_Creator_Pack_QMCP_Volume2_Node_Contracts_V1.0.md.
+// discover_current_issues stays a stub until Phase D's
+// current-issue-research module exists (RESEARCH_SERVICE_NOT_CONFIGURED).
+import { resolveNode as officialQuranMediaResolve } from '@lados/official-quran-media';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
@@ -96,6 +105,7 @@ export function buildRealNodeResolver(
   emailService?: EmailService,        // Phase 10
   smsService?: SmsService,            // Phase 10
   programArtifactService?: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
+  religiousSourceService?: ReligiousSourceService, // Phase B (QMCP)
 ): (nodeType: string) => NodeExecutor | null {
   // ArtifactService satisfies both IArtifactWriteService and IArtifactReadService structurally
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -246,6 +256,23 @@ export function buildRealNodeResolver(
     // RENDER_BACKEND_NOT_CONFIGURED failure, same pattern as
     // document-intelligence's unpassed storageService above.
     officialVideoProductionResolve({ fileService }),
+    // Quran Media Creator (L2) — Content Production line of business.
+    // quranSourceService/hadithVerificationService are the SAME
+    // ReligiousSourceService instance (it structurally satisfies both pack
+    // interfaces — Blueprint §9.1); passed as `undefined` when no QUL
+    // dataset is configured so the pack's own honest stubs degrade to
+    // RELIGIOUS_DATA_PATH_NOT_CONFIGURED/TAFSIR_NOT_CONFIGURED rather than
+    // this file silently swallowing the "not configured" signal.
+    // Hadith verification needs no dataset path, so it is always passed
+    // through when the service exists at all. currentIssueResearchService
+    // is intentionally left unpassed — Phase D module doesn't exist yet,
+    // discover_current_issues degrades to RESEARCH_SERVICE_NOT_CONFIGURED
+    // (same pattern as video-production's unpassed renderService above).
+    officialQuranMediaResolve({
+      aiService,
+      quranSourceService: religiousSourceService?.isConfigured ? religiousSourceService : undefined,
+      hadithVerificationService: religiousSourceService,
+    }),
   ];
 
   return (nodeType: string) => {
