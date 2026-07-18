@@ -1,0 +1,31 @@
+{
+  "_comment": "TEST FIXTURE ONLY (Blueprint V1.0 §21.3) — small, legal, obviously-placeholder dataset for exercising the religious-source pipeline (retrieval, provenance, error codes). NOT real QUL content and must never be used in production. Real datasets are downloaded separately per Blueprint §7.2/§7.3 and are never committed to this repository.",
+  "quranScript": {
+    "id": "fixture-quran-script",
+    "resourceName": "FIXTURE Quran Script (test-only placeholder)",
+    "language": "ar",
+    "file": "quran-sample.json"
+  },
+  "translations": [
+    {
+      "id": "fixture-translation-ms-primary",
+      "resourceName": "FIXTURE Malay Translation (test-only placeholder)",
+      "language": "ms",
+      "file": "translation-sample.json",
+      "role": "primary"
+    }
+  ],
+  "tafsirs": [
+    {
+      "id": "fixture-tafsir-ms-primary",
+      "resourceName": "FIXTURE Tafsir (test-only placeholder)",
+      "language": "ms",
+      "file": "tafsir-sample.json",
+      "role": "primary"
+    }
+  ],
+  "topics": {
+    "id": "fixture-ayah-topics",
+    "file": "topics-sample.json"
+  }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "theme": "patience",
+    "references": [
+      { "surah": 90, "ayahStart": 11, "ayahEnd": 16 },
+      { "surah": 2, "ayahStart": 153 }
+    ]
+  },
+  {
+    "theme": "hardship and ease",
+    "references": [{ "surah": 94, "ayahStart": 5, "ayahEnd": 6 }]
+  },
+  {
+    "theme": "compassion",
+    "references": [{ "surah": 90, "ayahStart": 13, "ayahEnd": 16 }]
+  }
+]
