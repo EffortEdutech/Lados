@@ -65,6 +65,9 @@ importers:
       '@lados/official-qs-commercial':
         specifier: workspace:*
         version: link:../../packs/official/lados-qs-commercial
+      '@lados/official-quran-media':
+        specifier: workspace:*
+        version: link:../../packs/official/lados-quran-media
       '@lados/official-resource-operations':
         specifier: workspace:*
         version: link:../../packs/official/lados-resource-operations

@@ -147,3 +147,21 @@ The engine is the PyPI package `graphifyy`; the `.ps1` wrapper is only the Windo
 
 Claude can refresh Graphify directly from Linux/macOS by using `./scripts/graphify.sh update .` after meaningful code structure changes. If a broad rebuild is needed, ask Codex/Windows to run the central multi-project build command.
 
+
+<!-- AI-WORKSPACE-CONTEXT-FALLBACK -->
+
+## Obsidian Fallback Context
+
+The central Obsidian vault lives at:
+
+~~~text
+C:\Users\user\Documents\00 AI agent\AI-Knowledge
+~~~
+
+Some Codex or Claude sessions mount only this project folder. If the live vault is outside the current sandbox, read this local bridge instead:
+
+~~~text
+docs\AI_WORKSPACE_CONTEXT.md
+~~~
+
+Use the bridge only for architecture rationale, ADRs, roadmap context, cross-project standards, and workspace operating context. Do not use it as a replacement for project docs, Graphify, or source inspection.

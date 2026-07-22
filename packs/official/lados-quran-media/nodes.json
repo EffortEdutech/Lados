@@ -765,6 +765,11 @@
           "id": "validation",
           "label": "Validation",
           "dataType": "object"
+        },
+        {
+          "id": "publicationBlocked",
+          "label": "Publication Blocked (flattened)",
+          "dataType": "boolean"
         }
       ]
     },

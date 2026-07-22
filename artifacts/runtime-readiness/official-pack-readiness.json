@@ -1,0 +1,5412 @@
+{
+  "schemaVersion": "lados.phase27.runtime-baseline.v1",
+  "generatedAt": "2026-07-22T07:50:54.578Z",
+  "scope": {
+    "officialRoot": "packs/official",
+    "archivedPacksExcluded": true,
+    "evidenceType": "static_repository"
+  },
+  "summary": {
+    "packCount": 22,
+    "executablePackCount": 15,
+    "compositionPackCount": 7,
+    "nodeCount": 103,
+    "implementedNodeCount": 99,
+    "stubNodeCount": 4,
+    "resolverDeclaredNodeCount": 103,
+    "runtimeReadyPackCount": 11,
+    "degradedPackCount": 4,
+    "blockedPackCount": 0,
+    "catalogueOnlyPackCount": 7,
+    "templateDescriptorCount": 16,
+    "workflowBodyCount": 3,
+    "descriptorOnlyCount": 13,
+    "graphReadyWorkflowCount": 2,
+    "degradedWorkflowCount": 1,
+    "blockedWorkflowCount": 0,
+    "nodesWithConfigFields": 102,
+    "l4PackCount": 0
+  },
+  "packs": [
+    {
+      "directory": "packs/official/lados-asset-fleet",
+      "id": "lados.asset-fleet",
+      "displayName": "Asset and Fleet Operations",
+      "version": "0.2.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.document-intelligence",
+        "lados.task-case"
+      ],
+      "capabilities": [
+        "asset_fleet.job.create",
+        "asset_fleet.trip.dispatch",
+        "asset_fleet.trip.complete",
+        "asset_fleet.fuel_receipt.upload",
+        "asset_fleet.fuel_receipt.extract",
+        "asset_fleet.maintenance.create",
+        "asset_fleet.maintenance.clear"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.asset_fleet.create_job",
+        "lados.asset_fleet.dispatch_trip",
+        "lados.asset_fleet.complete_trip",
+        "lados.asset_fleet.upload_fuel_receipt",
+        "lados.asset_fleet.extract_fuel_receipt",
+        "lados.asset_fleet.create_maintenance_record",
+        "lados.asset_fleet.clear_maintenance"
+      ],
+      "importName": "@lados/official-asset-fleet",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService",
+        "AiService"
+      ],
+      "externalRequirements": [
+        "AI provider for fuel-receipt vision"
+      ],
+      "nodeCount": 7,
+      "implementedNodeCount": 7,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 7,
+      "nodesWithConfigFields": 7,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-asset-fleet.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 7 declared nodes (no skeleton parity gap)",
+        "runtime": "implemented — all 7 nodes implemented, reusing job/trip/fuel_receipt/maintenance_record resource types from migration 0032_phase9_contractor_edition.sql (no new migration needed). extract_fuel_receipt reuses the real, already-integrated AiService.isConfigured/runVision (same capability contractor-pack's real contractor.extract_fuel_data node uses) — honest reuse, not fabrication; falls back to a confidence:0 advisory stub when AI is not configured. clear_maintenance enforces the MISSING_HUMAN_DECISION contract on clearedBy.",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-commercial-finance",
+      "id": "lados.commercial-finance",
+      "displayName": "Commercial Finance",
+      "version": "0.2.0",
+      "layer": "L1",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.human-work",
+        "lados.document-intelligence"
+      ],
+      "capabilities": [
+        "finance.invoice.submit",
+        "finance.invoice.verify",
+        "finance.invoice.approval_record",
+        "finance.payment.record",
+        "finance.po.create",
+        "finance.po.approval_record",
+        "finance.retention.claim_release",
+        "finance.retention.record_release"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.finance.submit_invoice",
+        "lados.finance.verify_invoice",
+        "lados.finance.record_invoice_approval",
+        "lados.finance.record_payment",
+        "lados.finance.create_purchase_order",
+        "lados.finance.record_purchase_order_approval",
+        "lados.finance.claim_retention_release",
+        "lados.finance.record_retention_release"
+      ],
+      "importName": "@lados/official-commercial-finance",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 8,
+      "implementedNodeCount": 8,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 8,
+      "nodesWithConfigFields": 8,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-commercial-finance.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S5 fix: nodes.json only defined 5 of the 8 nodes manifest.json declared (record_purchase_order_approval, claim_retention_release, record_retention_release were missing); added all 3",
+        "runtime": "implemented — all 8 nodes implemented. No new resource types needed: reuses finance_invoice/purchase_order/retention_release from migration 0043",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-communication",
+      "id": "lados.communication",
+      "displayName": "Communication",
+      "version": "0.2.0",
+      "layer": "L1",
+      "status": "draft",
+      "runtimeStatus": "stub_executors",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations"
+      ],
+      "capabilities": [
+        "communication.email.send",
+        "communication.sms.send",
+        "communication.in_app.send",
+        "communication.reminder.send"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.communication.send_email",
+        "lados.communication.send_sms",
+        "lados.communication.send_in_app",
+        "lados.communication.send_reminder"
+      ],
+      "importName": "@lados/official-communication",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "EmailService",
+        "SmsService",
+        "NotificationService"
+      ],
+      "externalRequirements": [
+        "SMTP configuration",
+        "SMS provider (missing)"
+      ],
+      "nodeCount": 4,
+      "implementedNodeCount": 3,
+      "stubNodeCount": 1,
+      "resolverDeclaredNodeCount": 4,
+      "nodesWithConfigFields": 4,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-communication.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "degraded",
+      "verification": {
+        "manifest": "verified",
+        "runtime": "partial — send_email, send_in_app, send_reminder implemented; send_sms is a stub pending a real SMS provider (Twilio/MSG91) wired into SmsService",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-construction-operations",
+      "id": "lados.construction-operations",
+      "displayName": "Construction Operations",
+      "version": "0.2.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.human-work",
+        "lados.document-intelligence",
+        "lados.task-case",
+        "lados.communication"
+      ],
+      "capabilities": [
+        "construction.project.create",
+        "construction.inspection.create",
+        "construction.inspection.submit_report",
+        "construction.defect.log",
+        "construction.site_diary.create",
+        "construction.handover.checklist"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.construction.create_project",
+        "lados.construction.create_site_inspection",
+        "lados.construction.submit_inspection_report",
+        "lados.construction.log_defect",
+        "lados.construction.create_site_diary",
+        "lados.construction.run_handover_checklist"
+      ],
+      "importName": "@lados/official-construction-operations",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 6,
+      "implementedNodeCount": 6,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 6,
+      "nodesWithConfigFields": 6,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-construction-operations.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S6 fix: nodes.json only defined 5 of the 6 nodes manifest.json declared (run_handover_checklist was missing); added it",
+        "runtime": "implemented — all 6 nodes implemented. New migration 0059_construction_site_diary_resource_type.sql adds site_diary; construction_project/site_inspection/defect reuse migration 0041. run_handover_checklist is deliberately stateless (no resource persisted) — handover sign-off happens via a separate lados.human.record_decision node in the composing template",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-contract-admin",
+      "id": "lados.contract-admin",
+      "displayName": "Contract Administration",
+      "version": "0.2.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.document-intelligence",
+        "lados.communication",
+        "lados.task-case"
+      ],
+      "capabilities": [
+        "contract.instruction.register",
+        "contract.notice.prepare",
+        "contract.notice.track_due_date",
+        "contract.clause.lookup",
+        "contract.correspondence.link_evidence"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.contract.register_instruction",
+        "lados.contract.prepare_notice",
+        "lados.contract.track_notice_due_date",
+        "lados.contract.lookup_clause_reference",
+        "lados.contract.link_correspondence_evidence"
+      ],
+      "importName": "@lados/official-contract-admin",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 5,
+      "implementedNodeCount": 5,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 5,
+      "nodesWithConfigFields": 5,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-contract-admin.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 5 declared nodes (first Wave 4 pack with no skeleton parity gap)",
+        "runtime": "implemented — all 5 nodes implemented. New migration 0060_contract_admin_resource_types.sql adds contract_instruction/contract_notice. lookup_clause_reference is a deterministic keyword match, not a real Knowledge Pack search integration (honest limitation, no capability fabricated) and is deliberately stateless",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-document-intelligence",
+      "id": "lados.document-intelligence",
+      "displayName": "Document Intelligence",
+      "version": "0.2.0",
+      "layer": "L1",
+      "status": "draft",
+      "runtimeStatus": "stub_executors",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations"
+      ],
+      "capabilities": [
+        "document.file.upload",
+        "document.table.read_excel",
+        "document.pdf.read",
+        "document.docx.read",
+        "document.table.extract",
+        "document.generate"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.document.upload_file",
+        "lados.document.read_excel",
+        "lados.document.read_pdf",
+        "lados.document.read_docx",
+        "lados.document.extract_table",
+        "lados.document.generate_document"
+      ],
+      "importName": "@lados/official-document-intelligence",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "FileService",
+        "LibraryService",
+        "DocumentService",
+        "IDocumentStorageService (missing)"
+      ],
+      "externalRequirements": [
+        "PDF/DOCX parser dependency (missing)"
+      ],
+      "nodeCount": 6,
+      "implementedNodeCount": 4,
+      "stubNodeCount": 2,
+      "resolverDeclaredNodeCount": 6,
+      "nodesWithConfigFields": 5,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-document-intelligence.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "degraded",
+      "verification": {
+        "manifest": "verified",
+        "runtime": "partial — upload_file, read_excel, extract_table, generate_document implemented; read_pdf and read_docx are stubs pending a PDF/DOCX text-extraction dependency",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-human-work",
+      "id": "lados.human-work",
+      "displayName": "Human Work",
+      "version": "0.2.0",
+      "layer": "L0",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations"
+      ],
+      "capabilities": [
+        "human.approval.request",
+        "human.input.request",
+        "human.assignment.assign",
+        "human.decision.record",
+        "human.review.checkpoint"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.human.request_approval",
+        "lados.human.request_input",
+        "lados.human.assign_user",
+        "lados.human.record_decision",
+        "lados.human.review_checkpoint"
+      ],
+      "importName": "@lados/official-human-work",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ApprovalTaskCreator",
+        "NotificationService",
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 5,
+      "implementedNodeCount": 5,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 5,
+      "nodesWithConfigFields": 5,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-human-work.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified",
+        "runtime": "implemented",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-people-payroll",
+      "id": "lados.people-payroll",
+      "displayName": "People and Payroll Operations",
+      "version": "0.2.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.human-work",
+        "lados.document-intelligence"
+      ],
+      "capabilities": [
+        "people_payroll.payroll.prepare",
+        "people_payroll.payroll.record_approval",
+        "people_payroll.expense.record_approval"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.people_payroll.prepare_payroll_run",
+        "lados.people_payroll.record_payroll_approval",
+        "lados.people_payroll.record_expense_approval"
+      ],
+      "importName": "@lados/official-people-payroll",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 3,
+      "implementedNodeCount": 3,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 3,
+      "nodesWithConfigFields": 3,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-people-payroll.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 3 declared nodes (no skeleton parity gap)",
+        "runtime": "implemented — all 3 nodes implemented, reusing payroll_run (migration 0034_phase9_contractor_edition_m3.sql) and expense (migration 0032_phase9_contractor_edition.sql) resource types (no new migration needed). record_payroll_approval and record_expense_approval both enforce the MISSING_HUMAN_DECISION contract on approvedBy — the system never approves payroll or expenses itself.",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-procurement",
+      "id": "lados.procurement",
+      "displayName": "Procurement",
+      "version": "0.2.0",
+      "layer": "L1",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.human-work",
+        "lados.document-intelligence",
+        "lados.communication"
+      ],
+      "capabilities": [
+        "procurement.rfq.create",
+        "procurement.rfq.issue",
+        "procurement.quotation.receive",
+        "procurement.quotation.compare",
+        "procurement.award.recommend",
+        "procurement.po.generate"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.procurement.create_rfq",
+        "lados.procurement.issue_rfq",
+        "lados.procurement.receive_quotation",
+        "lados.procurement.compare_quotations",
+        "lados.procurement.recommend_award",
+        "lados.procurement.generate_po_request"
+      ],
+      "importName": "@lados/official-procurement",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 6,
+      "implementedNodeCount": 6,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 6,
+      "nodesWithConfigFields": 6,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-procurement.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S5 fix: nodes.json only defined 4 of the 6 nodes manifest.json declared (issue_rfq, receive_quotation were missing); added both. New migration 0058_procurement_resource_types.sql adds rfq/quotation/po_request resource types",
+        "runtime": "implemented — all 6 nodes implemented; compare_quotations and recommend_award are deliberately stateless/advisory (no resource persisted — human review happens via a separate lados.human.request_approval node in the composing template)",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-qs-commercial",
+      "id": "lados.qs-commercial",
+      "displayName": "QS Commercial",
+      "version": "0.2.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.human-work",
+        "lados.document-intelligence"
+      ],
+      "capabilities": [
+        "qs.boq.read",
+        "qs.boq.normalize",
+        "qs.trade.classify",
+        "qs.work_package.split",
+        "qs.boq.generate_draft",
+        "qs.claim.submit",
+        "qs.claim.assess",
+        "qs.claim.record_certification",
+        "qs.variation.submit",
+        "qs.variation.value",
+        "qs.variation.record_approval",
+        "qs.final_account.reconcile"
+      ],
+      "capabilitiesWithoutNodes": [
+        "qs.boq.generate_draft",
+        "qs.claim.submit",
+        "qs.claim.record_certification",
+        "qs.variation.submit",
+        "qs.variation.record_approval"
+      ],
+      "manifestNodeTypes": [
+        "lados.qs.read_boq",
+        "lados.qs.normalize_boq",
+        "lados.qs.classify_trade",
+        "lados.qs.split_work_packages",
+        "lados.qs.assess_progress_claim",
+        "lados.qs.value_variation",
+        "lados.qs.reconcile_final_account"
+      ],
+      "importName": "@lados/official-qs-commercial",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 7,
+      "implementedNodeCount": 7,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 7,
+      "nodesWithConfigFields": 7,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-qs-commercial.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S6 fix: nodes.json only defined 3 of the 7 nodes manifest.json declared (normalize_boq, split_work_packages, value_variation, reconcile_final_account were missing); added all 4. 5 further manifest capabilities (qs.boq.generate_draft, qs.claim.submit, qs.claim.record_certification, qs.variation.submit, qs.variation.record_approval) have no corresponding node in manifest.json's own `nodes` list either — deferred as a known gap, same class as S2's workflow-foundation deferral, not blocking since all 7 *declared nodes* are implemented",
+        "runtime": "implemented — all 7 nodes implemented. classify_trade/value_variation/reconcile_final_account/assess_progress_claim are deterministic rules-based advisory computations, not real AI/LLM calls. No new resource types needed: reuses boq/progress_claim/variation from migration 0041. split_work_packages and reconcile_final_account are deliberately stateless (no resource persisted) — human acceptance happens via a separate lados.human.request_approval node in the composing template",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-quran-media",
+      "id": "lados.quran-media",
+      "displayName": "Quran Media Creator",
+      "version": "0.1.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "stub_executors",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.human-work",
+        "lados.video-production"
+      ],
+      "capabilities": [
+        "quran_media.issue.discover",
+        "quran_media.issue.rank",
+        "quran_media.impact.analyze",
+        "quran_media.theme.map",
+        "quran_media.quran.find",
+        "quran_media.quran.retrieve",
+        "quran_media.tafsir.retrieve",
+        "quran_media.hadith.verify",
+        "quran_media.evidence.build",
+        "quran_media.reflection.compose",
+        "quran_media.script.write",
+        "quran_media.content.validate",
+        "quran_media.media.prepare"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.quran_media.discover_current_issues",
+        "lados.quran_media.rank_issue_candidates",
+        "lados.quran_media.analyze_human_impact",
+        "lados.quran_media.map_islamic_themes",
+        "lados.quran_media.find_quran_candidates",
+        "lados.quran_media.retrieve_quran_evidence",
+        "lados.quran_media.retrieve_tafsir_context",
+        "lados.quran_media.verify_hadith_reference",
+        "lados.quran_media.build_evidence_bundle",
+        "lados.quran_media.compose_reflection",
+        "lados.quran_media.write_short_video_script",
+        "lados.quran_media.validate_dakwah_content",
+        "lados.quran_media.prepare_media_brief"
+      ],
+      "importName": "@lados/official-quran-media",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "AiService",
+        "ReligiousSourceService",
+        "CurrentIssueResearchService"
+      ],
+      "externalRequirements": [
+        "QUL dataset path",
+        "approved current-issue source allowlist",
+        "AI provider for editorial nodes"
+      ],
+      "nodeCount": 13,
+      "implementedNodeCount": 13,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 13,
+      "nodesWithConfigFields": 13,
+      "templateCount": 2,
+      "workflowBodyCount": 2,
+      "testEvidence": {
+        "direct": [
+          "official-quran-media-e2e.spec.ts",
+          "official-quran-media.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": true
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-quran-media/templates/issue-to-dakwah-video.template.json",
+        "packs/official/lados-quran-media/templates/issue-to-dakwah-video-revision.template.json"
+      ],
+      "baselineReadiness": "degraded",
+      "verification": {
+        "manifest": "draft — Phase A skeleton per QMCP Blueprint V1.0, not yet reviewed by eff",
+        "runtime": "13/13 executors implemented (Phase B deterministic evidence nodes + Phase C AI editorial nodes + Phase D current-issue research, wired to ReligiousSourceService/AiService/CurrentIssueResearchService in apps/api/src/execution/real-nodes/index.ts per QMCP Volume 2). discover_current_issues degrades to the honest RESEARCH_SERVICE_NOT_CONFIGURED stub whenever no approved RSS/news source is registered (CURRENT_ISSUE_RESEARCH_SOURCES) — the source allowlist is a content-governance decision for eff, same posture as the QUL dataset pick. Verified via sandbox tsc build against a real local HTTP fixture feed (not reimplemented logic). Not yet typechecked/tested on a live install (sandbox cross-mount symlink limitation — pending eff's Windows pnpm build:packs/typecheck/test pass).",
+        "canvas": "not_started",
+        "templates": "draft — two importable templates. issue-to-dakwah-video: the main chain with all three human gates wired, plus a real Video Production handoff (prepare_media_brief -> read_script -> draft_scenes, via new scriptText/title ports) and a real human-facing Gate R on the revision branch (replacing a passive log). issue-to-dakwah-video-revision: companion template that re-runs only compose_reflection->write_short_video_script->validate_dakwah_content against an already Gate-2-approved bundle -- the execution engine is a strict DAG (verified via graph-planner.ts's Kahn's-algorithm cycle detection, CYCLE_DETECTED blocks the whole run), so a same-graph loop-back edge is not possible; this is the real substitute, re-triggerable by an operator. Phase F fix: validate_dakwah_content now also outputs a flat publicationBlocked boolean port (alongside validation) because cond-publication's expression grammar has no dot-path field access -- the original Phase E wiring (whole validation object into a single value port, expression referencing a nested field) would have thrown EXPRESSION_ERROR on every real run, caught by extracting and running the real compiled expression grammar during Phase F test-writing, not by inspection alone. Gate 3 and Gate R contexts are now wired directly from validate_dakwah_content.validation rather than through cond-publication (see templates/README.md). Both graphs re-verified structurally after the fix (zero cycles, zero unknown node types, zero port-id mismatches, every node reachable) via the real compiled graph-planner.ts against the real cross-pack port registry (workflow-foundation + human-work + video-production + quran-media). Also fixed: all four lados.human.request_input gate nodes were missing the inputSchema config field the executor requires (would have failed MISSING_INPUT on first pause), and every gate node's guidance text was under a dead 'instructions' key never read by the executor (renamed to 'description'). Optional hadith verification remains a standalone example node (see templates/README.md). Not yet sanity-checked with a real live import + trigger on eff's Windows install."
+      }
+    },
+    {
+      "directory": "packs/official/lados-resource-operations",
+      "id": "lados.resource-operations",
+      "displayName": "Resource Operations",
+      "version": "0.2.0",
+      "layer": "L0",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation"
+      ],
+      "capabilities": [
+        "resource.create",
+        "resource.read",
+        "resource.list",
+        "resource.update",
+        "resource.transition",
+        "resource.binding.resolve",
+        "artifact.write",
+        "artifact.read",
+        "resource.assign"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.resource.create",
+        "lados.resource.read",
+        "lados.resource.list",
+        "lados.resource.update",
+        "lados.resource.transition",
+        "lados.resource.resolve_binding",
+        "lados.artifact.write",
+        "lados.artifact.read",
+        "lados.resource.assign"
+      ],
+      "importName": "@lados/official-resource-operations",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService",
+        "ArtifactService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 9,
+      "implementedNodeCount": 9,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 9,
+      "nodesWithConfigFields": 9,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-resource-operations.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S4 fix: the skeleton declared capability \"resource.transition\" with no corresponding node in `nodes`; added lados.resource.transition to close the gap. S9.1 fix: added \"resource.assign\" capability + lados.resource.assign node — successor to the prototype foundation.assign_user, generic across resource types.",
+        "runtime": "implemented — all 9 nodes implemented",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-solution-contractor-ops",
+      "id": "lados.solution.contractor-ops",
+      "displayName": "Contractor Operations Solution",
+      "version": "0.1.0",
+      "layer": "L3",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.asset-fleet",
+        "lados.commercial-finance",
+        "lados.people-payroll",
+        "lados.procurement",
+        "lados.task-case",
+        "lados.communication"
+      ],
+      "capabilities": [
+        "solution.contractor_ops.template.job_to_invoice",
+        "solution.contractor_ops.template.fleet_trip",
+        "solution.contractor_ops.template.fuel_review",
+        "solution.contractor_ops.template.maintenance",
+        "solution.contractor_ops.template.payroll"
+      ],
+      "capabilitiesWithoutNodes": [
+        "solution.contractor_ops.template.job_to_invoice",
+        "solution.contractor_ops.template.fleet_trip",
+        "solution.contractor_ops.template.fuel_review",
+        "solution.contractor_ops.template.maintenance",
+        "solution.contractor_ops.template.payroll"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 5,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-solution-contractor-ops/templates/fleet-job-to-invoice.template.json",
+        "packs/official/lados-solution-contractor-ops/templates/trip-dispatch-and-completion.template.json",
+        "packs/official/lados-solution-contractor-ops/templates/fuel-receipt-review.template.json",
+        "packs/official/lados-solution-contractor-ops/templates/fleet-maintenance.template.json",
+        "packs/official/lados-solution-contractor-ops/templates/payroll-prepare-to-approval.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-solution-qs-practice",
+      "id": "lados.solution.qs-practice",
+      "displayName": "QS Practice Solution",
+      "version": "0.1.0",
+      "layer": "L3",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.qs-commercial",
+        "lados.contract-admin",
+        "lados.construction-operations",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "capabilities": [
+        "solution.qs_practice.template.boq_upload_to_cost_summary",
+        "solution.qs_practice.template.variation_notice_to_valuation",
+        "solution.qs_practice.template.final_account_reconciliation"
+      ],
+      "capabilitiesWithoutNodes": [
+        "solution.qs_practice.template.boq_upload_to_cost_summary",
+        "solution.qs_practice.template.variation_notice_to_valuation",
+        "solution.qs_practice.template.final_account_reconciliation"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 3,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-solution-qs-practice/templates/boq-upload-to-cost-summary.template.json",
+        "packs/official/lados-solution-qs-practice/templates/variation-notice-to-valuation.template.json",
+        "packs/official/lados-solution-qs-practice/templates/final-account-reconciliation.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-task-case",
+      "id": "lados.task-case",
+      "displayName": "Task and Case Management",
+      "version": "0.2.0",
+      "layer": "L1",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [
+        "lados.workflow-foundation",
+        "lados.resource-operations",
+        "lados.human-work",
+        "lados.communication"
+      ],
+      "capabilities": [
+        "task.create",
+        "task.status.update",
+        "case.open",
+        "case.close"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.task.create",
+        "lados.task.update_status",
+        "lados.case.open",
+        "lados.case.close"
+      ],
+      "importName": "@lados/official-task-case",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "ResourceService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 4,
+      "implementedNodeCount": 4,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 4,
+      "nodesWithConfigFields": 4,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-task-case.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified",
+        "runtime": "implemented — all 4 nodes implemented; checklist tracking (ownerBoundary) is aspirational, no dedicated node yet",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    },
+    {
+      "directory": "packs/official/lados-template-cipaa-preparation",
+      "id": "lados.template.cipaa-preparation",
+      "displayName": "CIPAA Preparation Templates",
+      "version": "0.1.0",
+      "layer": "L5",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.contract-admin",
+        "lados.qs-commercial",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "capabilities": [
+        "template.cipaa_preparation"
+      ],
+      "capabilitiesWithoutNodes": [
+        "template.cipaa_preparation"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 1,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-template-cipaa-preparation/templates/cipaa-preparation-bundle.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-template-defect-management",
+      "id": "lados.template.defect-management",
+      "displayName": "Defect Management Templates",
+      "version": "0.1.0",
+      "layer": "L5",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.construction-operations",
+        "lados.task-case",
+        "lados.communication",
+        "lados.human-work"
+      ],
+      "capabilities": [
+        "template.defect_management"
+      ],
+      "capabilitiesWithoutNodes": [
+        "template.defect_management"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 1,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-template-defect-management/templates/defect-report-to-notification.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-template-invoice-approval",
+      "id": "lados.template.invoice-approval",
+      "displayName": "Invoice Approval Templates",
+      "version": "0.1.0",
+      "layer": "L5",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.commercial-finance",
+        "lados.human-work",
+        "lados.communication",
+        "lados.document-intelligence"
+      ],
+      "capabilities": [
+        "template.invoice_approval"
+      ],
+      "capabilitiesWithoutNodes": [
+        "template.invoice_approval"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 1,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-template-invoice-approval/templates/submit-invoice-to-approval.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-template-procurement-rfq",
+      "id": "lados.template.procurement-rfq",
+      "displayName": "Procurement RFQ Templates",
+      "version": "0.1.0",
+      "layer": "L5",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.procurement",
+        "lados.document-intelligence",
+        "lados.human-work",
+        "lados.communication"
+      ],
+      "capabilities": [
+        "template.procurement_rfq"
+      ],
+      "capabilitiesWithoutNodes": [
+        "template.procurement_rfq"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 1,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-template-procurement-rfq/templates/rfq-to-quotation-comparison.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-template-progress-claim",
+      "id": "lados.template.progress-claim",
+      "displayName": "Progress Claim Templates",
+      "version": "0.1.0",
+      "layer": "L5",
+      "status": "skeleton",
+      "runtimeStatus": "manifest_only",
+      "dependencies": [
+        "lados.qs-commercial",
+        "lados.construction-operations",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "capabilities": [
+        "template.progress_claim"
+      ],
+      "capabilitiesWithoutNodes": [
+        "template.progress_claim"
+      ],
+      "manifestNodeTypes": [],
+      "importName": null,
+      "apiResolverWired": false,
+      "runtimeServices": [],
+      "externalRequirements": [],
+      "nodeCount": 0,
+      "implementedNodeCount": 0,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 0,
+      "nodesWithConfigFields": 0,
+      "templateCount": 1,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": false,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-template-progress-claim/templates/progress-claim-evidence-check.template.json"
+      ],
+      "baselineReadiness": "catalogue_only",
+      "verification": {
+        "manifest": "draft",
+        "runtime": "not_started",
+        "canvas": "not_started",
+        "templates": "draft"
+      }
+    },
+    {
+      "directory": "packs/official/lados-video-production",
+      "id": "lados.video-production",
+      "displayName": "Video Production",
+      "version": "0.1.0",
+      "layer": "L2",
+      "status": "draft",
+      "runtimeStatus": "stub_executors",
+      "dependencies": [
+        "lados.workflow-foundation"
+      ],
+      "capabilities": [
+        "video.script.read",
+        "video.project.scaffold",
+        "video.scene.draft",
+        "video.scene.generate_batch",
+        "video.scene.render",
+        "video.scene.revise_layout",
+        "video.scene.remove_background",
+        "video.scene.insert_images"
+      ],
+      "capabilitiesWithoutNodes": [],
+      "manifestNodeTypes": [
+        "lados.video.read_script",
+        "lados.video.scaffold_project",
+        "lados.video.draft_scenes",
+        "lados.video.generate_scene_batch",
+        "lados.video.render_scenes",
+        "lados.video.revise_scene_layout",
+        "lados.video.remove_background",
+        "lados.video.insert_images"
+      ],
+      "importName": "@lados/official-video-production",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "FileService",
+        "RenderService (missing)"
+      ],
+      "externalRequirements": [
+        "Remotion render backend (missing)"
+      ],
+      "nodeCount": 8,
+      "implementedNodeCount": 7,
+      "stubNodeCount": 1,
+      "resolverDeclaredNodeCount": 8,
+      "nodesWithConfigFields": 8,
+      "templateCount": 1,
+      "workflowBodyCount": 1,
+      "testEvidence": {
+        "direct": [
+          "official-video-production-e2e.spec.ts",
+          "official-video-production.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": true
+      },
+      "templateDescriptorPaths": [
+        "packs/official/lados-video-production/templates/script-to-scene-plan.template.json"
+      ],
+      "baselineReadiness": "degraded",
+      "verification": {
+        "manifest": "draft — new pack, not yet reviewed by eff",
+        "runtime": "partial — read_script, scaffold_project, draft_scenes, generate_scene_batch, revise_scene_layout, remove_background, insert_images implemented; render_scenes is a stub (no Remotion render backend wired into the API)",
+        "canvas": "not_started",
+        "templates": "draft — script-to-scene-plan added: standard skeleton descriptor plus a real, importable graph body chaining 5 of 8 nodes automatically (3 ad-hoc revision nodes are standalone by design, see templates/README.md); not yet sanity-checked with a real import + trigger"
+      }
+    },
+    {
+      "directory": "packs/official/lados-workflow-foundation",
+      "id": "lados.workflow-foundation",
+      "displayName": "Workflow Foundation",
+      "version": "0.5.0",
+      "layer": "L0",
+      "status": "draft",
+      "runtimeStatus": "runtime_enabled",
+      "dependencies": [],
+      "capabilities": [
+        "workflow.trigger.manual",
+        "workflow.trigger.schedule",
+        "workflow.trigger.event",
+        "workflow.control.condition",
+        "workflow.control.switch",
+        "workflow.control.loop",
+        "workflow.control.parallel",
+        "workflow.control.merge",
+        "workflow.control.delay",
+        "workflow.log.write",
+        "workflow.event.publish",
+        "workflow.program.save_artifact",
+        "workflow.program.read_artifact"
+      ],
+      "capabilitiesWithoutNodes": [
+        "workflow.trigger.event"
+      ],
+      "manifestNodeTypes": [
+        "lados.workflow.trigger_manual",
+        "lados.workflow.trigger_schedule",
+        "lados.workflow.condition",
+        "lados.workflow.switch",
+        "lados.workflow.parallel",
+        "lados.workflow.merge",
+        "lados.workflow.delay",
+        "lados.workflow.write_log",
+        "lados.workflow.loop",
+        "lados.workflow.publish_event",
+        "lados.workflow.program_save_artifact",
+        "lados.workflow.program_read_artifact"
+      ],
+      "importName": "@lados/official-workflow-foundation",
+      "apiResolverWired": true,
+      "runtimeServices": [
+        "EventBusService",
+        "ProgramArtifactService"
+      ],
+      "externalRequirements": [],
+      "nodeCount": 12,
+      "implementedNodeCount": 12,
+      "stubNodeCount": 0,
+      "resolverDeclaredNodeCount": 12,
+      "nodesWithConfigFields": 12,
+      "templateCount": 0,
+      "workflowBodyCount": 0,
+      "testEvidence": {
+        "direct": [
+          "official-workflow-foundation.spec.ts"
+        ],
+        "crossPack": [
+          "official-wave1-e2e.spec.ts",
+          "official-wave2-e2e.spec.ts",
+          "official-wave3-e2e.spec.ts",
+          "official-wave4-1-e2e.spec.ts",
+          "official-wave4-e2e.spec.ts"
+        ],
+        "hasDirectContractTest": true,
+        "hasDirectE2eTest": false
+      },
+      "templateDescriptorPaths": [],
+      "baselineReadiness": "runtime_ready",
+      "verification": {
+        "manifest": "verified — S9.1 fix: the skeleton declared \"workflow.control.loop\" and \"workflow.event.publish\" capabilities with no corresponding nodes; added lados.workflow.loop and lados.workflow.publish_event to close both gaps. \"workflow.trigger.event\" remains capability-only by design — event-triggered workflow starts are handled by EventBusService subscription dispatch (see event-bus.service.ts), not by a runnable node; a placeholder node would have no executable behavior of its own. Phase 22 S22.4 (2026-07-06): added \"workflow.control.switch\" + lados.workflow.switch (true multi-way routing, 5 fixed case slots + default — see switch.ts header for why fixed rather than dynamic) and extended lados.workflow.condition's expression grammar (named fields + AND/OR combinator, backward compatible). Phase 23 S23.3 (2026-07-08): added \"workflow.pipeline.save_artifact\"/\"workflow.pipeline.read_artifact\" + lados.workflow.pipeline_save_artifact/pipeline_read_artifact — cross-workflow data handoff scoped to one pipeline_run_id (migration 0075's pipeline_artifacts table), successor in spirit to the dead project.save_artifact/project.read_artifact (archived with lados.core-pack in Phase 21 S9) but architecturally new, not a resurrection. Phase 24 S24.3 (2026-07-11): renamed to \"workflow.program.save_artifact\"/\"workflow.program.read_artifact\" + lados.workflow.program_save_artifact/program_read_artifact — corporate-vocabulary rename (Pipeline→Program), same table/column targets as migration 0079 renamed them to (program_run_id, program_artifacts). Old node type strings preserved as compatibility aliases, see @lados/pack-sdk's compatibility-aliases.ts.",
+        "runtime": "implemented — 12 of 13 capabilities have a backing node (see manifest note above for the one intentional exception, workflow.trigger.event)",
+        "canvas": "not_started",
+        "templates": "not_started"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "type": "lados.asset_fleet.create_job",
+      "displayName": "Create Fleet Job",
+      "canonicalCapability": "asset_fleet.job.create",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "customer",
+        "asset",
+        "jobDate",
+        "scope"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "fleet SOP",
+          "asset register rules"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "request"
+      ],
+      "outputPortIds": [
+        "job"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.asset_fleet.dispatch_trip",
+      "displayName": "Dispatch Trip",
+      "canonicalCapability": "asset_fleet.trip.dispatch",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "vehicle",
+        "driver",
+        "destination",
+        "dispatchTime"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "fleet SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "job"
+      ],
+      "outputPortIds": [
+        "dispatch"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.asset_fleet.complete_trip",
+      "displayName": "Complete Trip",
+      "canonicalCapability": "asset_fleet.trip.complete",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "completionTime",
+        "mileage",
+        "deliveryNoteRefs",
+        "exceptions"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "fleet SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "dispatch"
+      ],
+      "outputPortIds": [
+        "completion"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.asset_fleet.upload_fuel_receipt",
+      "displayName": "Upload Fuel Receipt",
+      "canonicalCapability": "asset_fleet.fuel_receipt.upload",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "vehicle",
+        "trip",
+        "receiptDate",
+        "fileRef"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "fuel policy"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "file"
+      ],
+      "outputPortIds": [
+        "receipt"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.asset_fleet.extract_fuel_receipt",
+      "displayName": "Extract Fuel Receipt",
+      "canonicalCapability": "asset_fleet.fuel_receipt.extract",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "requiredFields",
+        "confidenceThreshold",
+        "reviewLowConfidence"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "fuel policy"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "receipt"
+      ],
+      "outputPortIds": [
+        "extraction"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.asset_fleet.create_maintenance_record",
+      "displayName": "Create Maintenance Record",
+      "canonicalCapability": "asset_fleet.maintenance.create",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "asset",
+        "issueType",
+        "priority",
+        "reportedBy"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "maintenance checklist"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "issue"
+      ],
+      "outputPortIds": [
+        "maintenance"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.asset_fleet.clear_maintenance",
+      "displayName": "Clear Maintenance",
+      "canonicalCapability": "asset_fleet.maintenance.clear",
+      "ownerPack": "lados.asset-fleet",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "clearedBy",
+        "clearanceDate",
+        "evidenceRefs",
+        "returnToService"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "maintenance checklist"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "maintenance"
+      ],
+      "outputPortIds": [
+        "clearance"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.submit_invoice",
+      "displayName": "Submit Invoice",
+      "canonicalCapability": "finance.invoice.submit",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "invoiceBinding",
+        "supplier",
+        "amount",
+        "currency",
+        "poReference",
+        "contractReference",
+        "knowledgePackRefs"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "invoice validation rules",
+          "payment terms SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "invoice"
+      ],
+      "outputPortIds": [
+        "submission"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.verify_invoice",
+      "displayName": "Verify Invoice",
+      "canonicalCapability": "finance.invoice.verify",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "invoiceRules",
+        "tolerance",
+        "reviewLowConfidence",
+        "poBinding",
+        "deliveryEvidence",
+        "contractReference"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "invoice validation rules",
+          "tax/compliance references"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "invoice"
+      ],
+      "outputPortIds": [
+        "verification"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.record_invoice_approval",
+      "displayName": "Record Invoice Approval",
+      "canonicalCapability": "finance.invoice.approval_record",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "approvedBy",
+        "approvalDate",
+        "decision",
+        "notes"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "finance approval matrix"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "decision"
+      ],
+      "outputPortIds": [
+        "approval"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.record_payment",
+      "displayName": "Record Payment",
+      "canonicalCapability": "finance.payment.record",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "paidAmount",
+        "paidDate",
+        "reference",
+        "method"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "payment terms SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "payment"
+      ],
+      "outputPortIds": [
+        "record"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.create_purchase_order",
+      "displayName": "Create Purchase Order",
+      "canonicalCapability": "finance.po.create",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "supplier",
+        "amount",
+        "currency",
+        "approvedRequest"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "finance approval matrix"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "request"
+      ],
+      "outputPortIds": [
+        "po"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.record_purchase_order_approval",
+      "displayName": "Record PO Approval",
+      "canonicalCapability": "finance.po.approval_record",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "approvedBy",
+        "approvalDate",
+        "decision",
+        "notes"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "finance approval matrix"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "decision"
+      ],
+      "outputPortIds": [
+        "approval"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.claim_retention_release",
+      "displayName": "Claim Retention Release",
+      "canonicalCapability": "finance.retention.claim_release",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "contractReference",
+        "claimedAmount",
+        "claimPercentage",
+        "currency"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "retention rules"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "claim"
+      ],
+      "outputPortIds": [
+        "retention"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.finance.record_retention_release",
+      "displayName": "Record Retention Release",
+      "canonicalCapability": "finance.retention.record_release",
+      "ownerPack": "lados.commercial-finance",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "releasedAmount",
+        "releaseDate",
+        "reference",
+        "releasedBy"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "retention rules"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "release"
+      ],
+      "outputPortIds": [
+        "record"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.communication.send_email",
+      "displayName": "Send Email",
+      "canonicalCapability": "communication.email.send",
+      "ownerPack": "lados.communication",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "to",
+        "cc",
+        "bcc",
+        "subject",
+        "template",
+        "body"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "communication templates"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "message"
+      ],
+      "outputPortIds": [
+        "delivery"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.communication.send_sms",
+      "displayName": "Send SMS",
+      "canonicalCapability": "communication.sms.send",
+      "ownerPack": "lados.communication",
+      "executorStatus": "stub",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "phoneNumbers",
+        "message",
+        "template"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "communication templates"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "message"
+      ],
+      "outputPortIds": [
+        "delivery"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.communication.send_in_app",
+      "displayName": "Send In-App",
+      "canonicalCapability": "communication.in_app.send",
+      "ownerPack": "lados.communication",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "userId",
+        "role",
+        "organizationScope",
+        "title",
+        "body",
+        "severity"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "escalation SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "context"
+      ],
+      "outputPortIds": [
+        "notification"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.communication.send_reminder",
+      "displayName": "Send Reminder",
+      "canonicalCapability": "communication.reminder.send",
+      "ownerPack": "lados.communication",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "dueDate",
+        "offset",
+        "timezone",
+        "title",
+        "body",
+        "channel"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "escalation SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "target"
+      ],
+      "outputPortIds": [
+        "reminder"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.construction.create_project",
+      "displayName": "Create Project",
+      "canonicalCapability": "construction.project.create",
+      "ownerPack": "lados.construction-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "projectName",
+        "site",
+        "client",
+        "startDate"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "project"
+      ],
+      "outputPortIds": [
+        "resource"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.construction.create_site_inspection",
+      "displayName": "Create Inspection",
+      "canonicalCapability": "construction.inspection.create",
+      "ownerPack": "lados.construction-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "inspectionType",
+        "location",
+        "inspector",
+        "inspectionDate",
+        "checklistRefs",
+        "standardsRefs"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "inspection checklist packs",
+          "construction standards index"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "site"
+      ],
+      "outputPortIds": [
+        "inspection"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.construction.submit_inspection_report",
+      "displayName": "Submit Inspection Report",
+      "canonicalCapability": "construction.inspection.submit_report",
+      "ownerPack": "lados.construction-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "findings",
+        "photos",
+        "submittedBy",
+        "reviewRequired"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "inspection checklist packs"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "inspection"
+      ],
+      "outputPortIds": [
+        "report"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.construction.log_defect",
+      "displayName": "Log Defect",
+      "canonicalCapability": "construction.defect.log",
+      "ownerPack": "lados.construction-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "location",
+        "description",
+        "severity",
+        "responsibleParty",
+        "defectRules",
+        "standardsRefs",
+        "reviewRequired"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "defect classification rules",
+          "construction standards index"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "evidence"
+      ],
+      "outputPortIds": [
+        "defect"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.construction.create_site_diary",
+      "displayName": "Create Site Diary",
+      "canonicalCapability": "construction.site_diary.create",
+      "ownerPack": "lados.construction-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "date",
+        "weather",
+        "labour",
+        "plant",
+        "events"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "site diary SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "entry"
+      ],
+      "outputPortIds": [
+        "diary"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.construction.run_handover_checklist",
+      "displayName": "Run Handover Checklist",
+      "canonicalCapability": "construction.handover.checklist",
+      "ownerPack": "lados.construction-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "checklistRefs",
+        "requireAllComplete"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "handover SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "checklist"
+      ],
+      "outputPortIds": [
+        "result"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.contract.register_instruction",
+      "displayName": "Register Instruction",
+      "canonicalCapability": "contract.instruction.register",
+      "ownerPack": "lados.contract-admin",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "instructionDate",
+        "issuer",
+        "reference",
+        "summary"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "project contract reference"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "instruction"
+      ],
+      "outputPortIds": [
+        "entry"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.contract.prepare_notice",
+      "displayName": "Prepare Notice",
+      "canonicalCapability": "contract.notice.prepare",
+      "ownerPack": "lados.contract-admin",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "noticeType",
+        "recipient",
+        "issueDate",
+        "clauseRefs",
+        "requiresContractAdminReview",
+        "reviewerRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "project contract reference",
+          "clause reference pack"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "event"
+      ],
+      "outputPortIds": [
+        "notice"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.contract.track_notice_due_date",
+      "displayName": "Track Notice Due Date",
+      "canonicalCapability": "contract.notice.track_due_date",
+      "ownerPack": "lados.contract-admin",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "baseDate",
+        "dueDateRule",
+        "reminderOffsetDays"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "project contract reference",
+          "correspondence SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "notice"
+      ],
+      "outputPortIds": [
+        "tracking"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.contract.lookup_clause_reference",
+      "displayName": "Lookup Clause Reference",
+      "canonicalCapability": "contract.clause.lookup",
+      "ownerPack": "lados.contract-admin",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "contractPack",
+        "query",
+        "maxResults"
+      ],
+      "knowledgePackRequirements": {
+        "required": [
+          "project contract reference"
+        ],
+        "recommended": [
+          "clause reference pack"
+        ]
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "query"
+      ],
+      "outputPortIds": [
+        "clauses"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.contract.link_correspondence_evidence",
+      "displayName": "Link Correspondence Evidence",
+      "canonicalCapability": "contract.correspondence.link_evidence",
+      "ownerPack": "lados.contract-admin",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceBinding",
+        "documentRefs",
+        "correspondenceRefs"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "correspondence SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "evidence"
+      ],
+      "outputPortIds": [
+        "link"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.document.upload_file",
+      "displayName": "Upload File",
+      "canonicalCapability": "document.file.upload",
+      "ownerPack": "lados.document-intelligence",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "fileSource",
+        "documentType",
+        "description"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "document type library"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "file"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.document.read_excel",
+      "displayName": "Read Excel",
+      "canonicalCapability": "document.table.read_excel",
+      "ownerPack": "lados.document-intelligence",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "sheetName",
+        "headerRow",
+        "range"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "document control SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "file"
+      ],
+      "outputPortIds": [
+        "table"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.document.read_pdf",
+      "displayName": "Read PDF",
+      "canonicalCapability": "document.pdf.read",
+      "ownerPack": "lados.document-intelligence",
+      "executorStatus": "stub",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "pageRange"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "document control SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "file"
+      ],
+      "outputPortIds": [
+        "document"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.document.read_docx",
+      "displayName": "Read Word Document",
+      "canonicalCapability": "document.docx.read",
+      "ownerPack": "lados.document-intelligence",
+      "executorStatus": "stub",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "document control SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "file"
+      ],
+      "outputPortIds": [
+        "document"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.document.extract_table",
+      "displayName": "Extract Table",
+      "canonicalCapability": "document.table.extract",
+      "ownerPack": "lados.document-intelligence",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "targetTable",
+        "expectedColumns",
+        "reviewRequired"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "document type library",
+          "evidence rule packs"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "document"
+      ],
+      "outputPortIds": [
+        "table"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.document.generate_document",
+      "displayName": "Generate Document",
+      "canonicalCapability": "document.generate",
+      "ownerPack": "lados.document-intelligence",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "title",
+        "template"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "document control SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "data"
+      ],
+      "outputPortIds": [
+        "document"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.human.request_approval",
+      "displayName": "Request Approval",
+      "canonicalCapability": "human.approval.request",
+      "ownerPack": "lados.human-work",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "title",
+        "description",
+        "assigneeRole",
+        "dueDate",
+        "escalationRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "approval matrix"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "context"
+      ],
+      "outputPortIds": [
+        "approvalTask"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.human.request_input",
+      "displayName": "Request Input",
+      "canonicalCapability": "human.input.request",
+      "ownerPack": "lados.human-work",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "title",
+        "description",
+        "assigneeRole",
+        "inputSchema",
+        "escalateAfterMinutes",
+        "escalatedToUserId"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "context"
+      ],
+      "outputPortIds": [
+        "inputTask",
+        "submittedData"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.human.assign_user",
+      "displayName": "Assign User",
+      "canonicalCapability": "human.assignment.assign",
+      "ownerPack": "lados.human-work",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId",
+        "userId",
+        "assigneeRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "context"
+      ],
+      "outputPortIds": [
+        "assignment"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.human.record_decision",
+      "displayName": "Record Decision",
+      "canonicalCapability": "human.decision.record",
+      "ownerPack": "lados.human-work",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "decisionType",
+        "decisionBy",
+        "decisionDate",
+        "notes",
+        "attachments"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "evidence"
+      ],
+      "outputPortIds": [
+        "decision"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.human.review_checkpoint",
+      "displayName": "Review Checkpoint",
+      "canonicalCapability": "human.review.checkpoint",
+      "ownerPack": "lados.human-work",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "title",
+        "description",
+        "assigneeRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "context"
+      ],
+      "outputPortIds": [
+        "reviewTask"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.people_payroll.prepare_payroll_run",
+      "displayName": "Prepare Payroll Run",
+      "canonicalCapability": "people_payroll.payroll.prepare",
+      "ownerPack": "lados.people-payroll",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "period",
+        "employeeGroup",
+        "timesheetBinding",
+        "expenseBinding",
+        "requiresReview",
+        "reviewerRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "payroll SOP",
+          "timesheet evidence rules"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "inputs"
+      ],
+      "outputPortIds": [
+        "payrollRun"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.people_payroll.record_payroll_approval",
+      "displayName": "Record Payroll Approval",
+      "canonicalCapability": "people_payroll.payroll.record_approval",
+      "ownerPack": "lados.people-payroll",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "approvedBy",
+        "approvalDate",
+        "decision",
+        "notes"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "payroll SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "decision"
+      ],
+      "outputPortIds": [
+        "approval"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.people_payroll.record_expense_approval",
+      "displayName": "Record Expense Approval",
+      "canonicalCapability": "people_payroll.expense.record_approval",
+      "ownerPack": "lados.people-payroll",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "approvedBy",
+        "approvalDate",
+        "decision",
+        "policyRefs"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "expense policy"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "expense"
+      ],
+      "outputPortIds": [
+        "approval"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.procurement.create_rfq",
+      "displayName": "Create RFQ",
+      "canonicalCapability": "procurement.rfq.create",
+      "ownerPack": "lados.procurement",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "title",
+        "dueDate",
+        "currency",
+        "deliveryLocation",
+        "supplierRefs",
+        "knowledgePackRefs"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "supplier catalogues",
+          "procurement SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "scope"
+      ],
+      "outputPortIds": [
+        "rfq"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.procurement.issue_rfq",
+      "displayName": "Issue RFQ",
+      "canonicalCapability": "procurement.rfq.issue",
+      "ownerPack": "lados.procurement",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId",
+        "issuedTo"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "supplier catalogues"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "rfq"
+      ],
+      "outputPortIds": [
+        "issued"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.procurement.receive_quotation",
+      "displayName": "Receive Quotation",
+      "canonicalCapability": "procurement.quotation.receive",
+      "ownerPack": "lados.procurement",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "rfqId",
+        "supplier",
+        "amount",
+        "currency",
+        "validUntil"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "supplier catalogues"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "quotation"
+      ],
+      "outputPortIds": [
+        "received"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.procurement.compare_quotations",
+      "displayName": "Compare Quotations",
+      "canonicalCapability": "procurement.quotation.compare",
+      "ownerPack": "lados.procurement",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "criteria",
+        "weighting",
+        "normalization",
+        "supplierCatalogueRefs",
+        "comparisonRules"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "quotation comparison rules",
+          "supplier catalogues"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "quotations"
+      ],
+      "outputPortIds": [
+        "comparison"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.procurement.recommend_award",
+      "displayName": "Recommend Award",
+      "canonicalCapability": "procurement.award.recommend",
+      "ownerPack": "lados.procurement",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "recommendedSupplier",
+        "reason",
+        "reviewRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "procurement SOP",
+          "approval matrix"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "comparison"
+      ],
+      "outputPortIds": [
+        "recommendation"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.procurement.generate_po_request",
+      "displayName": "Generate PO Request",
+      "canonicalCapability": "procurement.po.generate",
+      "ownerPack": "lados.procurement",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "supplier",
+        "amount",
+        "items",
+        "financeReviewRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "procurement SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "award"
+      ],
+      "outputPortIds": [
+        "request"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.read_boq",
+      "displayName": "Read BOQ",
+      "canonicalCapability": "qs.boq.read",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "sourceType",
+        "bindingKey",
+        "sheetOrTable",
+        "itemNo",
+        "description",
+        "unit",
+        "quantity",
+        "rate"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "BOQ item library",
+          "measurement rules"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "source"
+      ],
+      "outputPortIds": [
+        "boq"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.normalize_boq",
+      "displayName": "Normalize BOQ",
+      "canonicalCapability": "qs.boq.normalize",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "dedupeItemNo",
+        "requireRate",
+        "requireQuantity",
+        "persist",
+        "boqName"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "BOQ item library",
+          "measurement rules"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "items"
+      ],
+      "outputPortIds": [
+        "normalized"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.classify_trade",
+      "displayName": "Classify Trade",
+      "canonicalCapability": "qs.trade.classify",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "tradeSystem",
+        "confidenceThreshold",
+        "reviewLowConfidence",
+        "knowledgePackRefs"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "BOQ item library",
+          "QS rate library"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "items"
+      ],
+      "outputPortIds": [
+        "classified"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.split_work_packages",
+      "displayName": "Split Work Packages",
+      "canonicalCapability": "qs.work_package.split",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "groupByField",
+        "minPackageSize"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "BOQ item library"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "items"
+      ],
+      "outputPortIds": [
+        "workPackages"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.value_variation",
+      "displayName": "Value Variation",
+      "canonicalCapability": "qs.variation.value",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId",
+        "currency",
+        "rateLibraryRefs",
+        "defaultMarkupPercent"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "QS rate library",
+          "contract clause reference"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "variation"
+      ],
+      "outputPortIds": [
+        "valuation"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.assess_progress_claim",
+      "displayName": "Assess Claim",
+      "canonicalCapability": "qs.claim.assess",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "claimBinding",
+        "assessmentDate",
+        "reviewRole",
+        "claimEvidenceRules",
+        "contractReference",
+        "standardsReferences",
+        "humanReviewRequired",
+        "confidenceThreshold"
+      ],
+      "knowledgePackRequirements": {
+        "required": [
+          "claim evidence rules"
+        ],
+        "recommended": [
+          "contract clause reference",
+          "standards reference packs"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "claim",
+        "evidence"
+      ],
+      "outputPortIds": [
+        "assessment"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.qs.reconcile_final_account",
+      "displayName": "Reconcile Final Account",
+      "canonicalCapability": "qs.final_account.reconcile",
+      "ownerPack": "lados.qs-commercial",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "tolerancePercent",
+        "currency"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "QS rate library",
+          "contract clause reference"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "summary"
+      ],
+      "outputPortIds": [
+        "costSummary"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.quran_media.discover_current_issues",
+      "displayName": "Discover Current Issues",
+      "canonicalCapability": "quran_media.issue.discover",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "topics",
+        "sinceHours",
+        "limit"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "issues"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.rank_issue_candidates",
+      "displayName": "Rank Issue Candidates",
+      "canonicalCapability": "quran_media.issue.rank",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "maxCandidates",
+        "audienceNote"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "issues"
+      ],
+      "outputPortIds": [
+        "ranked"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.analyze_human_impact",
+      "displayName": "Analyze Human Impact",
+      "canonicalCapability": "quran_media.impact.analyze",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "language"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "issue"
+      ],
+      "outputPortIds": [
+        "impact"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.map_islamic_themes",
+      "displayName": "Map Islamic Themes",
+      "canonicalCapability": "quran_media.theme.map",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "maxThemes"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "impact"
+      ],
+      "outputPortIds": [
+        "themes"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.find_quran_candidates",
+      "displayName": "Find Quran Candidates",
+      "canonicalCapability": "quran_media.quran.find",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "limit",
+        "language"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "themes"
+      ],
+      "outputPortIds": [
+        "candidates"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.retrieve_quran_evidence",
+      "displayName": "Retrieve Quran Evidence",
+      "canonicalCapability": "quran_media.quran.retrieve",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "translationId"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "candidates"
+      ],
+      "outputPortIds": [
+        "quranEvidence"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.retrieve_tafsir_context",
+      "displayName": "Retrieve Tafsir Context",
+      "canonicalCapability": "quran_media.tafsir.retrieve",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "tafsirIds"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "quranEvidence"
+      ],
+      "outputPortIds": [
+        "tafsirEvidence"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.verify_hadith_reference",
+      "displayName": "Verify Hadith Reference",
+      "canonicalCapability": "quran_media.hadith.verify",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "sourceUrl",
+        "submittedBy"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "hadithEvidence"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.build_evidence_bundle",
+      "displayName": "Build Evidence Bundle",
+      "canonicalCapability": "quran_media.evidence.build",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "requireTafsir"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "issue",
+        "themes",
+        "quranEvidence",
+        "tafsirEvidence",
+        "hadithEvidence"
+      ],
+      "outputPortIds": [
+        "bundle"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video"
+      ]
+    },
+    {
+      "type": "lados.quran_media.compose_reflection",
+      "displayName": "Compose Reflection",
+      "canonicalCapability": "quran_media.reflection.compose",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "language",
+        "tone"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "bundle"
+      ],
+      "outputPortIds": [
+        "reflection"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.quran_media.write_short_video_script",
+      "displayName": "Write Short Video Script",
+      "canonicalCapability": "quran_media.script.write",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "durationSeconds",
+        "language"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "reflection"
+      ],
+      "outputPortIds": [
+        "script"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.quran_media.validate_dakwah_content",
+      "displayName": "Validate Dakwah Content",
+      "canonicalCapability": "quran_media.content.validate",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "strictMode"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "script",
+        "bundle"
+      ],
+      "outputPortIds": [
+        "validation",
+        "publicationBlocked"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.quran_media.prepare_media_brief",
+      "displayName": "Prepare Media Brief",
+      "canonicalCapability": "quran_media.media.prepare",
+      "ownerPack": "lados.quran-media",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "visualRestrictions",
+        "voiceDirection"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "script",
+        "validation"
+      ],
+      "outputPortIds": [
+        "brief",
+        "scriptText",
+        "title"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.resource.create",
+      "displayName": "Create Resource",
+      "canonicalCapability": "resource.create",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceType",
+        "name",
+        "initialState",
+        "dataSource",
+        "fieldMap"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "data"
+      ],
+      "outputPortIds": [
+        "resource"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.resource.read",
+      "displayName": "Read Resource",
+      "canonicalCapability": "resource.read",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "ref"
+      ],
+      "outputPortIds": [
+        "resource"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.resource.list",
+      "displayName": "List Resources",
+      "canonicalCapability": "resource.list",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceType",
+        "state",
+        "limit"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "filter"
+      ],
+      "outputPortIds": [
+        "resources"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.resource.update",
+      "displayName": "Update Resource",
+      "canonicalCapability": "resource.update",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId",
+        "fieldMap"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "resource",
+        "data"
+      ],
+      "outputPortIds": [
+        "updated"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.resource.transition",
+      "displayName": "Transition Resource",
+      "canonicalCapability": "resource.transition",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId",
+        "toState"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "resource"
+      ],
+      "outputPortIds": [
+        "transitioned"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.resource.resolve_binding",
+      "displayName": "Resolve Binding",
+      "canonicalCapability": "resource.binding.resolve",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "bindingKey",
+        "requiredResourceType"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "resource"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.artifact.write",
+      "displayName": "Write Artifact",
+      "canonicalCapability": "artifact.write",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "key",
+        "format",
+        "retention"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "value"
+      ],
+      "outputPortIds": [
+        "artifact"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.artifact.read",
+      "displayName": "Read Artifact",
+      "canonicalCapability": "artifact.read",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "key",
+        "required"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "artifact"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.resource.assign",
+      "displayName": "Assign User",
+      "canonicalCapability": "resource.assign",
+      "ownerPack": "lados.resource-operations",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resourceId",
+        "userId",
+        "assigneeRole"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "resource",
+        "data"
+      ],
+      "outputPortIds": [
+        "assigned"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.task.create",
+      "displayName": "Create Task",
+      "canonicalCapability": "task.create",
+      "ownerPack": "lados.task-case",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "title",
+        "description",
+        "priority",
+        "assignee",
+        "role",
+        "dueDate"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "case management SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "context"
+      ],
+      "outputPortIds": [
+        "task"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.task.update_status",
+      "displayName": "Update Task",
+      "canonicalCapability": "task.status.update",
+      "ownerPack": "lados.task-case",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "status",
+        "reason",
+        "evidence"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "case management SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "task"
+      ],
+      "outputPortIds": [
+        "updated"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.case.open",
+      "displayName": "Open Case",
+      "canonicalCapability": "case.open",
+      "ownerPack": "lados.task-case",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "caseType",
+        "title",
+        "ownerRole",
+        "severity"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "case management SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "source"
+      ],
+      "outputPortIds": [
+        "case"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.case.close",
+      "displayName": "Close Case",
+      "canonicalCapability": "case.close",
+      "ownerPack": "lados.task-case",
+      "executorStatus": "implemented",
+      "nodeStatus": "skeleton",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "reason",
+        "closedBy",
+        "evidence"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "case management SOP"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": true
+      },
+      "inputPortIds": [
+        "case"
+      ],
+      "outputPortIds": [
+        "closed"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.video.read_script",
+      "displayName": "Read Script",
+      "canonicalCapability": "video.script.read",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "scriptText",
+        "fileId",
+        "title"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "Scene Composition style guide"
+        ]
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "file",
+        "scriptText",
+        "title"
+      ],
+      "outputPortIds": [
+        "script"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision",
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.scaffold_project",
+      "displayName": "Scaffold Project",
+      "canonicalCapability": "video.project.scaffold",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "projectName",
+        "template",
+        "folderPath"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "project"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.draft_scenes",
+      "displayName": "Draft Scenes",
+      "canonicalCapability": "video.scene.draft",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "splitStrategy",
+        "scenesPerBatch"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "Scene Composition style guide"
+        ]
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "script"
+      ],
+      "outputPortIds": [
+        "scenes"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision",
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.generate_scene_batch",
+      "displayName": "Generate Scene Batch",
+      "canonicalCapability": "video.scene.generate_batch",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "batchIndex",
+        "batchSize",
+        "creativeDirection",
+        "previousDirection"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "Creative Unlock Rule"
+        ]
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "scenes"
+      ],
+      "outputPortIds": [
+        "batch"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.render_scenes",
+      "displayName": "Render Scenes",
+      "canonicalCapability": "video.scene.render",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "stub",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "resolution",
+        "outDir"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "scenes"
+      ],
+      "outputPortIds": [
+        "render"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.revise_scene_layout",
+      "displayName": "Revise Scene Layout",
+      "canonicalCapability": "video.scene.revise_layout",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "targetZone"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": [
+          "Scene Revision & Versioning rule"
+        ]
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "scene"
+      ],
+      "outputPortIds": [
+        "revision"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.remove_background",
+      "displayName": "Remove Background",
+      "canonicalCapability": "video.scene.remove_background",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "backgroundColor",
+        "allowGradient"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "scene"
+      ],
+      "outputPortIds": [
+        "chromaKey"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.video.insert_images",
+      "displayName": "Insert Images",
+      "canonicalCapability": "video.scene.insert_images",
+      "ownerPack": "lados.video-production",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "targetElement",
+        "sceneNumbers"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": true,
+        "required": false
+      },
+      "inputPortIds": [
+        "images"
+      ],
+      "outputPortIds": [
+        "mapping"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.workflow.trigger_manual",
+      "displayName": "Manual Trigger",
+      "canonicalCapability": "workflow.trigger.manual",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "label",
+        "description"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "trigger"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision",
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.workflow.trigger_schedule",
+      "displayName": "Scheduled Trigger",
+      "canonicalCapability": "workflow.trigger.schedule",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "cronExpression",
+        "timezone",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "trigger"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.condition",
+      "displayName": "Condition",
+      "canonicalCapability": "workflow.control.condition",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "expression",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "value"
+      ],
+      "outputPortIds": [
+        "true",
+        "false",
+        "context"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision"
+      ]
+    },
+    {
+      "type": "lados.workflow.parallel",
+      "displayName": "Parallel",
+      "canonicalCapability": "workflow.control.parallel",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "branchCount",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "value"
+      ],
+      "outputPortIds": [
+        "branches"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.merge",
+      "displayName": "Merge",
+      "canonicalCapability": "workflow.control.merge",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "mergeStrategy",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "branches"
+      ],
+      "outputPortIds": [
+        "merged"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.delay",
+      "displayName": "Delay",
+      "canonicalCapability": "workflow.control.delay",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "delayMs",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "value"
+      ],
+      "outputPortIds": [
+        "resumed"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.write_log",
+      "displayName": "Write Log",
+      "canonicalCapability": "workflow.log.write",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "message",
+        "level"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "data"
+      ],
+      "outputPortIds": [
+        "logged"
+      ],
+      "referencedByWorkflowBodies": [
+        "lados.quran_media.issue_to_dakwah_video",
+        "lados.quran_media.issue_to_dakwah_video_revision",
+        "lados.video_production.script_to_scene_plan"
+      ]
+    },
+    {
+      "type": "lados.workflow.loop",
+      "displayName": "Loop",
+      "canonicalCapability": "workflow.control.loop",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "items_key",
+        "extract_key",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "items"
+      ],
+      "outputPortIds": [
+        "results",
+        "count",
+        "first",
+        "last"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.switch",
+      "displayName": "Switch",
+      "canonicalCapability": "workflow.control.switch",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "cases",
+        "label"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "value"
+      ],
+      "outputPortIds": [
+        "case1",
+        "case2",
+        "case3",
+        "case4",
+        "case5",
+        "default",
+        "matchedCase",
+        "context"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.publish_event",
+      "displayName": "Publish Event",
+      "canonicalCapability": "workflow.event.publish",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "eventType",
+        "sourceId"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "payload"
+      ],
+      "outputPortIds": [
+        "eventId",
+        "published"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.program_save_artifact",
+      "displayName": "Save Program Artifact",
+      "canonicalCapability": "workflow.program.save_artifact",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "artifactKey",
+        "value"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [
+        "value"
+      ],
+      "outputPortIds": [
+        "saved",
+        "artifactKey"
+      ],
+      "referencedByWorkflowBodies": []
+    },
+    {
+      "type": "lados.workflow.program_read_artifact",
+      "displayName": "Read Program Artifact",
+      "canonicalCapability": "workflow.program.read_artifact",
+      "ownerPack": "lados.workflow-foundation",
+      "executorStatus": "implemented",
+      "nodeStatus": "draft",
+      "resolverDeclared": true,
+      "apiResolverWired": true,
+      "configurationFieldKeys": [
+        "artifactKey"
+      ],
+      "knowledgePackRequirements": {
+        "required": [],
+        "recommended": []
+      },
+      "resourceBindings": {
+        "supported": false,
+        "required": false
+      },
+      "inputPortIds": [],
+      "outputPortIds": [
+        "value",
+        "found"
+      ],
+      "referencedByWorkflowBodies": []
+    }
+  ],
+  "workflows": [
+    {
+      "templateId": "lados.quran_media.issue_to_dakwah_video",
+      "displayName": "Issue to Dakwah Video",
+      "ownerPack": "lados.quran-media",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "End-to-end QMCP chain: discover and rank current issues, Gate 1 human issue selection, impact analysis, Islamic theme mapping, QUL Quran + tafsir evidence retrieval, evidence bundle, Gate 2 religious evidence review, reflection, short-video script, content validation, publication-blocked condition, Gate 3 editorial approval, and media brief. Optional hadith verification and the Video Production handoff nodes are included standalone (see templates/README.md). See issue-to-dakwah-video.workflow.json for the importable graph body — note every QMCP executor is a Phase A stub, so a live run will stop at discover_current_issues with RESEARCH_SERVICE_NOT_CONFIGURED until Phases B–D wire the services.",
+      "descriptorPath": "packs/official/lados-quran-media/templates/issue-to-dakwah-video.template.json",
+      "workflowBodyPath": "packs/official/lados-quran-media/templates/issue-to-dakwah-video.workflow.json",
+      "requiredPacks": [
+        "lados.workflow-foundation",
+        "lados.human-work",
+        "lados.video-production"
+      ],
+      "recommendedKnowledgePacks": [],
+      "missingRequiredPacks": [],
+      "nodeCount": 23,
+      "connectionCount": 23,
+      "nodeTypes": [
+        "lados.human.request_approval",
+        "lados.human.request_input",
+        "lados.quran_media.analyze_human_impact",
+        "lados.quran_media.build_evidence_bundle",
+        "lados.quran_media.compose_reflection",
+        "lados.quran_media.discover_current_issues",
+        "lados.quran_media.find_quran_candidates",
+        "lados.quran_media.map_islamic_themes",
+        "lados.quran_media.prepare_media_brief",
+        "lados.quran_media.rank_issue_candidates",
+        "lados.quran_media.retrieve_quran_evidence",
+        "lados.quran_media.retrieve_tafsir_context",
+        "lados.quran_media.validate_dakwah_content",
+        "lados.quran_media.verify_hadith_reference",
+        "lados.quran_media.write_short_video_script",
+        "lados.video.draft_scenes",
+        "lados.video.read_script",
+        "lados.workflow.condition",
+        "lados.workflow.trigger_manual",
+        "lados.workflow.write_log"
+      ],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "graph_ready"
+    },
+    {
+      "templateId": "lados.quran_media.issue_to_dakwah_video_revision",
+      "displayName": "Issue to Dakwah Video — Revision",
+      "ownerPack": "lados.quran-media",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Companion template to issue-to-dakwah-video for the Blueprint §14 'Revision path' after a validate_dakwah_content block. The main execution engine is a strict DAG (cycle detection blocks any workflow containing a real loop-back edge — verified in packages/execution-engine/src/graph-planner.ts), so this pack cannot wire a literal loop back into the main template's graph. This template is the real, re-triggerable substitute: a human resubmits the SAME already Gate-2-approved evidence bundle (no need to repeat issue discovery or either evidence review), and only the AI-authored content stage (compose_reflection → write_short_video_script → validate_dakwah_content) re-runs. If validation still blocks publication, Gate R fires again and the operator can re-trigger this same template as many times as needed — an operator-driven loop across separate runs, not a same-graph cycle. See issue-to-dakwah-video-revision.workflow.json for the importable graph body.",
+      "descriptorPath": "packs/official/lados-quran-media/templates/issue-to-dakwah-video-revision.template.json",
+      "workflowBodyPath": "packs/official/lados-quran-media/templates/issue-to-dakwah-video-revision.workflow.json",
+      "requiredPacks": [
+        "lados.workflow-foundation",
+        "lados.human-work",
+        "lados.video-production"
+      ],
+      "recommendedKnowledgePacks": [],
+      "missingRequiredPacks": [],
+      "nodeCount": 13,
+      "connectionCount": 13,
+      "nodeTypes": [
+        "lados.human.request_approval",
+        "lados.human.request_input",
+        "lados.quran_media.compose_reflection",
+        "lados.quran_media.prepare_media_brief",
+        "lados.quran_media.validate_dakwah_content",
+        "lados.quran_media.write_short_video_script",
+        "lados.video.draft_scenes",
+        "lados.video.read_script",
+        "lados.workflow.condition",
+        "lados.workflow.trigger_manual",
+        "lados.workflow.write_log"
+      ],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "graph_ready"
+    },
+    {
+      "templateId": "lados.solution.contractor_ops.fleet_job_to_invoice",
+      "displayName": "Fleet Job to Invoice",
+      "ownerPack": "lados.solution.contractor-ops",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Create a fleet job, complete operational evidence, submit invoice, verify invoice, and record human approval.",
+      "descriptorPath": "packs/official/lados-solution-contractor-ops/templates/fleet-job-to-invoice.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.asset-fleet",
+        "lados.commercial-finance",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "contractor SOP",
+        "finance approval matrix"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.contractor_ops.trip_dispatch_and_completion",
+      "displayName": "Trip Dispatch and Completion",
+      "ownerPack": "lados.solution.contractor-ops",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Dispatch a trip, record completion, capture exceptions, and create follow-up tasks where required.",
+      "descriptorPath": "packs/official/lados-solution-contractor-ops/templates/trip-dispatch-and-completion.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.asset-fleet",
+        "lados.task-case"
+      ],
+      "recommendedKnowledgePacks": [
+        "fleet SOP"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.contractor_ops.fuel_receipt_review",
+      "displayName": "Fuel Receipt Review",
+      "ownerPack": "lados.solution.contractor-ops",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Upload a fuel receipt, extract receipt data, route low-confidence or policy-sensitive claims for human expense approval.",
+      "descriptorPath": "packs/official/lados-solution-contractor-ops/templates/fuel-receipt-review.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.asset-fleet",
+        "lados.document-intelligence",
+        "lados.people-payroll",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "fuel policy",
+        "expense policy"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.contractor_ops.fleet_maintenance",
+      "displayName": "Fleet Maintenance",
+      "ownerPack": "lados.solution.contractor-ops",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Create a maintenance record, assign follow-up work, request procurement where needed, and record clearance.",
+      "descriptorPath": "packs/official/lados-solution-contractor-ops/templates/fleet-maintenance.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.asset-fleet",
+        "lados.task-case",
+        "lados.procurement"
+      ],
+      "recommendedKnowledgePacks": [
+        "maintenance checklist",
+        "procurement SOP"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.contractor_ops.payroll_prepare_to_approval",
+      "displayName": "Payroll Prepare to Approval",
+      "ownerPack": "lados.solution.contractor-ops",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Prepare a payroll run, request human review, record approval, and notify payroll stakeholders.",
+      "descriptorPath": "packs/official/lados-solution-contractor-ops/templates/payroll-prepare-to-approval.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.people-payroll",
+        "lados.human-work",
+        "lados.communication"
+      ],
+      "recommendedKnowledgePacks": [
+        "payroll SOP",
+        "approval matrix"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.qs_practice.boq_upload_to_cost_summary",
+      "displayName": "BOQ Upload to Cost Summary",
+      "ownerPack": "lados.solution.qs-practice",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Read a BOQ, classify trades, enrich with approved rate references, and route the cost summary for review.",
+      "descriptorPath": "packs/official/lados-solution-qs-practice/templates/boq-upload-to-cost-summary.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.document-intelligence",
+        "lados.qs-commercial",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "QS rate library",
+        "measurement rules"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.qs_practice.variation_notice_to_valuation",
+      "displayName": "Variation Notice to Valuation",
+      "ownerPack": "lados.solution.qs-practice",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Register notice evidence, link contract references, prepare QS valuation checks, and preserve human commercial review.",
+      "descriptorPath": "packs/official/lados-solution-qs-practice/templates/variation-notice-to-valuation.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.contract-admin",
+        "lados.qs-commercial",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "project contract reference",
+        "measurement rules",
+        "QS rate library"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.solution.qs_practice.final_account_reconciliation",
+      "displayName": "Final Account Reconciliation",
+      "ownerPack": "lados.solution.qs-practice",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Gather contract sums, variations, payments, retention, and evidence into a final account review workflow.",
+      "descriptorPath": "packs/official/lados-solution-qs-practice/templates/final-account-reconciliation.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.qs-commercial",
+        "lados.commercial-finance",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "claim evidence rules",
+        "retention rules",
+        "QS rate library"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.template.cipaa_preparation.cipaa_preparation_bundle",
+      "displayName": "CIPAA Preparation Bundle",
+      "ownerPack": "lados.template.cipaa-preparation",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Prepare chronology, evidence register, notice references, claim summaries, and review checkpoints for a CIPAA preparation bundle.",
+      "descriptorPath": "packs/official/lados-template-cipaa-preparation/templates/cipaa-preparation-bundle.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.contract-admin",
+        "lados.qs-commercial",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "project contract reference",
+        "claim evidence rules",
+        "notice chronology SOP"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.template.defect_management.defect_report_to_notification",
+      "displayName": "Defect Report to Notification",
+      "ownerPack": "lados.template.defect-management",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Log a defect, create a task/case, notify responsible parties, track reminders, and record human closeout.",
+      "descriptorPath": "packs/official/lados-template-defect-management/templates/defect-report-to-notification.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.construction-operations",
+        "lados.task-case",
+        "lados.communication",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "defect classification rules",
+        "site quality SOP"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.template.invoice_approval.submit_invoice_to_approval",
+      "displayName": "Submit Invoice to Approval",
+      "ownerPack": "lados.template.invoice-approval",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Submit invoice, verify invoice references, request human approval, record decision, and notify finance stakeholders.",
+      "descriptorPath": "packs/official/lados-template-invoice-approval/templates/submit-invoice-to-approval.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.commercial-finance",
+        "lados.human-work",
+        "lados.communication"
+      ],
+      "recommendedKnowledgePacks": [
+        "invoice validation rules",
+        "finance approval matrix"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.template.procurement_rfq.rfq_to_quotation_comparison",
+      "displayName": "RFQ to Quotation Comparison",
+      "ownerPack": "lados.template.procurement-rfq",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Create an RFQ, parse quotations, compare compliant offers, route award recommendation for human review, and request PO creation.",
+      "descriptorPath": "packs/official/lados-template-procurement-rfq/templates/rfq-to-quotation-comparison.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.procurement",
+        "lados.document-intelligence",
+        "lados.human-work",
+        "lados.communication"
+      ],
+      "recommendedKnowledgePacks": [
+        "supplier catalogues",
+        "procurement SOP",
+        "quotation comparison rules"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.template.progress_claim.progress_claim_evidence_check",
+      "displayName": "Progress Claim Evidence Check",
+      "ownerPack": "lados.template.progress-claim",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Collect site evidence, assess claim references, flag missing evidence, and route QS review before certification.",
+      "descriptorPath": "packs/official/lados-template-progress-claim/templates/progress-claim-evidence-check.template.json",
+      "workflowBodyPath": null,
+      "requiredPacks": [
+        "lados.qs-commercial",
+        "lados.construction-operations",
+        "lados.document-intelligence",
+        "lados.human-work"
+      ],
+      "recommendedKnowledgePacks": [
+        "claim evidence rules",
+        "measurement rules",
+        "QS rate library"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 0,
+      "connectionCount": 0,
+      "nodeTypes": [],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [],
+      "graphIssues": [],
+      "readiness": "descriptor_only"
+    },
+    {
+      "templateId": "lados.video_production.script_to_scene_plan",
+      "displayName": "Script to Scene Plan",
+      "ownerPack": "lados.video-production",
+      "status": "skeleton",
+      "maturity": "draft",
+      "summary": "Trigger a run, read a script, draft a numbered scene plan, lock the first creative-direction batch, and request a render — plus three ad-hoc example nodes (revise layout, chroma-key validation, image insertion) showing their config contract standalone, since their single-scene shape doesn't auto-chain off the bulk scene array. See script-to-scene-plan.workflow.json for the real, importable graph body.",
+      "descriptorPath": "packs/official/lados-video-production/templates/script-to-scene-plan.template.json",
+      "workflowBodyPath": "packs/official/lados-video-production/templates/script-to-scene-plan.workflow.json",
+      "requiredPacks": [
+        "lados.workflow-foundation"
+      ],
+      "recommendedKnowledgePacks": [
+        "Claude + Remotion Blueprint (Chronixel)",
+        "Scene Composition style guide"
+      ],
+      "missingRequiredPacks": [],
+      "nodeCount": 10,
+      "connectionCount": 4,
+      "nodeTypes": [
+        "lados.video.draft_scenes",
+        "lados.video.generate_scene_batch",
+        "lados.video.insert_images",
+        "lados.video.read_script",
+        "lados.video.remove_background",
+        "lados.video.render_scenes",
+        "lados.video.revise_scene_layout",
+        "lados.video.scaffold_project",
+        "lados.workflow.trigger_manual",
+        "lados.workflow.write_log"
+      ],
+      "unknownNodeTypes": [],
+      "unresolvedNodeTypes": [],
+      "stubNodeTypes": [
+        "lados.video.render_scenes"
+      ],
+      "graphIssues": [],
+      "readiness": "degraded"
+    }
+  ],
+  "rankedBlockers": [
+    {
+      "id": "missing_workflow_graph_bodies",
+      "affectedCount": 13,
+      "reason": "Descriptor-only L3/L5 assets cannot prove node, service, resource, connector, or port dependencies and cannot be imported as runnable workflows.",
+      "recommendedSprint": "S27.0 follow-up / S27.6 activation"
+    },
+    {
+      "id": "generic_string_configuration",
+      "affectedCount": 102,
+      "reason": "Official configGroups declare keys only, so the API derives optional string fields instead of typed, validated, resource-, knowledge-, or connection-aware controls.",
+      "recommendedSprint": "S27.2"
+    },
+    {
+      "id": "explicit_stub_executors",
+      "affectedCount": 4,
+      "reason": "Declared stubs (lados.communication.send_sms, lados.document.read_pdf, lados.document.read_docx, lados.video.render_scenes) block any graph that requires their real behavior.",
+      "recommendedSprint": "S27.2 / S27.4 / S27.5 by demand"
+    },
+    {
+      "id": "missing_l4_provider_catalogue",
+      "affectedCount": 1,
+      "reason": "No live official L4 pack exists; provider selection must follow workflow graph completion rather than assumptions.",
+      "recommendedSprint": "S27.3-S27.4"
+    },
+    {
+      "id": "degraded_runtime_status",
+      "affectedCount": 4,
+      "reason": "lados.communication, lados.document-intelligence, lados.quran-media, lados.video-production declare or derive degraded readiness and require explicit service/configuration verification.",
+      "recommendedSprint": "S27.2-S27.5"
+    }
+  ],
+  "recommendations": {
+    "firstActivationWave": [
+      "Complete the 13 missing workflow graph bodies before using L3/L5 assets to choose connectors.",
+      "Activate Document Intelligence first: implement PDF/DOCX extraction and document-library persistence because document handling is a dependency of multiple solution/template packs.",
+      "Finish typed configuration for Workflow Foundation, Human Work, Document Intelligence, Communication, and the professional packs used by the first graph bodies.",
+      "Add production-strict missing-executor behavior before certifying any workflow."
+    ],
+    "connectorDecision": [
+      "Do not select Microsoft 365 versus Google Workspace from descriptor prose alone.",
+      "After graph bodies exist, extract exact triggers/actions and score provider demand across the prepared workflows.",
+      "Generic HTTP/webhook, file/attachment, connection profile, OAuth, retry, pagination, and rate-limit foundations remain provider-neutral prerequisites."
+    ],
+    "firstCertificationSet": [
+      "Author and validate lados.solution.contractor_ops.trip_dispatch_and_completion first because its declared dependencies (Asset Fleet and Task Case) are both statically runtime-ready and contain no declared stubs.",
+      "Use lados.solution.contractor_ops.fleet_maintenance as the second business graph because Asset Fleet, Task Case, and Procurement are statically runtime-ready.",
+      "Video Production script-to-scene-plan is graph-backed but degraded by lados.video.render_scenes; certify an inspection/planning-only variant or implement the render backend before full certification.",
+      "Quran Media main and revision workflows are graph-backed and statically resolvable; they require configuration/service and live import/run verification rather than graph authoring.",
+      "Begin QS graph authoring after Document Intelligence PDF/DOCX and storage gaps are resolved, because all three QS Practice descriptors depend on that degraded pack."
+    ]
+  },
+  "adHocFindings": [
+    "Phase 27 was correctly numbered after existing Phase 25 and reserved Phase 26 plans were discovered.",
+    "The API real-node resolver comment still states that WorkflowRunner falls back to mock execution; this confirms S27.1 production-strict work remains required.",
+    "The Quran Media source header still describes all nodes as stubs while nodes.json and the manifest now declare 13 implemented executors; documentation/runtime comments have drifted.",
+    "Composition descriptors validate required pack IDs but do not declare the path to a workflow body, even where sibling workflow JSON exists; matching currently relies on filename convention.",
+    "Direct spec files exist for every executable pack, but direct spec presence alone is not proof of provider or live E2E readiness."
+  ],
+  "limitations": [
+    "This report does not read environment files and does not evaluate credentials or secrets.",
+    "Resolver evidence is static: API import wiring plus node-type declaration in each pack resolver. S27.1 should replace this with executable resolver probes.",
+    "Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.",
+    "Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.",
+    "Provider readiness cannot be certified without sandbox/test accounts and real round trips.",
+    "Supabase migration/application state and browser import/run behavior are outside this static baseline."
+  ]
+}

@@ -20,13 +20,46 @@ The main chain from Blueprint §14, including all three mandatory human gates:
   request_input variant supports pass-through of the incoming context, this
   wiring can switch to it without changing the graph shape.
 - **Gate 3 — Editorial publication approval**
-  (`lados.human.request_approval`): its `context` input is wired from
-  `cond-publication.context` (Phase E fix — see "Both DAG branches always
-  execute" below), not `.true`, so the reviewer always sees the real
-  validation result and can make an informed call even when the automated
-  check blocked publication. `approvalTask` output gates `prepare_media_brief`
-  (wired to the optional `validation` port purely as an execution dependency
-  so the brief cannot run before approval).
+  (`lados.human.request_approval`): its `context` input is wired directly
+  from `validate_dakwah_content.validation` (Phase F fix — see next section),
+  so the reviewer always sees the real, full validation result — issues,
+  riskLevel, requiredHumanActions — and can make an informed call even when
+  the automated check blocked publication. `approvalTask` output gates
+  `prepare_media_brief` (wired to the optional `validation` port purely as an
+  execution dependency so the brief cannot run before approval).
+
+### `cond-publication` — a real bug found and fixed in Phase F
+
+`validate_dakwah_content` has a single object-shaped output port
+(`validation`). The original Phase E wiring connected that whole object
+straight into `cond-publication`'s single `value` input port and wrote the
+expression as `"publicationBlocked == false"`, expecting the condition node
+to reach into the object for that field. It never could:
+`lados-workflow-foundation/src/lib/expression.ts`'s `resolveFieldValue()`
+does a flat `field in ctx.inputs` check with no dot-path/sub-field syntax —
+`ctx.inputs` only ever had a key called `value` (holding the whole object),
+never a key called `publicationBlocked`. Every real run would have thrown
+`EXPRESSION_ERROR` at this node, 100% of the time, regardless of the actual
+validation result — verified by extracting and running the real compiled
+expression grammar against the exact input shape the shipped connections
+produced (see Phase F test-writing notes; this file's earlier revision
+described the old, broken wiring as if it worked).
+
+Fixed with the same additive-port pattern used for the Video Production
+handoff: `validate_dakwah_content` now also outputs a flat
+`publicationBlocked` boolean port alongside `validation`, and only that flat
+boolean feeds `cond-publication.value` (expression updated to `"value ==
+false"`, which now resolves correctly). The full `validation` object no
+longer routes through `cond-publication` at all — it's wired directly to
+both `gate3-editorial-approval.context` and `gateR-revision.context` (see
+below), which is simpler than laundering it through the condition node's
+pass-through `context` output and avoids inventing an undeclared second
+input port on a shared foundation node. `cond-publication` still runs and
+still logs its routing decision (`Condition "value == false" → TRUE/FALSE`,
+visible in workflow run logs) for audit purposes, but as of this fix nothing
+downstream consumes its `true`/`false`/`context` outputs — see "Both DAG
+branches always execute" below for why that was already true in substance,
+just not in wiring, since Phase E.
 
 ### Video Production handoff (Phase E — now real, not an example)
 
@@ -79,14 +112,15 @@ the planner/runner source, not assumed.
 
 Two real, DAG-legal pieces stand in for it instead:
 
-1. **Gate R, in the main template.** `cond-publication`'s `false` branch
-   (the actual validation object, non-null only on this path — see next
-   section) now feeds `lados.human.request_input` ("Gate R — Revision
-   Required") instead of a passive `write_log`. The reviewer sees the
-   validation warnings and acknowledges them; a `write_log` records the
-   acknowledgement. This turns what used to be a silent dead-end into a real
-   human checkpoint, consistent with the pack's "no automatic publishing,
-   mandatory human review" principle.
+1. **Gate R, in the main template.** `validate_dakwah_content.validation`
+   (the full object, same source as Gate 3's context — see "`cond-publication`
+   — a real bug found and fixed in Phase F" above) feeds
+   `lados.human.request_input` ("Gate R — Revision Required") instead of a
+   passive `write_log`. The reviewer sees the validation warnings and
+   acknowledges them; a `write_log` records the acknowledgement. This turns
+   what used to be a silent dead-end into a real human checkpoint, consistent
+   with the pack's "no automatic publishing, mandatory human review"
+   principle.
 2. **`issue-to-dakwah-video-revision.template.json` / `.workflow.json`,** a
    companion template. A human resubmits the *same already Gate-2-approved*
    evidence bundle (no need to repeat issue discovery, Gate 1, or Gate 2 —
@@ -104,20 +138,22 @@ something worth documenting explicitly: this engine has **no conditional
 skip**. Every node in the topological plan runs regardless of which
 condition branch was "true" — `lados.workflow.condition` doesn't prevent the
 `false`-side subgraph from executing when the result is `true`, or vice
-versa. What actually varies is the *payload*: `true` output is the real
-input value when the condition is true and `null` otherwise; `false` is the
-mirror image. `context` (a third port) always carries the full input set
-regardless of branch result.
+versa. Concretely for this template: `gate3-editorial-approval` and
+`gateR-revision` both run on *every* execution, regardless of what
+`cond-publication` decides — `publicationBlocked` never actually gated which
+gate the run reaches, only (in the Phase E design) which one *received
+meaningful content*.
 
-Two consequences this pass had to design around, not paper over:
-
-- Gate R only receives meaningful content (the actual validation object)
-  when `publicationBlocked` really was `true`, because it's wired from
-  `.false` — correct, since `.false` is `null` on the happy path and Gate R
-  is only meant to fire meaningfully then.
-- Gate 3 is wired from `.context` (always populated), not `.true`, so the
-  editorial reviewer is never shown a blind/empty context — they always see
-  the real validation result and make their own informed final call. This is
-  arguably *more* aligned with "mandatory human review" than an engine-level
-  auto-skip would have been: the human, not the condition node, is the real
-  gate.
+That's the real reason the Phase F fix wires both gates' `context` directly
+from `validate_dakwah_content.validation` instead of routing content through
+`cond-publication`'s `true`/`false`/`context` outputs: since neither gate's
+*execution* was ever conditional on the other's outcome, there is no
+control-flow reason to launder the payload through the condition node at
+all — both gates always run, so both should always see the same real
+validation result, and a human reviewer at either gate can see
+`validation.publicationBlocked` themselves to know which situation they're
+in. `cond-publication` still runs, still evaluates the expression, and still
+logs the routing decision for the audit trail, but as of Phase F it has no
+downstream consumers — that's an accepted, intentional simplification, not
+an oversight (a workflow node with no outgoing connections is a normal
+pattern in this codebase; every `write_log` node here is exactly that).

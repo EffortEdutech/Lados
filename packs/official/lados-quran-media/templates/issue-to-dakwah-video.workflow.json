@@ -40,7 +40,12 @@
       "position": { "x": 800, "y": 400 },
       "config": {
         "title": "Gate 1 — Issue selection",
-        "instructions": "Review the ranked issue candidates. Confirm source quality, dakwah suitability, and non-exploitative framing, then submit the single selected issue object."
+        "description": "Review the ranked issue candidates. Confirm source quality, dakwah suitability, and non-exploitative framing, then submit the single selected issue object.",
+        "inputSchema": [
+          { "key": "issueId", "label": "Selected issue ID (must match one of the ranked candidates)", "type": "string", "required": true },
+          { "key": "headline", "label": "Issue headline", "type": "string", "required": true },
+          { "key": "summary", "label": "Issue summary", "type": "string", "required": false }
+        ]
       }
     },
     {
@@ -92,7 +97,11 @@
       "position": { "x": 2480, "y": 480 },
       "config": {
         "title": "Gate 2 — Religious evidence review",
-        "instructions": "Confirm each Quran reference, Arabic text, translation, tafsir context, optional hadith status, and contextual suitability. Submit the confirmed evidence bundle to continue."
+        "description": "Confirm each Quran reference, Arabic text, translation, tafsir context, optional hadith status, and contextual suitability. Submit the confirmed evidence bundle to continue.",
+        "inputSchema": [
+          { "key": "bundleVersion", "label": "Bundle version (must be \"1.0\" — submit the confirmed evidence bundle as JSON)", "type": "string", "required": true },
+          { "key": "religiousReview", "label": "Religious review object — status must be \"approved\" or compose_reflection will refuse the bundle (Gate 2 code-level enforcement)", "type": "string", "required": true }
+        ]
       }
     },
     {
@@ -121,7 +130,7 @@
       "type": "lados.workflow.condition",
       "label": "Publication Blocked?",
       "position": { "x": 3440, "y": 480 },
-      "config": { "expression": "publicationBlocked == false", "label": "Publication not blocked" }
+      "config": { "expression": "value == false", "label": "Publication not blocked" }
     },
     {
       "id": "gate3-editorial-approval",
@@ -130,7 +139,7 @@
       "position": { "x": 3680, "y": 360 },
       "config": {
         "title": "Gate 3 — Editorial publication approval",
-        "instructions": "Confirm script tone, visual sensitivity, wording, evidence appendix, and production suitability. Approval here is editorial and separate from the Gate 2 religious review."
+        "description": "Confirm script tone, visual sensitivity, wording, evidence appendix, and production suitability. Approval here is editorial and separate from the Gate 2 religious review."
       }
     },
     {
@@ -140,7 +149,10 @@
       "position": { "x": 3680, "y": 620 },
       "config": {
         "title": "Gate R — Revision required",
-        "instructions": "Dakwah content validation blocked publication (see the attached validation result for the specific warnings/errors). Review what needs to change, then use the companion 'Issue to Dakwah Video — Revision' template to resubmit corrected reflection/script against the SAME already-reviewed evidence bundle, without repeating issue discovery or the Gate 1/Gate 2 human reviews. Submit any note you want recorded against this run to continue."
+        "description": "Dakwah content validation blocked publication (see the attached validation result for the specific warnings/errors). Review what needs to change, then use the companion 'Issue to Dakwah Video — Revision' template to resubmit corrected reflection/script against the SAME already-reviewed evidence bundle, without repeating issue discovery or the Gate 1/Gate 2 human reviews. Submit any note you want recorded against this run to continue.",
+        "inputSchema": [
+          { "key": "acknowledgementNote", "label": "Note acknowledging the validation warnings (optional)", "type": "string", "required": false }
+        ]
       }
     },
     {
@@ -200,9 +212,9 @@
     { "id": "conn-11", "sourceNodeId": "gate2-religious-review", "sourcePortId": "submittedData", "targetNodeId": "reflect-1", "targetPortId": "bundle" },
     { "id": "conn-12", "sourceNodeId": "reflect-1", "sourcePortId": "reflection", "targetNodeId": "script-1", "targetPortId": "reflection" },
     { "id": "conn-13", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "validate-1", "targetPortId": "script" },
-    { "id": "conn-14", "sourceNodeId": "validate-1", "sourcePortId": "validation", "targetNodeId": "cond-publication", "targetPortId": "value" },
-    { "id": "conn-15", "sourceNodeId": "cond-publication", "sourcePortId": "context", "targetNodeId": "gate3-editorial-approval", "targetPortId": "context" },
-    { "id": "conn-16", "sourceNodeId": "cond-publication", "sourcePortId": "false", "targetNodeId": "gateR-revision", "targetPortId": "context" },
+    { "id": "conn-14", "sourceNodeId": "validate-1", "sourcePortId": "publicationBlocked", "targetNodeId": "cond-publication", "targetPortId": "value" },
+    { "id": "conn-15", "sourceNodeId": "validate-1", "sourcePortId": "validation", "targetNodeId": "gate3-editorial-approval", "targetPortId": "context" },
+    { "id": "conn-16", "sourceNodeId": "validate-1", "sourcePortId": "validation", "targetNodeId": "gateR-revision", "targetPortId": "context" },
     { "id": "conn-16b", "sourceNodeId": "gateR-revision", "sourcePortId": "submittedData", "targetNodeId": "log-revision", "targetPortId": "data" },
     { "id": "conn-17", "sourceNodeId": "script-1", "sourcePortId": "script", "targetNodeId": "brief-1", "targetPortId": "script" },
     { "id": "conn-18", "sourceNodeId": "gate3-editorial-approval", "sourcePortId": "approvalTask", "targetNodeId": "brief-1", "targetPortId": "validation" },

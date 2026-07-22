@@ -91,9 +91,21 @@ export async function validateDakwahContent(
 
   const validation: DakwahValidationResult = { passed, riskLevel, issues, requiredHumanActions, publicationBlocked };
 
+  // Phase F fix: also expose publicationBlocked as its own flat output port,
+  // alongside the nested `validation` object. The downstream
+  // lados.workflow.condition node's expression grammar can only compare a
+  // literal field name against ctx.inputs — it has no dot-path/sub-field
+  // syntax (packs/official/lados-workflow-foundation/src/lib/expression.ts's
+  // resolveFieldValue() does a direct `field in inputs` check) — so wiring
+  // the whole `validation` object to a single input port and writing an
+  // expression like "publicationBlocked == false" always throws
+  // EXPRESSION_ERROR (verified against the real compiled expression grammar
+  // during Phase F test-writing; both shipped templates had this bug from
+  // Phase E onward). Same additive-port pattern as prepare_media_brief's
+  // scriptText/title flattening in Phase E.
   return {
     status: 'success',
-    outputs: { validation },
+    outputs: { validation, publicationBlocked },
     summary: `Validation ${passed ? 'passed' : 'found issues'} — risk ${riskLevel}${aiDegraded ? ' (AI advisory pass degraded, deterministic checks still enforced)' : ''}`,
   };
 }
