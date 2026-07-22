@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.0 complete 2026-07-22; S27.1 next |
+| Status | Active - S27.1 in progress 2026-07-22 |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |
@@ -696,3 +696,33 @@ The four declared stubs are `lados.communication.send_sms`, `lados.document.read
 **Verification:** `node --check tools/generate-phase27-runtime-baseline.cjs` passed; `npm run baseline:phase27` passed repeatedly; generated graph checks report zero issues; `corepack pnpm validate:official-packs` passed (22 packs, 103 nodes, 122 canonical capabilities, 43 aliases); `git diff --check` passed for the scoped files. Full monorepo typecheck/API tests were not required for this static generator/doc sprint and remain part of implementation sprint verification.
 
 **Next:** S27.1 - implement production-strict execution modes and one generated readiness truth surface, using the S27.0 JSON as the baseline contract.
+
+### 2026-07-22 (4) - Post-S27.0 API compile blocker repaired
+
+eff reported `TS2307: Cannot find module '@lados/official-quran-media'` from `apps/api/src/execution/real-nodes/index.ts`. The package manifest, built `dist/index.d.ts`, and API dependency declaration were already present. The actual defect was an incomplete pnpm workspace install state: `apps/api/node_modules/@lados/official-quran-media` was missing and the API importer section of `pnpm-lock.yaml` did not yet contain the workspace link.
+
+Ran `corepack pnpm install --offline`, which added the missing lock importer entry and created the API workspace junction without downloading packages. Rebuilt `@lados/official-quran-media`. API typecheck then exposed one subsequent regression: `execution.service.recovery.spec.ts` still constructed `ExecutionService` with 20 arguments after QMCP added `ReligiousSourceService` and `CurrentIssueResearchService`. Added the two explicit test stubs.
+
+**Verification:** Quran Media pack build passed; `corepack pnpm --filter api typecheck` passed; targeted Jest passed 3/3 suites and 76/76 tests (`execution.service.recovery.spec.ts`, `official-quran-media.spec.ts`, `official-quran-media-e2e.spec.ts`). The original module-resolution error is closed.
+
+**Ad-hoc outstanding:** none from this compile repair. The broader S27.0 findings remain as recorded in entry (3).
+
+**Next:** S27.1 remains unchanged.
+
+### 2026-07-22 (5) - S27.1 core runtime and readiness slice complete
+
+Implemented explicit execution modes in `@lados/execution-engine`: `development-simulation`, `test`, and `production-strict`. The engine now defaults to production-strict, returns structured `EXECUTOR_NOT_AVAILABLE` for an unresolved node, permits only explicitly registered mocks in test mode, and records `real`, `simulated`, or `test_mock` execution source in node logs. Development simulation emits a clear warning that synthetic output is not production evidence. Both in-process API execution and BullMQ worker execution now resolve their mode through `execution-mode.ts`; production and unspecified environments are strict.
+
+Added resolver-backed readiness reconciliation in `runtime-readiness.ts`. It reads validated official manifests/nodes, probes the live API node resolver, derives per-node `implemented`/`stub`/`missing_executor` and per-pack `runtime_ready`/`degraded`/`blocked`/`catalogue_only`, and reports contradictions such as an implemented declaration with no resolver. `GET /execution/runtime-readiness` exposes this result. The Pack Manager now consumes this endpoint and displays honest runtime states instead of the legacy prefix-based health claim.
+
+**Verification:** execution-engine build passed; API and web typechecks passed; targeted S27.1 regression suite passed 5/5; full API Jest passed 34/34 suites, 462 passed and 2 skipped. The first full-suite command used the wrong pnpm argument separator and found no tests; it was immediately rerun correctly with `pnpm --filter api exec jest --runInBand` and passed.
+
+**Ad-hoc outstanding:**
+
+- The legacy `/packs/health` prefix-based endpoint still exists for compatibility and the pack-detail page; it must be retired or redirected to readiness truth before S27.1 closes.
+- Marketplace and node palette/inspector do not yet consume resolver-backed readiness.
+- Workflow publish/run preflight does not yet block or warn for stub/missing required nodes.
+- The S27.0 build report remains a static resolver-path audit; CI contradiction enforcement and build/runtime report unification are still required.
+- A dedicated database column for execution source was not added. The source is preserved in persisted node log messages; schema-level querying can be added only if operational reporting requires it.
+
+**Next:** finish S27.1 by unifying the remaining UI surfaces, publish/run validation, legacy health compatibility, and CI/build-report contradiction checks. S27.2 begins only after that gate is green.

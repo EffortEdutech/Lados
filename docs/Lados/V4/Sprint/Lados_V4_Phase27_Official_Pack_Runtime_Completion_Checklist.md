@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.0 complete 2026-07-22; S27.1 next  
+**Status:** Active - S27.1 in progress 2026-07-22
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -19,7 +19,7 @@
 | Sprint | Gate | Status | Evidence |
 |---|---|---|---|
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
-| S27.1 | Production-strict execution and one readiness truth | `[ ]` | Tests + API/UI/build report |
+| S27.1 | Production-strict execution and one readiness truth | `[~]` | Core runtime/API/Pack Manager complete; remaining UI/preflight/CI slice next |
 | S27.2 | First activation wave has typed config and real services | `[ ]` | Contract/integration tests |
 | S27.3 | Secure Connection Profile foundation operational | `[ ]` | Migration/RLS/API/UI/security tests |
 | S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
@@ -75,30 +75,30 @@
 
 ### Execution modes
 
-- [ ] Add explicit `development-simulation`, `test`, and `production-strict` modes.
-- [ ] Make production default strict.
-- [ ] Remove generic unknown-node success from production execution.
-- [ ] Require explicit test mock registration.
-- [ ] Watermark development simulations in outputs/logs.
-- [ ] Return structured `EXECUTOR_NOT_AVAILABLE` failure.
+- [x] Add explicit `development-simulation`, `test`, and `production-strict` modes.
+- [x] Make production default strict.
+- [x] Remove generic unknown-node success from production execution.
+- [x] Require explicit test mock registration.
+- [~] Watermark development simulations in outputs/logs. *(Log and persisted execution source complete; output-envelope watermark remains optional pending contract review.)*
+- [x] Return structured `EXECUTOR_NOT_AVAILABLE` failure.
 - [ ] Add regression tests for unknown, stub, degraded, and real executors.
 
 ### Runtime truth service
 
-- [ ] Implement manifest/resolver/service/test reconciliation.
-- [ ] Generate node readiness state.
-- [ ] Generate pack readiness state.
-- [ ] Expose readiness through API.
+- [~] Implement manifest/resolver/service/test reconciliation. *(Manifest + live resolver + tests complete; connector/service configuration readiness remains S27.3.)*
+- [x] Generate node readiness state.
+- [x] Generate pack readiness state.
+- [x] Expose readiness through API.
 - [ ] Surface readiness in Marketplace.
 - [ ] Surface readiness in node palette/inspector.
 - [ ] Block or warn workflow publish/run based on required readiness.
-- [ ] Persist real/degraded/simulated/test-mock execution evidence.
+- [~] Persist real/degraded/simulated/test-mock execution evidence. *(Real/simulated/test-mock is present in node logs; degraded remains readiness evidence rather than an execution source.)*
 - [ ] Add CI failure for contradictory runtime claims.
 
 ### S27.1 gate
 
-- [ ] Unknown node fails in production-strict mode.
-- [ ] Test mocks continue to work only in tests.
+- [x] Unknown node fails in production-strict mode.
+- [x] Test mocks continue to work only in tests.
 - [ ] API, UI, build report, and resolver show the same readiness.
 - [ ] No pack with a required stub/missing executor displays runtime-ready.
 
@@ -365,3 +365,15 @@ Created alongside the re-centered Phase 27 master plan. The first executable tas
 Generated and verified the complete static baseline. See the checked S27.0 items and evidence paths above, plus master-plan handover entry (3) for findings, ad-hoc outstanding work, activation decisions, and verification limits.
 
 **Next:** S27.1 production-strict execution and readiness reporting.
+
+### 2026-07-22 (3) - Quran Media workspace resolution repaired
+
+- [x] Refresh pnpm workspace links offline.
+- [x] Add missing Quran Media API importer entry to `pnpm-lock.yaml`.
+- [x] Confirm `apps/api/node_modules/@lados/official-quran-media` junction exists.
+- [x] Add Religious Source and Current Issue Research stubs to the recovery spec's `ExecutionService` constructor.
+- [x] Quran Media pack build passes.
+- [x] API typecheck passes.
+- [x] Targeted tests pass: 3 suites, 76 tests.
+
+**Next:** S27.1 remains the next planned sprint.

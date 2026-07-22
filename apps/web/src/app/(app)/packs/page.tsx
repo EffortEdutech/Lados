@@ -48,12 +48,15 @@ interface Pack {
   layer?:           string | null;
 }
 
-interface PackHealth {
-  packId:      string;
-  status:      'healthy' | 'degraded' | 'broken';
-  checkedAt:   string;
-  totalNodes:  number;
-  brokenNodes: { nodeType: string; resolvable: boolean; error?: string }[];
+interface PackReadiness {
+  packId: string;
+  state: 'runtime_ready' | 'degraded' | 'blocked' | 'catalogue_only';
+  nodes: { type: string; state: 'implemented' | 'stub' | 'missing_executor' }[];
+  contradictions: string[];
+}
+
+interface RuntimeReadinessReport {
+  packs: PackReadiness[];
 }
 
 type PackTab = 'capability' | 'solution' | 'template';
@@ -98,7 +101,7 @@ function StatusBadge({ status, isEnabled }: { status: Pack['status']; isEnabled:
 
 // ── Health badge (Phase 14) ───────────────────────────────────────────────────
 
-function HealthBadge({ health }: { health: PackHealth | null | undefined }) {
+function HealthBadge({ health }: { health: PackReadiness | null | undefined }) {
   if (!health) {
     return (
       <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-50 text-gray-400 border border-gray-100">
@@ -106,26 +109,34 @@ function HealthBadge({ health }: { health: PackHealth | null | undefined }) {
       </span>
     );
   }
-  if (health.status === 'healthy') {
+  if (health.state === 'runtime_ready') {
     return (
       <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100"
-        title={`${health.totalNodes} nodes healthy`}>
-        ✓ Healthy
+        title={`${health.nodes.length} implemented executors`}>
+        Runtime ready
       </span>
     );
   }
-  if (health.status === 'degraded') {
+  if (health.state === 'degraded') {
     return (
       <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-100"
-        title={`${health.brokenNodes.length}/${health.totalNodes} nodes unrecognised`}>
-        ⚠ Degraded
+        title={`${health.nodes.filter((node) => node.state === 'stub').length} stub executors`}>
+        Degraded
+      </span>
+    );
+  }
+  if (health.state === 'catalogue_only') {
+    return (
+      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200"
+        title="Composition pack; does not provide executors">
+        Catalogue only
       </span>
     );
   }
   return (
     <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-50 text-red-600 border border-red-100"
-      title="No nodes resolvable">
-      ✕ Broken
+      title={`${health.nodes.filter((node) => node.state === 'missing_executor').length} missing executors`}>
+      Blocked
     </span>
   );
 }
@@ -139,7 +150,7 @@ function PackTile({
   onToggle,
 }: {
   pack:     Pack;
-  health:   PackHealth | undefined;
+  health:   PackReadiness | undefined;
   toggling: boolean;
   onToggle: (pack: Pack) => void;
 }) {
@@ -218,7 +229,7 @@ function PackTile({
 
 export default function PacksPage() {
   const [packs,    setPacks]    = useState<Pack[]>([]);
-  const [health,   setHealth]   = useState<Record<string, PackHealth>>({});
+  const [health,   setHealth]   = useState<Record<string, PackReadiness>>({});
   const [loading,  setLoading]  = useState(true);
   const [syncing,  setSyncing]  = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -242,11 +253,11 @@ export default function PacksPage() {
       apiClient.get<Pack[]>('/packs'),
       // Phase 21 S9.1 — one bulk health call instead of one per enabled
       // pack (was tripping the global rate limit — see file header).
-      apiClient.get<Record<string, PackHealth>>('/packs/health'),
+      apiClient.get<RuntimeReadinessReport>('/execution/runtime-readiness'),
     ])
       .then(([packsRes, healthRes]) => {
         setPacks(packsRes.data ?? []);
-        setHealth(healthRes.data ?? {});
+        setHealth(Object.fromEntries((healthRes.data?.packs ?? []).map((pack) => [pack.packId, pack])));
         setError(null);
       })
       .catch(() => setError('Failed to load packs'))

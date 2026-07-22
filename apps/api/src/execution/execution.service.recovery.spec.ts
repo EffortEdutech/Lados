@@ -63,6 +63,8 @@ function makeService(supabase: unknown): ExecutionService {
     {} as never, // smsService
     { emit: jest.fn() } as never, // emitter (EventEmitter2)
     {} as never, // programArtifactService (Phase 23 S23.3, renamed Phase 24 S24.2)
+    {} as never, // religiousSourceService (QMCP Phase B)
+    {} as never, // currentIssueResearchService (QMCP Phase D)
   );
 }
 

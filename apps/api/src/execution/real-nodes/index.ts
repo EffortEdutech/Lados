@@ -93,7 +93,8 @@ type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
  * Call this once in ExecutionService and pass to WorkflowRunner.
  *
  * Each pack resolver is tried in order; the first non-null match wins.
- * Falls back to null (WorkflowRunner then uses its mock executor).
+ * Returns null when unresolved. WorkflowRunner applies its explicit execution
+ * mode policy; production-strict fails with EXECUTOR_NOT_AVAILABLE.
  */
 export function buildRealNodeResolver(
   fileService: FileService,

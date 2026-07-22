@@ -39,6 +39,7 @@ import { buildRealNodeResolver } from '../execution/real-nodes';
 import { runWorkflow } from '@lados/execution-engine';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
 import type { NodeProgressEvent } from '@lados/execution-engine';
+import { resolveExecutionMode } from '../execution/execution-mode';
 import {
   EXECUTION_QUEUE_NAME,
   EXECUTION_JOB_TYPE,
@@ -207,7 +208,7 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
   ): Promise<void> {
     let result;
     try {
-      result = await runWorkflow(options);
+      result = await runWorkflow({ ...options, executionMode: resolveExecutionMode() });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
 

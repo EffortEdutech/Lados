@@ -25,7 +25,7 @@ import type {
   InputBinding,
 } from './types';
 import { planWorkflow } from './graph-planner';
-import { getMockExecutor } from './mock-registry';
+import { getMockExecutor, hasMockFor } from './mock-registry';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
@@ -430,9 +430,43 @@ export class WorkflowRunner {
 
     try {
       const realExecutor = this.options.nodeResolver?.(step.nodeType) ?? null;
-      const executor: NodeExecutor = realExecutor ?? getMockExecutor(step.nodeType);
-      const isReal = realExecutor !== null;
-      nodeCtx.logger.info(`[${isReal ? 'REAL' : 'MOCK'}] Executing ${step.nodeType}`);
+      const executionMode = this.options.executionMode ?? 'production-strict';
+      let executor: NodeExecutor | null = realExecutor;
+
+      if (realExecutor) {
+        logEntry.executionSource = 'real';
+      } else if (executionMode === 'development-simulation') {
+        executor = getMockExecutor(step.nodeType);
+        logEntry.executionSource = 'simulated';
+      } else if (executionMode === 'test' && hasMockFor(step.nodeType)) {
+        executor = getMockExecutor(step.nodeType);
+        logEntry.executionSource = 'test_mock';
+      }
+
+      if (!executor) {
+        const nodeCompletedAt = new Date().toISOString();
+        const durationMs = new Date(nodeCompletedAt).getTime() - new Date(nodeStartedAt).getTime();
+        const message = `No executor is available for ${step.nodeType} in ${executionMode} mode`;
+        logEntry.status = 'failed';
+        logEntry.error = {
+          code: 'EXECUTOR_NOT_AVAILABLE',
+          message,
+          details: { nodeType: step.nodeType, executionMode },
+        };
+        logEntry.messages = [`[ERROR] ${message}`];
+        logEntry.completedAt = nodeCompletedAt;
+        logEntry.durationMs = durationMs;
+        this._emitNodeEvent({ type: 'done', nodeId: step.nodeId, nodeType: step.nodeType, nodeName: step.nodeLabel, status: 'failed', durationMs });
+        return { logEntry, nodeOutput: {}, stepStatus: 'failed' };
+      }
+
+      const sourceLabel = logEntry.executionSource === 'real'
+        ? 'REAL'
+        : logEntry.executionSource === 'test_mock' ? 'TEST MOCK' : 'SIMULATED';
+      nodeCtx.logger.info(`[${sourceLabel}] Executing ${step.nodeType}`);
+      if (logEntry.executionSource === 'simulated') {
+        nodeCtx.logger.warn('[SIMULATION] Output is synthetic and is not production execution evidence');
+      }
 
       const result = await executor(nodeCtx);
       const nodeCompletedAt = new Date().toISOString();

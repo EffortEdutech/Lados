@@ -60,6 +60,12 @@ export class ExecutionController {
     return { success: true, data };
   }
 
+  /** Resolver-backed official-pack runtime readiness (Phase 27 S27.1). */
+  @Get('execution/runtime-readiness')
+  getRuntimeReadiness() {
+    return { success: true, data: this.executionService.getRuntimeReadiness() };
+  }
+
   /** List recent runs for a workflow */
   @Get('workflows/:workflowId/runs')
   async listRuns(

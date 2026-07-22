@@ -42,6 +42,9 @@ import { PackRegistryService }   from '../pack/pack-registry.service';
 import { buildRealNodeResolver } from './real-nodes';
 import { runWorkflow } from '@lados/execution-engine';
 import type { ExecutionResult, RunnerOptions, SkipNodeSpec, NodeProgressEvent } from '@lados/execution-engine';
+import { resolveExecutionMode } from './execution-mode';
+import { loadOfficialPackSkeletons } from '../pack/official-pack-loader';
+import { buildRuntimeReadinessReport } from './runtime-readiness';
 import type { QSWorkflowDefinition } from '@lados/shared-types';
 import type { TriggerRunDto } from './dto/trigger-run.dto';
 
@@ -233,6 +236,7 @@ export class ExecutionService implements OnModuleInit {
         inputs:         params.inputs ?? {},
         variables:      params.variables ?? {},
         nodeResolver:   this.nodeResolver,
+        executionMode:  resolveExecutionMode(),
         skipNodes:      params.skipNodes ?? [],
         // Phase 21 S3 (D4) — same SSE bridge as ExecutionWorker's queue path,
         // so in-process fallback runs also drive live node progress.
@@ -452,7 +456,14 @@ export class ExecutionService implements OnModuleInit {
       ...options,
       definition: resolved.definition,
       nodeResolver: this.nodeResolver,
+      executionMode: options.executionMode ?? resolveExecutionMode(),
     });
+  }
+
+  getRuntimeReadiness() {
+    const loaded = loadOfficialPackSkeletons();
+    const report = buildRuntimeReadinessReport(loaded.packs, this.nodeResolver);
+    return { ...report, loadIssues: loaded.issues };
   }
 
   private async resolveDefinitionBindings(

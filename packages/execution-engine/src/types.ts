@@ -82,7 +82,12 @@ export interface NodeLogEntry {
   startedAt?: string;
   completedAt?: string;
   durationMs?: number;
+  /** Runtime source persisted so simulation cannot be mistaken for production evidence. */
+  executionSource?: NodeExecutionSource;
 }
+
+export type ExecutionMode = 'development-simulation' | 'test' | 'production-strict';
+export type NodeExecutionSource = 'real' | 'simulated' | 'test_mock';
 
 // ── Execution result ──────────────────────────────────────────────────────────
 
@@ -170,9 +175,11 @@ export interface RunnerOptions {
   definition: QSWorkflowDefinition;
   inputs?: Record<string, unknown>;
   variables?: Record<string, unknown>;
+  /** Controls unresolved-node behavior. Defaults to `production-strict`. */
+  executionMode?: ExecutionMode;
   /**
    * Sprint 7: Optional resolver that returns a REAL node executor.
-   * If it returns null for a given nodeType, the runner falls back to mock.
+   * If it returns null, behavior is controlled by `executionMode`.
    * Inject from NestJS context to give nodes access to DB/Storage services.
    */
   nodeResolver?: (nodeType: string) => ((ctx: NodeContext) => Promise<NodeExecuteResult>) | null;
