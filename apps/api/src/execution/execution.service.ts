@@ -344,6 +344,8 @@ export class ExecutionService implements OnModuleInit {
       throw new BadRequestException('Published workflow has no nodes');
     }
 
+    this.assertDefinitionRuntimeReady(definition);
+
     const resolved = await this.resolveDefinitionBindings(workflowId, definition);
     definition = resolved.definition;
 
@@ -464,6 +466,39 @@ export class ExecutionService implements OnModuleInit {
     const loaded = loadOfficialPackSkeletons();
     const report = buildRuntimeReadinessReport(loaded.packs, this.nodeResolver);
     return { ...report, loadIssues: loaded.issues };
+  }
+
+  getDefinitionRuntimeReadiness(definition: QSWorkflowDefinition) {
+    const report = this.getRuntimeReadiness();
+    const readinessByType = new Map(
+      report.packs.flatMap((pack) => pack.nodes.map((node) => [node.type, node] as const)),
+    );
+    const nodes = definition.nodes.map((node) => {
+      const readiness = readinessByType.get(node.type);
+      return readiness ?? {
+        type: node.type,
+        state: 'missing_executor' as const,
+        declaredExecutorStatus: 'unknown',
+        resolverAvailable: this.nodeResolver(node.type) !== null,
+      };
+    });
+    return {
+      ready: nodes.every((node) => node.state === 'implemented'),
+      nodes,
+      blockingNodes: nodes.filter((node) => node.state !== 'implemented'),
+    };
+  }
+
+  assertDefinitionRuntimeReady(definition: QSWorkflowDefinition) {
+    const readiness = this.getDefinitionRuntimeReadiness(definition);
+    if (readiness.ready) return readiness;
+
+    const blockers = readiness.blockingNodes
+      .map((node) => `${node.type} (${node.state})`)
+      .join(', ');
+    throw new BadRequestException(
+      `Workflow is not production-ready. Replace or configure these nodes before publishing or running: ${blockers}`,
+    );
   }
 
   private async resolveDefinitionBindings(

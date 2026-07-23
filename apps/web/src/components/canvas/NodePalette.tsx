@@ -40,6 +40,11 @@ interface RegisteredNode {
   };
 }
 
+type NodeReadinessState = 'implemented' | 'stub' | 'missing_executor';
+interface RuntimeReadinessReport {
+  packs: { nodes: { type: string; state: NodeReadinessState }[] }[];
+}
+
 // ── Capability layer grouping (S7 — UI Alignment) ─────────────────────────────
 //
 // Master plan S7: "Node palette grouped by capability layer (L0–L2) and
@@ -119,6 +124,7 @@ interface PackSectionProps {
   onDragStart: (e: React.DragEvent, node: RegisteredNode) => void;
   onBulkMode?: (nodeTypes: string[], mode: SkillMode) => void;
   defaultOpen?: boolean;
+  readiness: Record<string, NodeReadinessState>;
 }
 
 const BULK_ACTIONS: { mode: SkillMode; icon: string; title: string }[] = [
@@ -127,7 +133,7 @@ const BULK_ACTIONS: { mode: SkillMode; icon: string; title: string }[] = [
   { mode: 'bypassed', icon: '⏭',  title: 'Bypass All'   },
 ];
 
-function PackSection({ packId, packName, packColor, packIconName, nodes, onDragStart, onBulkMode, defaultOpen = true }: PackSectionProps) {
+function PackSection({ packId, packName, packColor, packIconName, nodes, onDragStart, onBulkMode, readiness, defaultOpen = true }: PackSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [hoverHeader, setHoverHeader] = useState(false);
 
@@ -196,13 +202,16 @@ function PackSection({ packId, packName, packColor, packIconName, nodes, onDragS
       {/* Skill cards */}
       {open && (
         <div className="space-y-1 pl-3 border-l-2" style={{ borderColor: packColor ? `${packColor}40` : '#E5E7EB' }}>
-          {nodes.map((node) => (
+          {nodes.map((node) => {
+            const nodeReadiness = readiness[node.type] ?? 'missing_executor';
+            const executable = nodeReadiness === 'implemented';
+            return (
             <div
               key={node.type}
-              draggable
+              draggable={executable}
               onDragStart={(e) => onDragStart(e, node)}
-              className="cursor-grab rounded border border-gray-200 bg-gray-50 px-2 py-1.5 hover:border-blue-300 hover:bg-blue-50 active:cursor-grabbing transition-colors"
-              title={`${node.type}${node.description ? '\n' + node.description : ''}`}
+              className={`${executable ? 'cursor-grab border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50 active:cursor-grabbing' : 'cursor-not-allowed border-amber-200 bg-amber-50/40 opacity-70'} rounded border px-2 py-1.5 transition-colors`}
+              title={`${node.type}${node.description ? '\n' + node.description : ''}${executable ? '' : `\nRuntime: ${nodeReadiness}`}`}
             >
               {/* Skill name */}
               <div className="flex items-center gap-1.5">
@@ -215,6 +224,11 @@ function PackSection({ packId, packName, packColor, packIconName, nodes, onDragS
                   />
                 )}
                 <span className="text-xs font-medium text-gray-800 truncate">{node.name}</span>
+                {!executable && (
+                  <span className="ml-auto flex-shrink-0 rounded border border-amber-200 bg-amber-50 px-1 py-0.5 text-[8px] font-semibold text-amber-700">
+                    {nodeReadiness === 'stub' ? 'Stub' : 'Unavailable'}
+                  </span>
+                )}
               </div>
 
               {/* Description (single line) */}
@@ -233,7 +247,8 @@ function PackSection({ packId, packName, packColor, packIconName, nodes, onDragS
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -254,14 +269,22 @@ export default function NodePalette({ onBulkMode, searchOverride }: NodePaletteP
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<Record<string, NodeReadinessState>>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const effectiveSearch = searchOverride ?? search;
 
   // Load all nodes on mount
   useEffect(() => {
-    apiClient
-      .get<RegisteredNode[]>('/nodes')
-      .then((res) => setNodes(res.data ?? []))
+    Promise.all([
+      apiClient.get<RegisteredNode[]>('/nodes'),
+      apiClient.get<RuntimeReadinessReport>('/execution/runtime-readiness'),
+    ])
+      .then(([nodesRes, readinessRes]) => {
+        setNodes(nodesRes.data ?? []);
+        setReadiness(Object.fromEntries(
+          (readinessRes.data?.packs ?? []).flatMap((pack) => pack.nodes.map((node) => [node.type, node.state])),
+        ));
+      })
       .catch(() => setError('Failed to load skills'))
       .finally(() => setLoading(false));
   }, []);
@@ -391,6 +414,7 @@ export default function NodePalette({ onBulkMode, searchOverride }: NodePaletteP
                 onDragStart={onDragStart}
                 onBulkMode={onBulkMode}
                 defaultOpen={true}
+                readiness={readiness}
               />
             ))}
           </div>

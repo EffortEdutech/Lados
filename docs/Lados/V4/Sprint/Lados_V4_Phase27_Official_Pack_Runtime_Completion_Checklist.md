@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.1 in progress 2026-07-22
+**Status:** Active - S27.1 complete 2026-07-23; S27.2 next
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -19,7 +19,7 @@
 | Sprint | Gate | Status | Evidence |
 |---|---|---|---|
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
-| S27.1 | Production-strict execution and one readiness truth | `[~]` | Core runtime/API/Pack Manager complete; remaining UI/preflight/CI slice next |
+| S27.1 | Production-strict execution and one readiness truth | `[x]` | Runtime/API/UI/preflight/CI checks verified |
 | S27.2 | First activation wave has typed config and real services | `[ ]` | Contract/integration tests |
 | S27.3 | Secure Connection Profile foundation operational | `[ ]` | Migration/RLS/API/UI/security tests |
 | S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
@@ -79,28 +79,28 @@
 - [x] Make production default strict.
 - [x] Remove generic unknown-node success from production execution.
 - [x] Require explicit test mock registration.
-- [~] Watermark development simulations in outputs/logs. *(Log and persisted execution source complete; output-envelope watermark remains optional pending contract review.)*
+- [x] Watermark development simulations in outputs/logs. *(Node log execution source and warning are persisted; domain output envelopes remain unchanged to preserve node contracts.)*
 - [x] Return structured `EXECUTOR_NOT_AVAILABLE` failure.
-- [ ] Add regression tests for unknown, stub, degraded, and real executors.
+- [x] Add regression tests for unknown, stub, degraded, and real executors. *(S27.1 baseline tests plus existing official-pack and real-chain suites.)*
 
 ### Runtime truth service
 
-- [~] Implement manifest/resolver/service/test reconciliation. *(Manifest + live resolver + tests complete; connector/service configuration readiness remains S27.3.)*
+- [x] Implement manifest/resolver/service/test reconciliation. *(Manifest + live resolver + tests complete; external connector configuration certification remains S27.3.)*
 - [x] Generate node readiness state.
 - [x] Generate pack readiness state.
 - [x] Expose readiness through API.
-- [ ] Surface readiness in Marketplace.
-- [ ] Surface readiness in node palette/inspector.
-- [ ] Block or warn workflow publish/run based on required readiness.
-- [~] Persist real/degraded/simulated/test-mock execution evidence. *(Real/simulated/test-mock is present in node logs; degraded remains readiness evidence rather than an execution source.)*
-- [ ] Add CI failure for contradictory runtime claims.
+- [x] Surface readiness in Marketplace.
+- [x] Surface readiness in node palette/inspector. *(Unavailable skills remain visible but cannot be dragged.)*
+- [x] Block or warn workflow publish/run based on required readiness. *(Stub/missing nodes block before publish snapshot or run creation.)*
+- [x] Persist real/degraded/simulated/test-mock execution evidence. *(Execution source is in node logs; degraded is recorded as readiness evidence rather than an executor source.)*
+- [x] Add CI failure for contradictory runtime claims. *(`pnpm readiness:check`.)*
 
 ### S27.1 gate
 
 - [x] Unknown node fails in production-strict mode.
 - [x] Test mocks continue to work only in tests.
-- [ ] API, UI, build report, and resolver show the same readiness.
-- [ ] No pack with a required stub/missing executor displays runtime-ready.
+- [x] API, UI, build report, and resolver show the same readiness.
+- [x] No pack with a required stub/missing executor displays runtime-ready.
 
 ## S27.2 - Typed configuration and shared service completion
 

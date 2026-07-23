@@ -289,6 +289,12 @@ function renderMarkdown(report) {
 
   push(
     '',
+    '## Runtime claim contradictions',
+    '',
+    ...(report.contradictions.length > 0
+      ? report.contradictions.map((item) => `- ${item}`)
+      : ['- None. Manifest executor status and resolver wiring agree.']),
+    '',
     '## Ranked blockers',
     '',
     '| Rank | Blocker | Affected assets | Why it matters | Recommended sprint |',
@@ -334,6 +340,7 @@ function renderMarkdown(report) {
 }
 
 function main() {
+  const checkOnly = process.argv.includes('--check');
   const apiResolverSource = readText(apiResolverPath);
   const testFiles = fs.existsSync(apiTestRoot)
     ? fs.readdirSync(apiTestRoot).filter((file) => file.endsWith('.spec.ts')).sort()
@@ -368,6 +375,9 @@ function main() {
         executorStatus: node.executorStatus,
         nodeStatus: node.status,
         resolverDeclared,
+        runtimeReadiness: !resolverDeclared
+          ? 'missing_executor'
+          : node.executorStatus === 'implemented' ? 'implemented' : 'stub',
         apiResolverWired: apiWired,
         configurationFieldKeys: [...new Set((node.configGroups ?? []).flatMap((group) => group.fields ?? []))],
         knowledgePackRequirements: node.knowledgePackRequirements ?? { required: [], recommended: [] },
@@ -473,6 +483,21 @@ function main() {
   const stubNodes = nodes.filter((node) => node.executorStatus === 'stub');
   const genericConfigNodes = nodes.filter((node) => node.configurationFieldKeys.length > 0);
   const degradedPacks = packs.filter((pack) => pack.baselineReadiness === 'degraded');
+  const contradictions = [];
+  for (const node of nodes) {
+    if (node.executorStatus === 'implemented' && !node.resolverDeclared) {
+      contradictions.push(`${node.ownerPack}: ${node.type} is declared implemented but resolver wiring is missing`);
+    }
+  }
+  for (const pack of packs) {
+    const packNodes = nodes.filter((node) => node.ownerPack === pack.id);
+    if (pack.runtimeStatus === 'runtime_enabled' && packNodes.some((node) => node.executorStatus !== 'implemented')) {
+      contradictions.push(`${pack.id}: runtime_enabled contains a non-implemented executor`);
+    }
+    if (pack.baselineReadiness === 'runtime_ready' && packNodes.some((node) => node.runtimeReadiness !== 'implemented')) {
+      contradictions.push(`${pack.id}: runtime_ready contains a stub or missing executor`);
+    }
+  }
 
   const rankedBlockers = [
     {
@@ -536,6 +561,7 @@ function main() {
       nodesWithConfigFields: genericConfigNodes.length,
       l4PackCount: packs.filter((pack) => pack.layer === 'L4').length,
     },
+    contradictions,
     packs,
     nodes,
     workflows,
@@ -562,14 +588,14 @@ function main() {
     },
     adHocFindings: [
       'Phase 27 was correctly numbered after existing Phase 25 and reserved Phase 26 plans were discovered.',
-      'The API real-node resolver comment still states that WorkflowRunner falls back to mock execution; this confirms S27.1 production-strict work remains required.',
+      'Production-strict execution and resolver-backed API readiness landed in S27.1; this report mirrors the same state vocabulary for build-time checks.',
       'The Quran Media source header still describes all nodes as stubs while nodes.json and the manifest now declare 13 implemented executors; documentation/runtime comments have drifted.',
       'Composition descriptors validate required pack IDs but do not declare the path to a workflow body, even where sibling workflow JSON exists; matching currently relies on filename convention.',
       'Direct spec files exist for every executable pack, but direct spec presence alone is not proof of provider or live E2E readiness.',
     ],
     limitations: [
       'This report does not read environment files and does not evaluate credentials or secrets.',
-      'Resolver evidence is static: API import wiring plus node-type declaration in each pack resolver. S27.1 should replace this with executable resolver probes.',
+      'Build evidence is static API import wiring plus node-type declaration; the runtime API additionally probes the live resolver factory.',
       'Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.',
       'Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.',
       'Provider readiness cannot be certified without sandbox/test accounts and real round trips.',
@@ -577,12 +603,14 @@ function main() {
     ],
   };
 
-  ensureParent(jsonOutputPath);
-  ensureParent(markdownOutputPath);
-  fs.writeFileSync(jsonOutputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-  fs.writeFileSync(markdownOutputPath, renderMarkdown(report), 'utf8');
+  if (!checkOnly) {
+    ensureParent(jsonOutputPath);
+    ensureParent(markdownOutputPath);
+    fs.writeFileSync(jsonOutputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(markdownOutputPath, renderMarkdown(report), 'utf8');
+  }
 
-  console.log('Phase 27 runtime baseline generated.');
+  console.log(checkOnly ? 'Phase 27 runtime readiness claims checked.' : 'Phase 27 runtime baseline generated.');
   console.log(`JSON: ${relative(jsonOutputPath)}`);
   console.log(`Markdown: ${relative(markdownOutputPath)}`);
   console.log(`Packs: ${report.summary.packCount}`);
@@ -591,6 +619,11 @@ function main() {
   console.log(`Templates: ${report.summary.templateDescriptorCount}`);
   console.log(`Workflow bodies: ${report.summary.workflowBodyCount}`);
   console.log(`Descriptor-only: ${report.summary.descriptorOnlyCount}`);
+  console.log(`Contradictions: ${report.contradictions.length}`);
+  if (report.contradictions.length > 0) {
+    for (const contradiction of report.contradictions) console.error(`- ${contradiction}`);
+    process.exitCode = 1;
+  }
 }
 
 main();

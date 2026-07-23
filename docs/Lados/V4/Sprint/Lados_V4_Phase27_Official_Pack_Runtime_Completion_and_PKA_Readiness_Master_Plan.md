@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.1 in progress 2026-07-22 |
+| Status | Active - S27.1 complete 2026-07-23; S27.2 next |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |
@@ -726,3 +726,17 @@ Added resolver-backed readiness reconciliation in `runtime-readiness.ts`. It rea
 - A dedicated database column for execution source was not added. The source is preserved in persisted node log messages; schema-level querying can be added only if operational reporting requires it.
 
 **Next:** finish S27.1 by unifying the remaining UI surfaces, publish/run validation, legacy health compatibility, and CI/build-report contradiction checks. S27.2 begins only after that gate is green.
+
+### 2026-07-23 (6) - S27.1 complete: readiness enforced across UI, publish/run, and CI
+
+Closed the remaining S27.1 surfaces. Marketplace installed-pack cards and tables, Pack Manager, pack detail/node inspector, and the canvas Skill Library now consume `GET /execution/runtime-readiness`. Stub or missing-executor skills remain visible for diagnosis but cannot be dragged into new workflows. The pack-detail page no longer calls the legacy prefix-based health endpoint.
+
+Added definition readiness preflight to `ExecutionService`. Publishing and triggering a run now stop before snapshot/run creation when any required node is a stub or has no resolver, returning a structured `BadRequestException` with the blocking node types and states. Added a publish regression proving no workflow update occurs after a failed preflight.
+
+Extended `tools/generate-phase27-runtime-baseline.cjs` with per-node runtime readiness, contradiction reporting, and `--check` mode. Root command `pnpm readiness:check` now fails when an implemented node lacks resolver wiring, a runtime-enabled pack contains a non-implemented executor, or a runtime-ready pack contains a stub/missing executor. CI runs this check after official-pack validation. Regenerated JSON and Markdown evidence; current result remains 22 packs, 103 nodes, 4 honest stubs, 11 runtime-ready packs, 4 degraded packs, 7 catalogue-only packs, and zero contradictions.
+
+**Verification:** API and web typechecks passed; `pnpm readiness:check` passed with zero contradictions; baseline regeneration passed; targeted NestJS suites passed 2/2 suites and 7/7 tests; full API Jest passed serially with 34/34 suites, 464 passed and 2 skipped. A parallel full-suite run briefly produced Windows/Jest module-resolution errors inside installed NestJS files; `pnpm install --offline` confirmed the workspace was current, the affected suites passed serially, and the final serial full suite was green.
+
+**Ad-hoc outstanding:** the legacy `/packs/health` and `/packs/:id/health` endpoints remain server-side for backward compatibility, but first-party UI no longer consumes them. Remove them in a future API deprecation pass after confirming no external client usage. No S27.1 gate depends on their deletion.
+
+**Next:** S27.2 - typed configuration and shared service completion, beginning with the selected activation wave and Document Intelligence PDF/DOCX/storage requirements.

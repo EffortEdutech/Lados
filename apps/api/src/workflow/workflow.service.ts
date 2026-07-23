@@ -443,6 +443,8 @@ export class WorkflowService {
       throw new Error('Cannot publish a workflow with no nodes');
     }
 
+    this.executionService.assertDefinitionRuntimeReady(workflow.definition as QSWorkflowDefinition);
+
     // Snapshot the current definition
     const version = await this.snapshotVersion(
       workflowId,

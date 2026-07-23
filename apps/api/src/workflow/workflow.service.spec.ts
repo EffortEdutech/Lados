@@ -62,7 +62,10 @@ function chainableTable(opts: {
   return obj;
 }
 
-function makeService(capture: { publishUpdate?: Record<string, unknown> }): WorkflowService {
+function makeService(
+  capture: { publishUpdate?: Record<string, unknown> },
+  preflight: jest.Mock = jest.fn(),
+): WorkflowService {
   const tables: Record<string, ReturnType<typeof chainableTable>> = {
     workflows: chainableTable({
       onSelect: () => ({
@@ -119,7 +122,11 @@ function makeService(capture: { publishUpdate?: Record<string, unknown> }): Work
     },
   };
 
-  return new WorkflowService(supabase as never, {} as never, {} as never);
+  return new WorkflowService(
+    supabase as never,
+    {} as never,
+    { assertDefinitionRuntimeReady: preflight } as never,
+  );
 }
 
 describe('WorkflowService.publish — D1 status regression', () => {
@@ -149,5 +156,15 @@ describe('WorkflowService.publish — D1 status regression', () => {
       published_version_id: 'version-001',
     });
     expect(typeof capture.publishUpdate!['published_at']).toBe('string');
+  });
+
+  it('blocks publish before snapshotting when a required executor is unavailable', async () => {
+    const capture: { publishUpdate?: Record<string, unknown> } = {};
+    const preflight = jest.fn(() => { throw new Error('Workflow is not production-ready'); });
+    const service = makeService(capture, preflight);
+
+    await expect(service.publish(WORKFLOW_ID, USER_ID)).rejects.toThrow('not production-ready');
+    expect(preflight).toHaveBeenCalledTimes(1);
+    expect(capture.publishUpdate).toBeUndefined();
   });
 });

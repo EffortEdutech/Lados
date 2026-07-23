@@ -1,6 +1,6 @@
 # Phase 27 Official Pack Runtime Baseline
 
-**Generated:** 2026-07-22T07:50:54.578Z
+**Generated:** 2026-07-23T00:07:09.827Z
 
 **Scope:** Static repository evidence for S27.0. Archived packs are excluded. Provider sandbox health, live credentials, Supabase state, and browser execution are not claimed by this report.
 
@@ -97,6 +97,10 @@
 | lados.template.progress_claim.progress_claim_evidence_check | lados.template.progress-claim | lados.qs-commercial, lados.construction-operations, lados.document-intelligence, lados.human-work | missing | 0 | none | none | descriptor_only |
 | lados.video_production.script_to_scene_plan | lados.video-production | lados.workflow-foundation | packs/official/lados-video-production/templates/script-to-scene-plan.workflow.json | 10 | none | lados.video.render_scenes | degraded |
 
+## Runtime claim contradictions
+
+- None. Manifest executor status and resolver wiring agree.
+
 ## Ranked blockers
 
 | Rank | Blocker | Affected assets | Why it matters | Recommended sprint |
@@ -133,7 +137,7 @@
 ## Ad-hoc findings
 
 - Phase 27 was correctly numbered after existing Phase 25 and reserved Phase 26 plans were discovered.
-- The API real-node resolver comment still states that WorkflowRunner falls back to mock execution; this confirms S27.1 production-strict work remains required.
+- Production-strict execution and resolver-backed API readiness landed in S27.1; this report mirrors the same state vocabulary for build-time checks.
 - The Quran Media source header still describes all nodes as stubs while nodes.json and the manifest now declare 13 implemented executors; documentation/runtime comments have drifted.
 - Composition descriptors validate required pack IDs but do not declare the path to a workflow body, even where sibling workflow JSON exists; matching currently relies on filename convention.
 - Direct spec files exist for every executable pack, but direct spec presence alone is not proof of provider or live E2E readiness.
@@ -141,7 +145,7 @@
 ## Evidence limitations
 
 - This report does not read environment files and does not evaluate credentials or secrets.
-- Resolver evidence is static: API import wiring plus node-type declaration in each pack resolver. S27.1 should replace this with executable resolver probes.
+- Build evidence is static API import wiring plus node-type declaration; the runtime API additionally probes the live resolver factory.
 - Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.
 - Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.
 - Provider readiness cannot be certified without sandbox/test accounts and real round trips.

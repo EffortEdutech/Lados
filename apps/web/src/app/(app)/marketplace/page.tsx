@@ -36,6 +36,12 @@ interface Pack {
   dependencies: string[];
 }
 
+type PackReadinessState = 'runtime_ready' | 'degraded' | 'blocked' | 'catalogue_only';
+
+interface RuntimeReadinessReport {
+  packs: { packId: string; state: PackReadinessState }[];
+}
+
 interface RegistryNodeManifest {
   type: string;
   name?: string;
@@ -170,14 +176,25 @@ function PackBadge({ children, tone = 'gray' }: { children: string; tone?: 'gray
   );
 }
 
+function RuntimeBadge({ state }: { state?: PackReadinessState }) {
+  if (!state) return <PackBadge tone="gray">Checking runtime</PackBadge>;
+  const label: Record<PackReadinessState, string> = {
+    runtime_ready: 'Runtime ready', degraded: 'Degraded', blocked: 'Blocked', catalogue_only: 'Catalogue only',
+  };
+  const tone = state === 'runtime_ready' ? 'green' : state === 'degraded' ? 'amber' : 'gray';
+  return <PackBadge tone={tone}>{label[state]}</PackBadge>;
+}
+
 function InstalledPackCard({
   pack,
   onToggle,
   busy,
+  readiness,
 }: {
   pack: Pack;
   onToggle: (pack: Pack) => void;
   busy: boolean;
+  readiness?: PackReadinessState;
 }) {
   const isActive = pack.is_enabled && pack.status !== 'disabled';
 
@@ -193,6 +210,7 @@ function InstalledPackCard({
         <div className="flex flex-wrap justify-end gap-1.5">
           {pack.is_official && <PackBadge tone="blue">Official</PackBadge>}
           <PackBadge tone={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Disabled'}</PackBadge>
+          <RuntimeBadge state={readiness} />
         </div>
       </div>
 
@@ -470,11 +488,13 @@ function InstalledPackTable({
   onToggle,
   busyId,
   canManage,
+  readiness,
 }: {
   packs: Pack[];
   onToggle: (pack: Pack) => void;
   busyId: string | null;
   canManage: boolean;
+  readiness: Record<string, PackReadinessState>;
 }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -505,6 +525,7 @@ function InstalledPackTable({
                   <div className="flex gap-1.5">
                     {pack.is_official && <PackBadge tone="blue">Official</PackBadge>}
                     <PackBadge tone={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Disabled'}</PackBadge>
+                    <RuntimeBadge state={readiness[pack.id]} />
                   </div>
                 </td>
                 <td className="px-4 py-2.5 text-right">
@@ -844,6 +865,7 @@ export default function MarketplacePage() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [packs, setPacks] = useState<Pack[]>([]);
+  const [runtimeReadiness, setRuntimeReadiness] = useState<Record<string, PackReadinessState>>({});
   const [registryPacks, setRegistryPacks] = useState<RegistryPack[]>([]);
   const [reviewPacks, setReviewPacks] = useState<RegistryPack[]>([]);
   const [dataPacks, setDataPacks] = useState<DataPackSummary[]>([]);
@@ -890,9 +912,15 @@ export default function MarketplacePage() {
 
   const loadPacks = useCallback(async () => {
     setLoading(true);
-    const res = await apiClient.get<Pack[]>('/marketplace/packs');
+    const [res, readinessRes] = await Promise.all([
+      apiClient.get<Pack[]>('/marketplace/packs'),
+      apiClient.get<RuntimeReadinessReport>('/execution/runtime-readiness'),
+    ]);
     if (res.success) {
       setPacks(res.data ?? []);
+      setRuntimeReadiness(Object.fromEntries(
+        (readinessRes.data?.packs ?? []).map((pack) => [pack.packId, pack.state]),
+      ));
       setError(null);
     } else {
       setError(res.error?.message ?? 'Failed to load packs');
@@ -1241,11 +1269,12 @@ export default function MarketplacePage() {
                         pack={pack}
                         onToggle={handleToggle}
                         busy={busyId === pack.id || !canManage}
+                        readiness={runtimeReadiness[pack.id]}
                       />
                     ))}
                   </div>
                 ) : (
-                  <InstalledPackTable packs={activePacks} onToggle={handleToggle} busyId={busyId} canManage={canManage} />
+                  <InstalledPackTable packs={activePacks} onToggle={handleToggle} busyId={busyId} canManage={canManage} readiness={runtimeReadiness} />
                 )}
               </section>
             )}
@@ -1263,11 +1292,12 @@ export default function MarketplacePage() {
                         pack={pack}
                         onToggle={handleToggle}
                         busy={busyId === pack.id || !canManage}
+                        readiness={runtimeReadiness[pack.id]}
                       />
                     ))}
                   </div>
                 ) : (
-                  <InstalledPackTable packs={disabledPacks} onToggle={handleToggle} busyId={busyId} canManage={canManage} />
+                  <InstalledPackTable packs={disabledPacks} onToggle={handleToggle} busyId={busyId} canManage={canManage} readiness={runtimeReadiness} />
                 )}
               </section>
             )}

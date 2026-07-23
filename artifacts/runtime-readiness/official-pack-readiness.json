@@ -1,6 +1,6 @@
 {
   "schemaVersion": "lados.phase27.runtime-baseline.v1",
-  "generatedAt": "2026-07-22T07:50:54.578Z",
+  "generatedAt": "2026-07-23T00:07:09.827Z",
   "scope": {
     "officialRoot": "packs/official",
     "archivedPacksExcluded": true,
@@ -27,6 +27,7 @@
     "nodesWithConfigFields": 102,
     "l4PackCount": 0
   },
+  "contradictions": [],
   "packs": [
     {
       "directory": "packs/official/lados-asset-fleet",
@@ -1508,6 +1509,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "customer",
@@ -1542,6 +1544,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "vehicle",
@@ -1575,6 +1578,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "completionTime",
@@ -1608,6 +1612,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "vehicle",
@@ -1641,6 +1646,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "requiredFields",
@@ -1673,6 +1679,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "asset",
@@ -1706,6 +1713,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "clearedBy",
@@ -1739,6 +1747,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "invoiceBinding",
@@ -1776,6 +1785,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "invoiceRules",
@@ -1812,6 +1822,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "approvedBy",
@@ -1845,6 +1856,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "paidAmount",
@@ -1878,6 +1890,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "supplier",
@@ -1911,6 +1924,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "approvedBy",
@@ -1944,6 +1958,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "contractReference",
@@ -1977,6 +1992,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "releasedAmount",
@@ -2010,6 +2026,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "to",
@@ -2045,6 +2062,7 @@
       "executorStatus": "stub",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "stub",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "phoneNumbers",
@@ -2077,6 +2095,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "userId",
@@ -2112,6 +2131,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "dueDate",
@@ -2147,6 +2167,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "projectName",
@@ -2178,6 +2199,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "inspectionType",
@@ -2214,6 +2236,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "findings",
@@ -2247,6 +2270,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "location",
@@ -2284,6 +2308,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "date",
@@ -2318,6 +2343,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "checklistRefs",
@@ -2349,6 +2375,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "instructionDate",
@@ -2382,6 +2409,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "noticeType",
@@ -2418,6 +2446,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "baseDate",
@@ -2451,6 +2480,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "contractPack",
@@ -2485,6 +2515,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceBinding",
@@ -2517,6 +2548,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "fileSource",
@@ -2547,6 +2579,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "sheetName",
@@ -2579,6 +2612,7 @@
       "executorStatus": "stub",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "stub",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "pageRange"
@@ -2609,6 +2643,7 @@
       "executorStatus": "stub",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "stub",
       "apiResolverWired": true,
       "configurationFieldKeys": [],
       "knowledgePackRequirements": {
@@ -2637,6 +2672,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "targetTable",
@@ -2670,6 +2706,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "title",
@@ -2701,6 +2738,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "title",
@@ -2738,6 +2776,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "title",
@@ -2775,6 +2814,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId",
@@ -2805,6 +2845,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "decisionType",
@@ -2837,6 +2878,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "title",
@@ -2867,6 +2909,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "period",
@@ -2903,6 +2946,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "approvedBy",
@@ -2936,6 +2980,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "approvedBy",
@@ -2969,6 +3014,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "title",
@@ -3005,6 +3051,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId",
@@ -3036,6 +3083,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "rfqId",
@@ -3070,6 +3118,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "criteria",
@@ -3105,6 +3154,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "recommendedSupplier",
@@ -3138,6 +3188,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "supplier",
@@ -3171,6 +3222,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "sourceType",
@@ -3209,6 +3261,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "dedupeItemNo",
@@ -3244,6 +3297,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "tradeSystem",
@@ -3278,6 +3332,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "groupByField",
@@ -3309,6 +3364,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId",
@@ -3343,6 +3399,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "claimBinding",
@@ -3384,6 +3441,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "tolerancePercent",
@@ -3416,6 +3474,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "topics",
@@ -3446,6 +3505,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "maxCandidates",
@@ -3477,6 +3537,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "language"
@@ -3507,6 +3568,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "maxThemes"
@@ -3537,6 +3599,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "limit",
@@ -3568,6 +3631,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "translationId"
@@ -3598,6 +3662,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "tafsirIds"
@@ -3628,6 +3693,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "sourceUrl",
@@ -3657,6 +3723,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "requireTafsir"
@@ -3691,6 +3758,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "language",
@@ -3723,6 +3791,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "durationSeconds",
@@ -3755,6 +3824,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "strictMode"
@@ -3788,6 +3858,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "visualRestrictions",
@@ -3823,6 +3894,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceType",
@@ -3855,6 +3927,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId"
@@ -3883,6 +3956,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceType",
@@ -3913,6 +3987,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId",
@@ -3943,6 +4018,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId",
@@ -3972,6 +4048,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "bindingKey",
@@ -3999,6 +4076,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "key",
@@ -4029,6 +4107,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "key",
@@ -4056,6 +4135,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resourceId",
@@ -4087,6 +4167,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "title",
@@ -4122,6 +4203,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "status",
@@ -4154,6 +4236,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "caseType",
@@ -4187,6 +4270,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "skeleton",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "reason",
@@ -4219,6 +4303,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "scriptText",
@@ -4257,6 +4342,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "projectName",
@@ -4287,6 +4373,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "splitStrategy",
@@ -4322,6 +4409,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "batchIndex",
@@ -4357,6 +4445,7 @@
       "executorStatus": "stub",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "stub",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "resolution",
@@ -4388,6 +4477,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "targetZone"
@@ -4420,6 +4510,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "backgroundColor",
@@ -4451,6 +4542,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "targetElement",
@@ -4482,6 +4574,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "label",
@@ -4513,6 +4606,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "cronExpression",
@@ -4541,6 +4635,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "expression",
@@ -4575,6 +4670,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "branchCount",
@@ -4604,6 +4700,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "mergeStrategy",
@@ -4633,6 +4730,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "delayMs",
@@ -4662,6 +4760,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "message",
@@ -4695,6 +4794,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "items_key",
@@ -4728,6 +4828,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "cases",
@@ -4764,6 +4865,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "eventType",
@@ -4794,6 +4896,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "artifactKey",
@@ -4824,6 +4927,7 @@
       "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
         "artifactKey"
@@ -5396,14 +5500,14 @@
   },
   "adHocFindings": [
     "Phase 27 was correctly numbered after existing Phase 25 and reserved Phase 26 plans were discovered.",
-    "The API real-node resolver comment still states that WorkflowRunner falls back to mock execution; this confirms S27.1 production-strict work remains required.",
+    "Production-strict execution and resolver-backed API readiness landed in S27.1; this report mirrors the same state vocabulary for build-time checks.",
     "The Quran Media source header still describes all nodes as stubs while nodes.json and the manifest now declare 13 implemented executors; documentation/runtime comments have drifted.",
     "Composition descriptors validate required pack IDs but do not declare the path to a workflow body, even where sibling workflow JSON exists; matching currently relies on filename convention.",
     "Direct spec files exist for every executable pack, but direct spec presence alone is not proof of provider or live E2E readiness."
   ],
   "limitations": [
     "This report does not read environment files and does not evaluate credentials or secrets.",
-    "Resolver evidence is static: API import wiring plus node-type declaration in each pack resolver. S27.1 should replace this with executable resolver probes.",
+    "Build evidence is static API import wiring plus node-type declaration; the runtime API additionally probes the live resolver factory.",
     "Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.",
     "Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.",
     "Provider readiness cannot be certified without sandbox/test accounts and real round trips.",

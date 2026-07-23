@@ -45,12 +45,14 @@ interface PackDetail {
   nodes:            PackNode[];
 }
 
-interface PackHealth {
-  packId:      string;
-  status:      'healthy' | 'degraded' | 'broken';
-  checkedAt:   string;
-  totalNodes:  number;
-  brokenNodes: { nodeType: string; resolvable: boolean; error?: string }[];
+interface PackReadiness {
+  packId: string;
+  state: 'runtime_ready' | 'degraded' | 'blocked' | 'catalogue_only';
+  nodes: { type: string; state: 'implemented' | 'stub' | 'missing_executor' }[];
+}
+
+interface RuntimeReadinessReport {
+  packs: PackReadiness[];
 }
 
 interface NodeOverride {
@@ -155,41 +157,47 @@ function StatusBadge({ status, isEnabled }: { status: PackDetail['status']; isEn
   );
 }
 
-function HealthBadge({ health }: { health: PackHealth | null }) {
+function HealthBadge({ health }: { health: PackReadiness | null }) {
   if (!health) {
     return (
       <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-50 text-gray-400 border border-gray-100">
-        ··· checking health
+        Checking runtime
       </span>
     );
   }
-  const checkedAt = new Date(health.checkedAt).toLocaleTimeString();
-  if (health.status === 'healthy') {
+  if (health.state === 'runtime_ready') {
     return (
       <span
         className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100"
-        title={`${health.totalNodes} nodes healthy · checked at ${checkedAt}`}
+        title={`${health.nodes.length} implemented executors`}
       >
-        ✓ Healthy — {health.totalNodes} nodes
+        Runtime ready
       </span>
     );
   }
-  if (health.status === 'degraded') {
+  if (health.state === 'degraded') {
     return (
       <span
         className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-100"
-        title={`${health.brokenNodes.length}/${health.totalNodes} nodes unrecognised · checked at ${checkedAt}`}
+        title={`${health.nodes.filter((node) => node.state === 'stub').length} stub executors`}
       >
-        ⚠ Degraded — {health.brokenNodes.length}/{health.totalNodes} unrecognised
+        Degraded
+      </span>
+    );
+  }
+  if (health.state === 'catalogue_only') {
+    return (
+      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-50 text-gray-600 border border-gray-200">
+        Catalogue only
       </span>
     );
   }
   return (
     <span
       className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-50 text-red-600 border border-red-100"
-      title={`No nodes resolvable · checked at ${checkedAt}`}
+      title={`${health.nodes.filter((node) => node.state === 'missing_executor').length} missing executors`}
     >
-      ✕ Broken
+      Blocked
     </span>
   );
 }
@@ -204,7 +212,7 @@ export default function PackDetailPage({ params }: PageProps) {
   const packId = decodeURIComponent(params.packId);
 
   const [pack,      setPack]      = useState<PackDetail | null>(null);
-  const [health,    setHealth]    = useState<PackHealth | null>(null);
+  const [health,    setHealth]    = useState<PackReadiness | null>(null);
   const [orgId,     setOrgId]     = useState<string | null>(null);
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});  // nodeType → is_enabled
   const [toggling,  setToggling]  = useState<string | null>(null);           // nodeType being toggled
@@ -233,9 +241,9 @@ export default function PackDetailPage({ params }: PageProps) {
         const packRes = await apiClient.get<PackDetail>(`/packs/${encodeURIComponent(packId)}`);
         setPack(packRes.data ?? null);
 
-        // Load health (non-blocking)
-        apiClient.get<PackHealth>(`/packs/${encodeURIComponent(packId)}/health`)
-          .then((r) => setHealth(r.data ?? null))
+        // Load resolver-backed runtime readiness (non-blocking)
+        apiClient.get<RuntimeReadinessReport>('/execution/runtime-readiness')
+          .then((r) => setHealth(r.data?.packs.find((item) => item.packId === packId) ?? null))
           .catch(() => {});
 
         // Load org + overrides
@@ -413,6 +421,7 @@ export default function PackDetailPage({ params }: PageProps) {
                   ? overrides[node.type]
                   : (node.is_enabled !== false);
                 const isTogglingThis = toggling === node.type;
+                const nodeReadiness = health?.nodes.find((item) => item.type === node.type)?.state;
 
                 return (
                   <div
@@ -441,6 +450,11 @@ export default function PackDetailPage({ params }: PageProps) {
                     {/* Node info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-800">{node.name}</p>
+                      {nodeReadiness && nodeReadiness !== 'implemented' && (
+                        <span className="mt-1 inline-flex rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700">
+                          {nodeReadiness === 'stub' ? 'Stub executor' : 'Executor unavailable'}
+                        </span>
+                      )}
                       <p className="text-[10px] font-mono text-gray-400">{node.type}</p>
                       {node.description && (
                         <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">{node.description}</p>

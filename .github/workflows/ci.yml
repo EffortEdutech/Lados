@@ -37,6 +37,9 @@ jobs:
       - name: Validate official capability packs (Phase 20B/21 S1)
         run: pnpm validate:official-packs
 
+      - name: Verify Phase 27 runtime readiness claims
+        run: pnpm readiness:check
+
       - name: Build apps
         run: pnpm --filter api build && pnpm --filter web build
         env:
