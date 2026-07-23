@@ -21,6 +21,7 @@
     "validate:official-packs": "pnpm --filter @lados/pack-sdk build && node tools/validate-official-packs.cjs",
     "baseline:phase27": "node tools/generate-phase27-runtime-baseline.cjs",
     "readiness:check": "node tools/generate-phase27-runtime-baseline.cjs --check",
+    "verify:document-parsers": "node tools/verify-document-parsers.cjs",
     "clean": "pnpm -r clean && rm -rf node_modules",
     "db:migrate": "pnpm --filter api db:migrate",
     "db:seed": "pnpm --filter api db:seed"

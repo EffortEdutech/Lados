@@ -93,11 +93,18 @@
         "id": "read",
         "label": "Read Options",
         "fields": [
+          "fileId",
+          "libraryFileId",
           "sheetName",
-          "headerRow",
-          "range"
+          "headerRow"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "fileId", "label": "Uploaded File", "type": "file", "required": false, "description": "Upload a workbook or use a connected File input." },
+      { "key": "libraryFileId", "label": "Project Library File", "type": "string", "required": false, "ui": { "widget": "library-picker" } },
+      { "key": "sheetName", "label": "Sheet Name", "type": "string", "required": false, "placeholder": "First sheet" },
+      { "key": "headerRow", "label": "Header Row", "type": "number", "required": false, "validation": { "min": 1 } }
     ],
     "resourceBindings": {
       "supported": true,
@@ -139,7 +146,7 @@
       "ports",
       "inspector"
     ],
-    "outputPattern": "file metadata; text extraction not yet implemented",
+    "outputPattern": "PDF text, page metadata, and source provenance",
     "ports": {
       "inputs": [
         {
@@ -161,9 +168,16 @@
         "id": "read",
         "label": "Read Options",
         "fields": [
+          "fileId",
+          "libraryFileId",
           "pageRange"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "fileId", "label": "Uploaded PDF", "type": "file", "required": false, "description": "Upload a PDF or use a connected File input." },
+      { "key": "libraryFileId", "label": "Project Library PDF", "type": "string", "required": false, "ui": { "widget": "library-picker" } },
+      { "key": "pageRange", "label": "Page Range", "type": "string", "required": false, "placeholder": "1-3,5", "validation": { "pattern": "^\\d+(?:-\\d+)?(?:,\\s*\\d+(?:-\\d+)?)*$", "message": "Use page numbers or ranges such as 1-3,5." } }
     ],
     "resourceBindings": {
       "supported": true,
@@ -183,7 +197,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Document Intelligence",
     "icon": "FileSearch",
     "searchKeywords": [
@@ -203,7 +217,7 @@
       "ports",
       "inspector"
     ],
-    "outputPattern": "file metadata; text extraction not yet implemented",
+    "outputPattern": "DOCX plain text, parser messages, and source provenance",
     "ports": {
       "inputs": [
         {
@@ -224,8 +238,15 @@
       {
         "id": "read",
         "label": "Read Options",
-        "fields": []
+        "fields": [
+          "fileId",
+          "libraryFileId"
+        ]
       }
+    ],
+    "configSchema": [
+      { "key": "fileId", "label": "Uploaded Word Document", "type": "file", "required": false, "description": "Upload a DOCX or use a connected File input." },
+      { "key": "libraryFileId", "label": "Project Library Document", "type": "string", "required": false, "ui": { "widget": "library-picker" } }
     ],
     "resourceBindings": {
       "supported": true,
@@ -245,7 +266,7 @@
       "maxVisiblePortsPerSide": 2
     },
     "compatibilityAliases": [],
-    "executorStatus": "stub",
+    "executorStatus": "implemented",
     "category": "Document Intelligence",
     "icon": "FileSearch",
     "searchKeywords": [
@@ -360,6 +381,10 @@
           "template"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "title", "label": "Document Title", "type": "string", "required": false, "defaultValue": "Generated Document" },
+      { "key": "template", "label": "Template", "type": "string", "required": false, "description": "Reserved template reference; blank uses the standard document renderer." }
     ],
     "resourceBindings": {
       "supported": true,

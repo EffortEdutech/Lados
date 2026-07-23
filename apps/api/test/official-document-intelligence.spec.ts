@@ -6,9 +6,8 @@
  * (upload_file, read_excel, read_pdf, read_docx, extract_table,
  * generate_document).
  *
- * read_pdf / read_docx are deliberate, honestly-labeled stubs
- * (executorStatus: "stub") — their tests assert the stub behavior itself
- * (textExtracted always false) rather than pretending they parse text.
+ * PDF/DOCX readers use the injected DocumentService and preserve source
+ * provenance. Missing parser or download services fail loudly.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -33,7 +32,6 @@ const manifests: NodeManifestLike[] = JSON.parse(
     'utf8',
   ),
 );
-const STUB_TYPES = new Set(['lados.document.read_pdf', 'lados.document.read_docx']);
 
 function makeExcelBuffer(): Buffer {
   // fallbackParseExcel's header-row heuristic requires >= 3 truthy cells in
@@ -64,13 +62,9 @@ describe('official-document-intelligence — manifest <-> executor contract', ()
     }
   });
 
-  it('read_pdf and read_docx are honestly marked stub; all others implemented', () => {
+  it('all Document Intelligence nodes are implemented', () => {
     for (const m of manifests) {
-      if (STUB_TYPES.has(m.type)) {
-        expect(m.executorStatus).toBe('stub');
-      } else {
-        expect(m.executorStatus).toBe('implemented');
-      }
+      expect(m.executorStatus).toBe('implemented');
     }
   });
 
@@ -134,6 +128,8 @@ describe('lados.document.read_excel', () => {
         rows: [{ id: 1, amount: 100 }],
         rowCount: 1,
       }),
+      parsePdf: jest.fn(),
+      parseDocx: jest.fn(),
     };
     const fileService = fakeFileService(makeExcelBuffer());
     const libraryService: ILibraryService = {
@@ -151,7 +147,7 @@ describe('lados.document.read_excel', () => {
   });
 });
 
-describe('lados.document.read_pdf — honest stub', () => {
+describe('lados.document.read_pdf', () => {
   it('fails when fileId is missing', async () => {
     const { ctx } = createMockNodeContext();
     const exec = resolveNode()('lados.document.read_pdf')!;
@@ -159,31 +155,54 @@ describe('lados.document.read_pdf — honest stub', () => {
     const result = await exec(ctx);
 
     expect(result.status).toBe('failure');
-    expect(result.error?.code).toBe('MISSING_INPUT');
+    expect(result.error?.code).toBe('NO_FILE_SOURCE');
   });
 
-  it('always returns textExtracted:false — never fabricates parsed text', async () => {
+  it('extracts text and page provenance through DocumentService', async () => {
     const fileService = fakeFileService(Buffer.from('fake pdf bytes'));
-    const { ctx } = createMockNodeContext({ inputs: { fileId: 'file-1' } });
-    const exec = resolveNode({ fileService })('lados.document.read_pdf')!;
+    const documentService = {
+      parseExcel: jest.fn(),
+      parsePdf: jest.fn().mockResolvedValue({
+        text: 'Payment certificate', pageCount: 2,
+        pages: [{ page: 1, text: 'Payment' }, { page: 2, text: 'certificate' }],
+      }),
+      parseDocx: jest.fn(),
+    } satisfies IDocumentService;
+    const { ctx } = createMockNodeContext({ inputs: { fileId: 'file-1' }, config: { pageRange: '1-2' } });
+    const exec = resolveNode({ fileService, documentService })('lados.document.read_pdf')!;
 
     const result = await exec(ctx);
 
     expect(result.status).toBe('success');
-    expect(result.outputs['document']).toMatchObject({ fileId: 'file-1', textExtracted: false });
+    expect(result.outputs['document']).toMatchObject({
+      fileId: 'file-1', textExtracted: true, text: 'Payment certificate', pageCount: 2,
+    });
+    expect(documentService.parsePdf).toHaveBeenCalledWith(expect.any(Buffer), { pages: [1, 2] });
+  });
+
+  it('fails loudly when DocumentService is unavailable', async () => {
+    const fileService = fakeFileService(Buffer.from('fake pdf bytes'));
+    const { ctx } = createMockNodeContext({ inputs: { fileId: 'file-1' } });
+    const result = await resolveNode({ fileService })('lados.document.read_pdf')!(ctx);
+    expect(result.error?.code).toBe('DOCUMENT_SERVICE_NOT_CONFIGURED');
   });
 });
 
-describe('lados.document.read_docx — honest stub', () => {
-  it('always returns textExtracted:false — never fabricates parsed text', async () => {
+describe('lados.document.read_docx', () => {
+  it('extracts text through DocumentService', async () => {
     const fileService = fakeFileService(Buffer.from('fake docx bytes'));
+    const documentService = {
+      parseExcel: jest.fn(),
+      parsePdf: jest.fn(),
+      parseDocx: jest.fn().mockResolvedValue({ text: 'Variation order', messages: [] }),
+    } satisfies IDocumentService;
     const { ctx } = createMockNodeContext({ inputs: { fileId: 'file-1' } });
-    const exec = resolveNode({ fileService })('lados.document.read_docx')!;
+    const exec = resolveNode({ fileService, documentService })('lados.document.read_docx')!;
 
     const result = await exec(ctx);
 
     expect(result.status).toBe('success');
-    expect(result.outputs['document']).toMatchObject({ textExtracted: false });
+    expect(result.outputs['document']).toMatchObject({ textExtracted: true, text: 'Variation order' });
   });
 });
 

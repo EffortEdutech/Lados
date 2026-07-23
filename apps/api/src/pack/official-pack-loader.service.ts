@@ -79,6 +79,12 @@ export function deriveConfigSchema(manifest: OfficialNodeManifest): {
   uiSchema: { sections: Array<{ title: string; fieldKeys: string[] }> };
 } {
   const groups: OfficialNodeConfigGroup[] = manifest.configGroups ?? [];
+  if (manifest.configSchema?.length) {
+    return {
+      configSchema: manifest.configSchema as unknown as Array<Record<string, unknown>>,
+      uiSchema: { sections: groups.map((group) => ({ title: group.label, fieldKeys: group.fields })) },
+    };
+  }
   const seen = new Set<string>();
   const configSchema: Array<Record<string, unknown>> = [];
 

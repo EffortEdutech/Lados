@@ -36,6 +36,7 @@ export default function ManifestFieldRouter(props: FieldProps) {
   if (widget === 'resource-picker') return <ResourcePickerField {...props} />;
   if (widget === 'data-pack-item')  return <DataPackItemField  {...props} />;
   if (widget === 'file-upload')     return <FileUploadField     {...props} />;
+  if (widget === 'library-picker')  return <LibraryPickerField  {...props} />;
   if (widget === 'json')            return <JsonField            {...props} />;
   if (widget === 'textarea')        return <TextareaField        {...props} />;
   if (widget === 'toggle')          return <ToggleField          {...props} />;

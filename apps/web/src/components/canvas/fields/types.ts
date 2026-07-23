@@ -29,6 +29,7 @@ export type UiWidget =
   | 'select'
   | 'toggle'
   | 'file-upload'
+  | 'library-picker'
   | 'resource-picker'
   | 'json';
 

@@ -339,6 +339,21 @@ export function validateOfficialNodeManifests(
     if (!Array.isArray(node['configGroups'])) {
       issues.push({ field: `${prefix}.configGroups`, message: 'configGroups must be an array' });
     }
+    if (node['configSchema'] !== undefined) {
+      if (!Array.isArray(node['configSchema'])) {
+        issues.push({ field: `${prefix}.configSchema`, message: 'configSchema must be an array' });
+      } else {
+        for (const [fieldIndex, field] of node['configSchema'].entries()) {
+          if (!isRecord(field)) {
+            issues.push({ field: `${prefix}.configSchema[${fieldIndex}]`, message: 'config field must be an object' });
+            continue;
+          }
+          requireString(field, 'key', issues);
+          requireString(field, 'label', issues);
+          requireString(field, 'type', issues);
+        }
+      }
+    }
 
     if (!isRecord(node['resourceBindings'])) {
       issues.push({ field: `${prefix}.resourceBindings`, message: 'resourceBindings is required' });

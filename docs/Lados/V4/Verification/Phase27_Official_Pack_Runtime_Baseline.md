@@ -1,17 +1,17 @@
 # Phase 27 Official Pack Runtime Baseline
 
-**Generated:** 2026-07-23T00:07:09.827Z
+**Generated:** 2026-07-23T05:22:57.658Z
 
 **Scope:** Static repository evidence for S27.0. Archived packs are excluded. Provider sandbox health, live credentials, Supabase state, and browser execution are not claimed by this report.
 
 ## Executive findings
 
 - Official workspaces: **22** (15 with nodes; 7 composition-only).
-- Official nodes: **103** (99 declared implemented; 4 declared stub).
+- Official nodes: **103** (101 declared implemented; 2 declared stub).
 - Resolver declarations: **103/103** node types are present in a pack resolver that is wired into the API resolver.
 - Template descriptors: **16**; importable workflow bodies: **3**; descriptor-only assets: **13**.
 - No live official L4 pack was found. Exact provider demand remains under-specified for descriptor-only L3/L5 assets.
-- All manifest configuration groups still provide field keys rather than typed field definitions; the API derives generic string inputs for **102** nodes with configuration fields.
+- Typed configuration schemas are declared by **4** nodes; **99** configured nodes still rely wholly or partly on API-derived generic string inputs.
 
 ## Readiness interpretation
 
@@ -29,7 +29,7 @@
 | lados.communication | L1 | stub_executors | 4 | 3 | 1 | 4/4 | 0 | 0 | degraded | official-communication.spec.ts |
 | lados.construction-operations | L2 | runtime_enabled | 6 | 6 | 0 | 6/6 | 0 | 0 | runtime_ready | official-construction-operations.spec.ts |
 | lados.contract-admin | L2 | runtime_enabled | 5 | 5 | 0 | 5/5 | 0 | 0 | runtime_ready | official-contract-admin.spec.ts |
-| lados.document-intelligence | L1 | stub_executors | 6 | 4 | 2 | 6/6 | 0 | 0 | degraded | official-document-intelligence.spec.ts |
+| lados.document-intelligence | L1 | runtime_enabled | 6 | 6 | 0 | 6/6 | 0 | 0 | runtime_ready | official-document-intelligence.spec.ts |
 | lados.human-work | L0 | runtime_enabled | 5 | 5 | 0 | 5/5 | 0 | 0 | runtime_ready | official-human-work.spec.ts |
 | lados.people-payroll | L2 | runtime_enabled | 3 | 3 | 0 | 3/3 | 0 | 0 | runtime_ready | official-people-payroll.spec.ts |
 | lados.procurement | L1 | runtime_enabled | 6 | 6 | 0 | 6/6 | 0 | 0 | runtime_ready | official-procurement.spec.ts |
@@ -56,7 +56,7 @@
 | lados.communication | EmailService, SmsService, NotificationService | SMTP configuration, SMS provider (missing) | none |
 | lados.construction-operations | ResourceService | none identified | none |
 | lados.contract-admin | ResourceService | none identified | none |
-| lados.document-intelligence | FileService, LibraryService, DocumentService, IDocumentStorageService (missing) | PDF/DOCX parser dependency (missing) | none |
+| lados.document-intelligence | FileService, LibraryService, DocumentService | pdf-parse, mammoth | none |
 | lados.human-work | ApprovalTaskCreator, NotificationService, ResourceService | none identified | none |
 | lados.people-payroll | ResourceService | none identified | none |
 | lados.procurement | ResourceService | none identified | none |
@@ -72,8 +72,6 @@
 | Node | Pack | Capability | Referenced by graph-backed workflows |
 |---|---|---|---|
 | lados.communication.send_sms | lados.communication | communication.sms.send | none |
-| lados.document.read_pdf | lados.document-intelligence | document.pdf.read | none |
-| lados.document.read_docx | lados.document-intelligence | document.docx.read | none |
 | lados.video.render_scenes | lados.video-production | video.scene.render | lados.video_production.script_to_scene_plan |
 
 ## Template and workflow dependency matrix
@@ -106,10 +104,10 @@
 | Rank | Blocker | Affected assets | Why it matters | Recommended sprint |
 |---:|---|---:|---|---|
 | 1 | missing_workflow_graph_bodies | 13 | Descriptor-only L3/L5 assets cannot prove node, service, resource, connector, or port dependencies and cannot be imported as runnable workflows. | S27.0 follow-up / S27.6 activation |
-| 2 | generic_string_configuration | 102 | Official configGroups declare keys only, so the API derives optional string fields instead of typed, validated, resource-, knowledge-, or connection-aware controls. | S27.2 |
-| 3 | explicit_stub_executors | 4 | Declared stubs (lados.communication.send_sms, lados.document.read_pdf, lados.document.read_docx, lados.video.render_scenes) block any graph that requires their real behavior. | S27.2 / S27.4 / S27.5 by demand |
+| 2 | generic_string_configuration | 99 | These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields. | S27.2 |
+| 3 | explicit_stub_executors | 2 | Declared stubs (lados.communication.send_sms, lados.video.render_scenes) block any graph that requires their real behavior. | S27.2 / S27.4 / S27.5 by demand |
 | 4 | missing_l4_provider_catalogue | 1 | No live official L4 pack exists; provider selection must follow workflow graph completion rather than assumptions. | S27.3-S27.4 |
-| 5 | degraded_runtime_status | 4 | lados.communication, lados.document-intelligence, lados.quran-media, lados.video-production declare or derive degraded readiness and require explicit service/configuration verification. | S27.2-S27.5 |
+| 5 | degraded_runtime_status | 3 | lados.communication, lados.quran-media, lados.video-production declare or derive degraded readiness and require explicit service/configuration verification. | S27.2-S27.5 |
 
 ## Recommended activation waves
 
@@ -147,7 +145,7 @@
 - This report does not read environment files and does not evaluate credentials or secrets.
 - Build evidence is static API import wiring plus node-type declaration; the runtime API additionally probes the live resolver factory.
 - Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.
-- Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.
+- Typed configuration readiness is inferred from explicit configSchema fields; configGroups fields without matching schema entries remain generic loader-derived strings.
 - Provider readiness cannot be certified without sandbox/test accounts and real round trips.
 - Supabase migration/application state and browser import/run behavior are outside this static baseline.
 

@@ -6,13 +6,9 @@
  * + ../nodes.json (read by OfficialPackLoaderService); this package supplies
  * runtime behavior only.
  *
- * Honesty note: read_pdf and read_docx are STUBS — they fetch file metadata
- * but do not extract text, because no PDF/DOCX-reading dependency exists in
- * this repo yet. Their nodes.json entries are marked `executorStatus: "stub"`
- * accordingly; the pack's overall `runtimeStatus` is `stub_executors`, not
- * `runtime_enabled`. Do not build production templates depending on parsed
- * PDF/DOCX text until those two are upgraded with a verified dependency +
- * lockfile update.
+ * PDF and DOCX readers use the injected DocumentService and fail clearly when
+ * parsing or storage dependencies are unavailable. Generated documents persist
+ * through the injected FileService in the API runtime.
  */
 import type { NodeContext, NodeExecuteResult } from '@lados/execution-engine';
 
@@ -52,8 +48,8 @@ export function resolveNode(
   const nodes: Record<string, NodeExecutor> = {
     'lados.document.upload_file': (ctx) => uploadFile(ctx),
     'lados.document.read_excel': (ctx) => readExcel(ctx, fileService, libraryService, documentService),
-    'lados.document.read_pdf': (ctx) => readPdf(ctx, fileService),
-    'lados.document.read_docx': (ctx) => readDocx(ctx, fileService),
+    'lados.document.read_pdf': (ctx) => readPdf(ctx, fileService, libraryService, documentService),
+    'lados.document.read_docx': (ctx) => readDocx(ctx, fileService, libraryService, documentService),
     'lados.document.extract_table': (ctx) => extractTable(ctx, fileService),
     'lados.document.generate_document': (ctx) => generateDocument(ctx, storageService),
   };

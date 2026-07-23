@@ -11,6 +11,8 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import * as XLSX from 'xlsx';
+import { PDFParse } from 'pdf-parse';
+import * as mammoth from 'mammoth';
 import { SupabaseService } from '../common/supabase/supabase.service';
 
 // ── Shared types ──────────────────────────────────────────────────────────────
@@ -38,6 +40,12 @@ export interface ParseExcelOptions {
 export interface ParsePdfResult {
   text: string;
   pageCount: number;
+  pages: Array<{ page: number; text: string }>;
+}
+
+export interface ParseDocxResult {
+  text: string;
+  messages: Array<{ type: string; message: string }>;
 }
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -136,16 +144,42 @@ export class DocumentService {
     };
   }
 
-  /**
-   * Extract plain text from a PDF buffer.
-   * Stub — full OCR/extraction in Sprint 19 when OCR Service is built.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  parsePdf(_buffer: Buffer): ParsePdfResult {
-    this.logger.warn('parsePdf called — OCR Service not yet built (Sprint 19)');
-    return {
-      text: '',
-      pageCount: 0,
-    };
+  async parsePdf(buffer: Buffer, options: { pages?: number[] } = {}): Promise<ParsePdfResult> {
+    this.logger.debug(`Parsing PDF buffer (${buffer.length} bytes)`);
+    const parser = new PDFParse({ data: buffer });
+    try {
+      const result = await parser.getText(options.pages?.length ? { partial: options.pages } : undefined);
+      const pages = result.pages.map((page) => ({ page: page.num, text: page.text }));
+      this.writeParseAudit('document.parse_pdf', buffer.length, {
+        page_count: result.total,
+        extracted_pages: pages.map((page) => page.page),
+        character_count: result.text.length,
+      });
+      return { text: result.text, pageCount: result.total, pages };
+    } finally {
+      await parser.destroy();
+    }
+  }
+
+  async parseDocx(buffer: Buffer): Promise<ParseDocxResult> {
+    this.logger.debug(`Parsing DOCX buffer (${buffer.length} bytes)`);
+    const result = await mammoth.extractRawText({ buffer });
+    const messages = result.messages.map((message) => ({ type: message.type, message: message.message }));
+    this.writeParseAudit('document.parse_docx', buffer.length, {
+      character_count: result.value.length,
+      message_count: messages.length,
+    });
+    return { text: result.value, messages };
+  }
+
+  private writeParseAudit(eventType: string, bufferBytes: number, metadata: Record<string, unknown>): void {
+    this.supabase.admin.from('audit_log').insert({
+      event_type: eventType,
+      summary: eventType,
+      service_id: 'document-service',
+      metadata: { ...metadata, buffer_bytes: bufferBytes },
+    }).then(({ error }) => {
+      if (error) this.logger.warn(`Audit write failed: ${error.message}`);
+    }, () => {/* non-blocking */});
   }
 }

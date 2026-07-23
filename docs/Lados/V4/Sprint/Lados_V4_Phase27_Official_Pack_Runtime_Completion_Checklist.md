@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.1 complete 2026-07-23; S27.2 next
+**Status:** Active - S27.2 in progress; Document Intelligence activation slice complete 2026-07-23
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -20,7 +20,7 @@
 |---|---|---|---|
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
 | S27.1 | Production-strict execution and one readiness truth | `[x]` | Runtime/API/UI/preflight/CI checks verified |
-| S27.2 | First activation wave has typed config and real services | `[ ]` | Contract/integration tests |
+| S27.2 | First activation wave has typed config and real services | `[~]` | Document Intelligence slice verified; remaining activation packs open |
 | S27.3 | Secure Connection Profile foundation operational | `[ ]` | Migration/RLS/API/UI/security tests |
 | S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
 | S27.5 | L0-L2 packs have explicit verified outcomes | `[ ]` | Updated matrix + graph tests |
@@ -106,32 +106,34 @@
 
 ### Configuration
 
-- [ ] Select packs/nodes from S27.0 activation wave.
-- [ ] Replace generic strings with actual field types.
-- [ ] Add required/default/validation rules.
+- [x] Select first pack/nodes from S27.0 activation wave. *(Document Intelligence: Excel, PDF, DOCX, and document generation.)*
+- [x] Replace generic strings with actual field types for the selected Document Intelligence nodes.
+- [x] Add required/default/validation rules for the selected Document Intelligence nodes.
 - [ ] Add resource and Knowledge Pack reference fields.
-- [ ] Add file/document fields.
+- [x] Add file/document and library-picker fields for the selected Document Intelligence nodes.
 - [ ] Add future Connection Profile selectors where required.
 - [ ] Verify configuration fits and functions in canvas UI.
-- [ ] Add DTO/manifest/executor contract tests.
+- [x] Add manifest/executor/service contract tests for the Document Intelligence slice.
 
 ### Services
 
-- [ ] Confirm and implement selected document parsing gaps.
-- [ ] Confirm and implement document/library storage gap.
-- [ ] Confirm and implement selected spreadsheet operations.
+- [x] Confirm and implement PDF and DOCX parsing gaps with real parser libraries.
+- [x] Confirm and implement generated-document storage with upload metadata and provenance.
+- [x] Confirm the selected spreadsheet read operation and typed sheet/header-row configuration.
 - [ ] Confirm and implement notification recipient lookup gaps.
 - [ ] Add timeout, retry, idempotency, and structured error conventions.
-- [ ] Add audit/provenance behavior.
-- [ ] Remove stub status only after the real path passes tests.
+- [x] Add parser audit and stored-document provenance behavior.
+- [x] Remove PDF/DOCX stub status only after contract and real-parser integration tests pass.
 - [ ] Reclassify unselected gaps honestly.
 
 ### S27.2 gate
 
-- [ ] Selected nodes are configurable without editing JSON.
-- [ ] Selected executors invoke real services.
-- [ ] Missing dependencies fail loudly.
-- [ ] Contract and integration tests pass.
+- [x] Selected Document Intelligence nodes are configurable without editing JSON.
+- [x] Selected Document Intelligence executors invoke real services.
+- [x] Selected Document Intelligence nodes fail loudly when parsing, download, or storage dependencies fail.
+- [x] Document Intelligence contract and integration tests pass.
+
+The S27.2 sprint remains open for resource/Knowledge Pack references, Connection Profile selectors, canvas visual verification, notification recipient lookup, shared timeout/retry/idempotency conventions, and the remaining selected pack schemas.
 
 ## S27.3 - Connection Profiles and connector runtime foundation
 

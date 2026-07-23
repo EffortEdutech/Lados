@@ -30,6 +30,9 @@ export interface IDocumentStorageService {
     fileName: string;
     buffer: Buffer;
     mimeType: string;
+    userId: string;
+    projectId: string;
+    workflowId: string;
   }): Promise<{ fileId: string }>;
 }
 
@@ -94,6 +97,9 @@ export async function generateDocument(
         fileName,
         buffer,
         mimeType,
+        userId: ctx.userId,
+        projectId: ctx.projectId,
+        workflowId: ctx.workflowId,
       });
       ctx.logger.info(`lados.document.generate_document: saved as ${fileId}`);
       return {
@@ -102,7 +108,8 @@ export async function generateDocument(
         summary: `Generated "${fileName}" and saved (${fileId})`,
       };
     } catch (err) {
-      ctx.logger.warn(`lados.document.generate_document: storage failed, falling back to inline — ${err instanceof Error ? err.message : String(err)}`);
+      const message = err instanceof Error ? err.message : String(err);
+      return { status: 'failure', outputs: {}, error: { code: 'STORAGE_FAILED', message } };
     }
   }
 

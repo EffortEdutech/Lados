@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.1 complete 2026-07-23; S27.2 next |
+| Status | Active - S27.2 in progress; Document Intelligence activation slice complete 2026-07-23 |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |
@@ -740,3 +740,19 @@ Extended `tools/generate-phase27-runtime-baseline.cjs` with per-node runtime rea
 **Ad-hoc outstanding:** the legacy `/packs/health` and `/packs/:id/health` endpoints remain server-side for backward compatibility, but first-party UI no longer consumes them. Remove them in a future API deprecation pass after confirming no external client usage. No S27.1 gate depends on their deletion.
 
 **Next:** S27.2 - typed configuration and shared service completion, beginning with the selected activation wave and Document Intelligence PDF/DOCX/storage requirements.
+
+### 2026-07-23 (7) - S27.2 Document Intelligence activation slice complete
+
+Activated the first S27.2 pack slice without waiting for a KF-manufactured PKA. The official Document Intelligence pack now declares explicit typed configuration schemas for Excel, PDF, DOCX, and generated-document nodes. The shared manifest contract and validator preserve those schemas, and the canvas field router supports the existing library picker as a typed manifest widget.
+
+Replaced the PDF and DOCX placeholders with real `pdf-parse` and `mammoth` extraction paths. Both nodes resolve upload or library sources, emit source/provenance metadata, support structured failures, and require the real `DocumentService`. PDF extraction supports validated page ranges. Generated documents now persist through `FileService` with organization, project, workflow, and user provenance; storage failures no longer silently fall back to an inline-only result when storage is available.
+
+Regenerated the runtime baseline with typed-versus-generic configuration accounting. Current static result: 22 packs, 103 nodes, 101 implemented, 2 stubs, 12 runtime-ready packs, 3 degraded packs, 7 catalogue-only packs, and zero contradictions. Four Document Intelligence nodes now have explicit typed schemas; 99 configured nodes still contain generic loader-derived fields.
+
+**Verification:** `@lados/core`, `@lados/node-sdk`, `@lados/pack-sdk`, and the official Document Intelligence pack builds passed; API and web typechecks passed; official-pack validation and readiness checks passed; real generated PDF/DOCX extraction passed in plain Node; focused Jest passed 4/4 suites and 31/31 tests; full API Jest passed 36/36 suites with 470 passed and 2 skipped.
+
+**Ad-hoc completed:** removed the unconsumed Excel `range` manifest field rather than exposing a control the executor ignored. Updated Git `origin` to `https://github.com/EffortEdutech/Lados.git` as requested; this repository setting is not part of the source commit.
+
+**Ad-hoc outstanding:** canvas visual verification for the new typed controls; generic configuration remains on 99 nodes; resource/Knowledge Pack reference selectors, future Connection Profile selectors, notification recipient lookup, and shared timeout/retry/idempotency conventions remain within S27.2. The two honest runtime stubs are SMS sending and video rendering.
+
+**Next:** continue S27.2 with shared timeout/retry/idempotency/error conventions and notification recipient resolution, then type the next workflow-demanded pack rather than broad-editing all manifests without graph demand.

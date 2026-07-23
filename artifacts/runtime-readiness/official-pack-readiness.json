@@ -1,6 +1,6 @@
 {
   "schemaVersion": "lados.phase27.runtime-baseline.v1",
-  "generatedAt": "2026-07-23T00:07:09.827Z",
+  "generatedAt": "2026-07-23T05:22:57.658Z",
   "scope": {
     "officialRoot": "packs/official",
     "archivedPacksExcluded": true,
@@ -11,11 +11,11 @@
     "executablePackCount": 15,
     "compositionPackCount": 7,
     "nodeCount": 103,
-    "implementedNodeCount": 99,
-    "stubNodeCount": 4,
+    "implementedNodeCount": 101,
+    "stubNodeCount": 2,
     "resolverDeclaredNodeCount": 103,
-    "runtimeReadyPackCount": 11,
-    "degradedPackCount": 4,
+    "runtimeReadyPackCount": 12,
+    "degradedPackCount": 3,
     "blockedPackCount": 0,
     "catalogueOnlyPackCount": 7,
     "templateDescriptorCount": 16,
@@ -24,7 +24,9 @@
     "graphReadyWorkflowCount": 2,
     "degradedWorkflowCount": 1,
     "blockedWorkflowCount": 0,
-    "nodesWithConfigFields": 102,
+    "nodesWithConfigFields": 103,
+    "nodesWithTypedConfig": 4,
+    "nodesWithGenericConfig": 99,
     "l4PackCount": 0
   },
   "contradictions": [],
@@ -76,6 +78,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 7,
       "nodesWithConfigFields": 7,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -147,6 +150,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 8,
       "nodesWithConfigFields": 8,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -213,6 +217,7 @@
       "stubNodeCount": 1,
       "resolverDeclaredNodeCount": 4,
       "nodesWithConfigFields": 4,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -282,6 +287,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 6,
       "nodesWithConfigFields": 6,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -348,6 +354,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 5,
       "nodesWithConfigFields": 5,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -380,7 +387,7 @@
       "version": "0.2.0",
       "layer": "L1",
       "status": "draft",
-      "runtimeStatus": "stub_executors",
+      "runtimeStatus": "runtime_enabled",
       "dependencies": [
         "lados.workflow-foundation",
         "lados.resource-operations"
@@ -407,17 +414,18 @@
       "runtimeServices": [
         "FileService",
         "LibraryService",
-        "DocumentService",
-        "IDocumentStorageService (missing)"
+        "DocumentService"
       ],
       "externalRequirements": [
-        "PDF/DOCX parser dependency (missing)"
+        "pdf-parse",
+        "mammoth"
       ],
       "nodeCount": 6,
-      "implementedNodeCount": 4,
-      "stubNodeCount": 2,
+      "implementedNodeCount": 6,
+      "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 6,
-      "nodesWithConfigFields": 5,
+      "nodesWithConfigFields": 6,
+      "nodesWithTypedConfig": 4,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -435,11 +443,11 @@
         "hasDirectE2eTest": false
       },
       "templateDescriptorPaths": [],
-      "baselineReadiness": "degraded",
+      "baselineReadiness": "runtime_ready",
       "verification": {
         "manifest": "verified",
-        "runtime": "partial — upload_file, read_excel, extract_table, generate_document implemented; read_pdf and read_docx are stubs pending a PDF/DOCX text-extraction dependency",
-        "canvas": "not_started",
+        "runtime": "verified — all six executors implemented; PDF/DOCX use DocumentService parsers and generated documents persist through FileService",
+        "canvas": "typed configuration provided for Excel, PDF, DOCX, and document generation",
         "templates": "not_started"
       }
     },
@@ -483,6 +491,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 5,
       "nodesWithConfigFields": 5,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -544,6 +553,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 3,
       "nodesWithConfigFields": 3,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -612,6 +622,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 6,
       "nodesWithConfigFields": 6,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -692,6 +703,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 7,
       "nodesWithConfigFields": 7,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -778,6 +790,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 13,
       "nodesWithConfigFields": 13,
+      "nodesWithTypedConfig": 0,
       "templateCount": 2,
       "workflowBodyCount": 2,
       "testEvidence": {
@@ -853,6 +866,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 9,
       "nodesWithConfigFields": 9,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -918,6 +932,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 5,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -982,6 +997,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 3,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1047,6 +1063,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 4,
       "nodesWithConfigFields": 4,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1102,6 +1119,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 1,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1157,6 +1175,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 1,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1212,6 +1231,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 1,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1267,6 +1287,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 1,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1322,6 +1343,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 0,
       "nodesWithConfigFields": 0,
+      "nodesWithTypedConfig": 0,
       "templateCount": 1,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1393,6 +1415,7 @@
       "stubNodeCount": 1,
       "resolverDeclaredNodeCount": 8,
       "nodesWithConfigFields": 8,
+      "nodesWithTypedConfig": 0,
       "templateCount": 1,
       "workflowBodyCount": 1,
       "testEvidence": {
@@ -1474,6 +1497,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 12,
       "nodesWithConfigFields": 12,
+      "nodesWithTypedConfig": 0,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -1517,6 +1541,7 @@
         "jobDate",
         "scope"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1552,6 +1577,7 @@
         "destination",
         "dispatchTime"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1586,6 +1612,7 @@
         "deliveryNoteRefs",
         "exceptions"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1620,6 +1647,7 @@
         "receiptDate",
         "fileRef"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1653,6 +1681,7 @@
         "confidenceThreshold",
         "reviewLowConfidence"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1687,6 +1716,7 @@
         "priority",
         "reportedBy"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1721,6 +1751,7 @@
         "evidenceRefs",
         "returnToService"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1758,6 +1789,7 @@
         "contractReference",
         "knowledgePackRefs"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1795,6 +1827,7 @@
         "deliveryEvidence",
         "contractReference"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1830,6 +1863,7 @@
         "decision",
         "notes"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1864,6 +1898,7 @@
         "reference",
         "method"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1898,6 +1933,7 @@
         "currency",
         "approvedRequest"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1932,6 +1968,7 @@
         "decision",
         "notes"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1966,6 +2003,7 @@
         "claimPercentage",
         "currency"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2000,6 +2038,7 @@
         "reference",
         "releasedBy"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2036,6 +2075,7 @@
         "template",
         "body"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2069,6 +2109,7 @@
         "message",
         "template"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2105,6 +2146,7 @@
         "body",
         "severity"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2141,6 +2183,7 @@
         "body",
         "channel"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2175,6 +2218,7 @@
         "client",
         "startDate"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -2209,6 +2253,7 @@
         "checklistRefs",
         "standardsRefs"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2244,6 +2289,7 @@
         "submittedBy",
         "reviewRequired"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2281,6 +2327,7 @@
         "standardsRefs",
         "reviewRequired"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2317,6 +2364,7 @@
         "plant",
         "events"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2349,6 +2397,7 @@
         "checklistRefs",
         "requireAllComplete"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2383,6 +2432,7 @@
         "reference",
         "summary"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2419,6 +2469,7 @@
         "requiresContractAdminReview",
         "reviewerRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2453,6 +2504,7 @@
         "dueDateRule",
         "reminderOffsetDays"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2487,6 +2539,7 @@
         "query",
         "maxResults"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [
           "project contract reference"
@@ -2522,6 +2575,7 @@
         "documentRefs",
         "correspondenceRefs"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2555,6 +2609,7 @@
         "documentType",
         "description"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2582,9 +2637,16 @@
       "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
+        "fileId",
+        "libraryFileId",
         "sheetName",
-        "headerRow",
-        "range"
+        "headerRow"
+      ],
+      "typedConfigurationFieldKeys": [
+        "fileId",
+        "libraryFileId",
+        "sheetName",
+        "headerRow"
       ],
       "knowledgePackRequirements": {
         "required": [],
@@ -2609,12 +2671,19 @@
       "displayName": "Read PDF",
       "canonicalCapability": "document.pdf.read",
       "ownerPack": "lados.document-intelligence",
-      "executorStatus": "stub",
+      "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
-      "runtimeReadiness": "stub",
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
+        "fileId",
+        "libraryFileId",
+        "pageRange"
+      ],
+      "typedConfigurationFieldKeys": [
+        "fileId",
+        "libraryFileId",
         "pageRange"
       ],
       "knowledgePackRequirements": {
@@ -2640,12 +2709,19 @@
       "displayName": "Read Word Document",
       "canonicalCapability": "document.docx.read",
       "ownerPack": "lados.document-intelligence",
-      "executorStatus": "stub",
+      "executorStatus": "implemented",
       "nodeStatus": "draft",
       "resolverDeclared": true,
-      "runtimeReadiness": "stub",
+      "runtimeReadiness": "implemented",
       "apiResolverWired": true,
-      "configurationFieldKeys": [],
+      "configurationFieldKeys": [
+        "fileId",
+        "libraryFileId"
+      ],
+      "typedConfigurationFieldKeys": [
+        "fileId",
+        "libraryFileId"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2679,6 +2755,7 @@
         "expectedColumns",
         "reviewRequired"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2709,6 +2786,10 @@
       "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
+        "title",
+        "template"
+      ],
+      "typedConfigurationFieldKeys": [
         "title",
         "template"
       ],
@@ -2747,6 +2828,7 @@
         "dueDate",
         "escalationRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2786,6 +2868,7 @@
         "escalateAfterMinutes",
         "escalatedToUserId"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -2821,6 +2904,7 @@
         "userId",
         "assigneeRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -2854,6 +2938,7 @@
         "notes",
         "attachments"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -2885,6 +2970,7 @@
         "description",
         "assigneeRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -2919,6 +3005,7 @@
         "requiresReview",
         "reviewerRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2954,6 +3041,7 @@
         "decision",
         "notes"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2988,6 +3076,7 @@
         "decision",
         "policyRefs"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3024,6 +3113,7 @@
         "supplierRefs",
         "knowledgePackRefs"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3057,6 +3147,7 @@
         "resourceId",
         "issuedTo"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3092,6 +3183,7 @@
         "currency",
         "validUntil"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3127,6 +3219,7 @@
         "supplierCatalogueRefs",
         "comparisonRules"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3161,6 +3254,7 @@
         "reason",
         "reviewRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3196,6 +3290,7 @@
         "items",
         "financeReviewRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3234,6 +3329,7 @@
         "quantity",
         "rate"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3270,6 +3366,7 @@
         "persist",
         "boqName"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3305,6 +3402,7 @@
         "reviewLowConfidence",
         "knowledgePackRefs"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3338,6 +3436,7 @@
         "groupByField",
         "minPackageSize"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3372,6 +3471,7 @@
         "rateLibraryRefs",
         "defaultMarkupPercent"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3411,6 +3511,7 @@
         "humanReviewRequired",
         "confidenceThreshold"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [
           "claim evidence rules"
@@ -3447,6 +3548,7 @@
         "tolerancePercent",
         "currency"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -3481,6 +3583,7 @@
         "sinceHours",
         "limit"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3511,6 +3614,7 @@
         "maxCandidates",
         "audienceNote"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3542,6 +3646,7 @@
       "configurationFieldKeys": [
         "language"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3573,6 +3678,7 @@
       "configurationFieldKeys": [
         "maxThemes"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3605,6 +3711,7 @@
         "limit",
         "language"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3636,6 +3743,7 @@
       "configurationFieldKeys": [
         "translationId"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3667,6 +3775,7 @@
       "configurationFieldKeys": [
         "tafsirIds"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3699,6 +3808,7 @@
         "sourceUrl",
         "submittedBy"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3728,6 +3838,7 @@
       "configurationFieldKeys": [
         "requireTafsir"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3764,6 +3875,7 @@
         "language",
         "tone"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3797,6 +3909,7 @@
         "durationSeconds",
         "language"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3829,6 +3942,7 @@
       "configurationFieldKeys": [
         "strictMode"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3864,6 +3978,7 @@
         "visualRestrictions",
         "voiceDirection"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3903,6 +4018,7 @@
         "dataSource",
         "fieldMap"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3932,6 +4048,7 @@
       "configurationFieldKeys": [
         "resourceId"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3963,6 +4080,7 @@
         "state",
         "limit"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -3993,6 +4111,7 @@
         "resourceId",
         "fieldMap"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4024,6 +4143,7 @@
         "resourceId",
         "toState"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4054,6 +4174,7 @@
         "bindingKey",
         "requiredResourceType"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4083,6 +4204,7 @@
         "format",
         "retention"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4113,6 +4235,7 @@
         "key",
         "required"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4142,6 +4265,7 @@
         "userId",
         "assigneeRole"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4177,6 +4301,7 @@
         "role",
         "dueDate"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4210,6 +4335,7 @@
         "reason",
         "evidence"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4244,6 +4370,7 @@
         "ownerRole",
         "severity"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4277,6 +4404,7 @@
         "closedBy",
         "evidence"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4310,6 +4438,7 @@
         "fileId",
         "title"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4349,6 +4478,7 @@
         "template",
         "folderPath"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4379,6 +4509,7 @@
         "splitStrategy",
         "scenesPerBatch"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4417,6 +4548,7 @@
         "creativeDirection",
         "previousDirection"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4451,6 +4583,7 @@
         "resolution",
         "outDir"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4482,6 +4615,7 @@
       "configurationFieldKeys": [
         "targetZone"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -4516,6 +4650,7 @@
         "backgroundColor",
         "allowGradient"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4548,6 +4683,7 @@
         "targetElement",
         "sceneNumbers"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4580,6 +4716,7 @@
         "label",
         "description"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4613,6 +4750,7 @@
         "timezone",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4641,6 +4779,7 @@
         "expression",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4676,6 +4815,7 @@
         "branchCount",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4706,6 +4846,7 @@
         "mergeStrategy",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4736,6 +4877,7 @@
         "delayMs",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4766,6 +4908,7 @@
         "message",
         "level"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4801,6 +4944,7 @@
         "extract_key",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4834,6 +4978,7 @@
         "cases",
         "label"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4871,6 +5016,7 @@
         "eventType",
         "sourceId"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4902,6 +5048,7 @@
         "artifactKey",
         "value"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -4932,6 +5079,7 @@
       "configurationFieldKeys": [
         "artifactKey"
       ],
+      "typedConfigurationFieldKeys": [],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": []
@@ -5455,14 +5603,14 @@
     },
     {
       "id": "generic_string_configuration",
-      "affectedCount": 102,
-      "reason": "Official configGroups declare keys only, so the API derives optional string fields instead of typed, validated, resource-, knowledge-, or connection-aware controls.",
+      "affectedCount": 99,
+      "reason": "These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields.",
       "recommendedSprint": "S27.2"
     },
     {
       "id": "explicit_stub_executors",
-      "affectedCount": 4,
-      "reason": "Declared stubs (lados.communication.send_sms, lados.document.read_pdf, lados.document.read_docx, lados.video.render_scenes) block any graph that requires their real behavior.",
+      "affectedCount": 2,
+      "reason": "Declared stubs (lados.communication.send_sms, lados.video.render_scenes) block any graph that requires their real behavior.",
       "recommendedSprint": "S27.2 / S27.4 / S27.5 by demand"
     },
     {
@@ -5473,8 +5621,8 @@
     },
     {
       "id": "degraded_runtime_status",
-      "affectedCount": 4,
-      "reason": "lados.communication, lados.document-intelligence, lados.quran-media, lados.video-production declare or derive degraded readiness and require explicit service/configuration verification.",
+      "affectedCount": 3,
+      "reason": "lados.communication, lados.quran-media, lados.video-production declare or derive degraded readiness and require explicit service/configuration verification.",
       "recommendedSprint": "S27.2-S27.5"
     }
   ],
@@ -5509,7 +5657,7 @@
     "This report does not read environment files and does not evaluate credentials or secrets.",
     "Build evidence is static API import wiring plus node-type declaration; the runtime API additionally probes the live resolver factory.",
     "Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.",
-    "Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.",
+    "Typed configuration readiness is inferred from explicit configSchema fields; configGroups fields without matching schema entries remain generic loader-derived strings.",
     "Provider readiness cannot be certified without sandbox/test accounts and real round trips.",
     "Supabase migration/application state and browser import/run behavior are outside this static baseline."
   ]

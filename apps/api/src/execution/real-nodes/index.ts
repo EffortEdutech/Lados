@@ -139,8 +139,7 @@ export function buildRealNodeResolver(
       fileService,
       libraryService,
       documentService,
-      // No storage service implements IDocumentStorageService yet —
-      // generate_document falls back to returning the file inline.
+      storageService: fileService,
     }),
     // Phase 21 S4 (Wave 2) — Resource Operations (L0). ResourceService
     // satisfies create/read/list/update/transition all at once via

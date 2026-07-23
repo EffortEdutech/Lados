@@ -110,4 +110,40 @@ export class FileService {
     if (error ?? !data) throw new BadRequestException(`Upload ${fileId} not found`);
     return data;
   }
+
+  async saveGeneratedDocument(params: {
+    orgId: string;
+    fileName: string;
+    buffer: Buffer;
+    mimeType: string;
+    userId: string;
+    projectId: string;
+    workflowId: string;
+  }): Promise<{ fileId: string }> {
+    const safeName = params.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = [params.orgId, params.projectId, `${Date.now()}_${safeName}`].join('/');
+    const { error: storageErr } = await this.supabase.admin.storage
+      .from(BUCKET)
+      .upload(storagePath, params.buffer, { contentType: params.mimeType, upsert: false });
+    if (storageErr) throw new BadRequestException(`Storage upload failed: ${storageErr.message}`);
+
+    const { data, error: dbErr } = await this.supabase.admin.from('uploads').insert({
+      organization_id: params.orgId,
+      project_id: params.projectId,
+      workflow_id: params.workflowId,
+      original_name: params.fileName,
+      storage_path: storagePath,
+      bucket: BUCKET,
+      mime_type: params.mimeType,
+      size_bytes: params.buffer.length,
+      status: 'ready',
+      uploaded_by: params.userId,
+    }).select('id').single();
+
+    if (dbErr ?? !data) {
+      await this.supabase.admin.storage.from(BUCKET).remove([storagePath]);
+      throw new BadRequestException(`Failed to record generated document: ${dbErr?.message}`);
+    }
+    return { fileId: data.id as string };
+  }
 }

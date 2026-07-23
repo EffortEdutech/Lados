@@ -5,7 +5,7 @@
   "displayName": "Document Intelligence",
   "layer": "L1",
   "status": "draft",
-  "runtimeStatus": "stub_executors",
+  "runtimeStatus": "runtime_enabled",
   "description": "Official Lados document intake, reading, extraction, classification, and document generation pack.",
   "ownerBoundary": [
     "file upload and intake",
@@ -58,8 +58,8 @@
   ],
   "verification": {
     "manifest": "verified",
-    "runtime": "partial — upload_file, read_excel, extract_table, generate_document implemented; read_pdf and read_docx are stubs pending a PDF/DOCX text-extraction dependency",
-    "canvas": "not_started",
+    "runtime": "verified — all six executors implemented; PDF/DOCX use DocumentService parsers and generated documents persist through FileService",
+    "canvas": "typed configuration provided for Excel, PDF, DOCX, and document generation",
     "templates": "not_started"
   },
   "visual": {

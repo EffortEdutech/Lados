@@ -117,6 +117,21 @@ describe('deriveConfigSchema', () => {
     const { configSchema } = deriveConfigSchema(node);
     expect(configSchema.every((f) => f.type === 'string')).toBe(true);
   });
+
+  it('preserves an explicit typed schema supplied by an official node', () => {
+    const node = baseNode({
+      configGroups: [{ id: 'read', label: 'Read', fields: ['fileId', 'pageRange'] }],
+      configSchema: [
+        { key: 'fileId', label: 'PDF', type: 'file', required: true },
+        { key: 'pageRange', label: 'Pages', type: 'string', validation: { pattern: '^\\d' } },
+      ],
+    });
+
+    const { configSchema, uiSchema } = deriveConfigSchema(node);
+
+    expect(configSchema).toEqual(node.configSchema);
+    expect(uiSchema.sections).toEqual([{ title: 'Read', fieldKeys: ['fileId', 'pageRange'] }]);
+  });
 });
 
 describe('deriveConfigSchema — runs cleanly over every real official pack node', () => {

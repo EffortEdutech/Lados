@@ -362,6 +362,8 @@ export interface OfficialNodeManifest {
   outputPattern: string;
   ports: OfficialNodePorts;
   configGroups: OfficialNodeConfigGroup[];
+  /** Optional typed canvas configuration. When present, the loader uses this instead of generic string fields. */
+  configSchema?: import('@lados/node-sdk').ConfigField[];
   resourceBindings: OfficialNodeResourceBindingContract;
   knowledgePackRequirements: OfficialKnowledgePackRequirements;
   humanDecisionBoundary: string;

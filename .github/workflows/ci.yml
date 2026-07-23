@@ -40,6 +40,9 @@ jobs:
       - name: Verify Phase 27 runtime readiness claims
         run: pnpm readiness:check
 
+      - name: Verify Document Intelligence parsers
+        run: pnpm verify:document-parsers
+
       - name: Build apps
         run: pnpm --filter api build && pnpm --filter web build
         env:

@@ -27,8 +27,8 @@ const runtimeDependenciesByPack = {
     external: [],
   },
   'lados.document-intelligence': {
-    services: ['FileService', 'LibraryService', 'DocumentService', 'IDocumentStorageService (missing)'],
-    external: ['PDF/DOCX parser dependency (missing)'],
+    services: ['FileService', 'LibraryService', 'DocumentService'],
+    external: ['pdf-parse', 'mammoth'],
   },
   'lados.resource-operations': {
     services: ['ResourceService', 'ArtifactService'],
@@ -203,7 +203,7 @@ function renderMarkdown(report) {
     `- Resolver declarations: **${report.summary.resolverDeclaredNodeCount}/${report.summary.nodeCount}** node types are present in a pack resolver that is wired into the API resolver.`,
     `- Template descriptors: **${report.summary.templateDescriptorCount}**; importable workflow bodies: **${report.summary.workflowBodyCount}**; descriptor-only assets: **${report.summary.descriptorOnlyCount}**.`,
     `- No live official L4 pack was found. Exact provider demand remains under-specified for descriptor-only L3/L5 assets.`,
-    `- All manifest configuration groups still provide field keys rather than typed field definitions; the API derives generic string inputs for **${report.summary.nodesWithConfigFields}** nodes with configuration fields.`,
+    `- Typed configuration schemas are declared by **${report.summary.nodesWithTypedConfig}** nodes; **${report.summary.nodesWithGenericConfig}** configured nodes still rely wholly or partly on API-derived generic string inputs.`,
     '',
     '## Readiness interpretation',
     '',
@@ -380,6 +380,7 @@ function main() {
           : node.executorStatus === 'implemented' ? 'implemented' : 'stub',
         apiResolverWired: apiWired,
         configurationFieldKeys: [...new Set((node.configGroups ?? []).flatMap((group) => group.fields ?? []))],
+        typedConfigurationFieldKeys: [...new Set((node.configSchema ?? []).map((field) => field.key))],
         knowledgePackRequirements: node.knowledgePackRequirements ?? { required: [], recommended: [] },
         resourceBindings: node.resourceBindings ?? { supported: false, required: false },
         inputPortIds: (node.ports?.inputs ?? []).map((port) => port.id),
@@ -419,6 +420,7 @@ function main() {
       stubNodeCount: packNodes.filter((node) => node.executorStatus === 'stub').length,
       resolverDeclaredNodeCount: packNodes.filter((node) => node.resolverDeclared).length,
       nodesWithConfigFields: packNodes.filter((node) => node.configurationFieldKeys.length > 0).length,
+      nodesWithTypedConfig: packNodes.filter((node) => node.typedConfigurationFieldKeys.length > 0).length,
       templateCount: templateDescriptors.length,
       workflowBodyCount: templateDescriptors.filter((descriptor) => findWorkflowBody(descriptor)).length,
       testEvidence,
@@ -481,7 +483,10 @@ function main() {
 
   const descriptorOnly = workflows.filter((workflow) => workflow.readiness === 'descriptor_only');
   const stubNodes = nodes.filter((node) => node.executorStatus === 'stub');
-  const genericConfigNodes = nodes.filter((node) => node.configurationFieldKeys.length > 0);
+  const typedConfigNodes = nodes.filter((node) => node.typedConfigurationFieldKeys.length > 0);
+  const genericConfigNodes = nodes.filter((node) =>
+    node.configurationFieldKeys.some((key) => !node.typedConfigurationFieldKeys.includes(key)),
+  );
   const degradedPacks = packs.filter((pack) => pack.baselineReadiness === 'degraded');
   const contradictions = [];
   for (const node of nodes) {
@@ -509,7 +514,7 @@ function main() {
     {
       id: 'generic_string_configuration',
       affectedCount: genericConfigNodes.length,
-      reason: 'Official configGroups declare keys only, so the API derives optional string fields instead of typed, validated, resource-, knowledge-, or connection-aware controls.',
+      reason: 'These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields.',
       recommendedSprint: 'S27.2',
     },
     {
@@ -558,7 +563,9 @@ function main() {
       graphReadyWorkflowCount: workflows.filter((workflow) => workflow.readiness === 'graph_ready').length,
       degradedWorkflowCount: workflows.filter((workflow) => workflow.readiness === 'degraded').length,
       blockedWorkflowCount: workflows.filter((workflow) => workflow.readiness === 'blocked').length,
-      nodesWithConfigFields: genericConfigNodes.length,
+      nodesWithConfigFields: nodes.filter((node) => node.configurationFieldKeys.length > 0).length,
+      nodesWithTypedConfig: typedConfigNodes.length,
+      nodesWithGenericConfig: genericConfigNodes.length,
       l4PackCount: packs.filter((pack) => pack.layer === 'L4').length,
     },
     contradictions,
@@ -597,7 +604,7 @@ function main() {
       'This report does not read environment files and does not evaluate credentials or secrets.',
       'Build evidence is static API import wiring plus node-type declaration; the runtime API additionally probes the live resolver factory.',
       'Test evidence is filename-based. S27.1/S27.5 should add machine-readable test evidence or probe results.',
-      'Generic configuration readiness is inferred from the current official loader, which derives string fields from configGroups.',
+      'Typed configuration readiness is inferred from explicit configSchema fields; configGroups fields without matching schema entries remain generic loader-derived strings.',
       'Provider readiness cannot be certified without sandbox/test accounts and real round trips.',
       'Supabase migration/application state and browser import/run behavior are outside this static baseline.',
     ],

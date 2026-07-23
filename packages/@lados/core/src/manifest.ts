@@ -98,6 +98,7 @@ export interface UISchemaField {
     | 'select'
     | 'toggle'
     | 'file-upload'
+    | 'library-picker'
     | 'resource-picker'
     | 'json'
     | 'secret';

@@ -35,6 +35,13 @@ export interface IDocumentService {
     buffer: Buffer,
     options?: { headerRow?: number | string; sheetName?: string },
   ): { sheetName: string; sheets: string[]; headers: string[]; rows: ExcelRow[]; rowCount: number };
+  parsePdf(
+    buffer: Buffer,
+    options?: { pages?: number[] },
+  ): Promise<{ text: string; pageCount: number; pages: Array<{ page: number; text: string }> }>;
+  parseDocx(
+    buffer: Buffer,
+  ): Promise<{ text: string; messages: Array<{ type: string; message: string }> }>;
 }
 
 function fallbackParseExcel(buffer: Buffer, ctx: NodeContext) {
