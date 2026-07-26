@@ -168,8 +168,9 @@
 - Connection security tests cover encryption round trip, tamper rejection, missing-key failure, sanitized list DTOs, inactive/expired/missing-scope rejection, unauthorized management, secret-redacting provider errors, and host-service injection.
 - Repository-wide API lint remains red on two pre-existing unused declarations outside S27.3 (`execution/real-nodes/index.ts` and `test/official-wave3-e2e.spec.ts`).
 
-### Operational blockers
+### Operational closure
 
-- Migration `0080` is not applied from this checkout because Supabase CLI reports that the project is not linked.
-- The API requires a server-only `LADOS_CONNECTION_ENCRYPTION_KEY` containing exactly 32 bytes (Base64 or 64-character hex); no environment file was read or modified during this work.
-- Authenticated browser proof remains required before marking the S27.3 gate complete or starting provider certification.
+- Migration `0080` was applied by the operator.
+- The server-only `LADOS_CONNECTION_ENCRYPTION_KEY` was configured without exposing its value.
+- Authenticated create/test/disable/reconnect/retest/revoke verification passed on `/settings/connections`; S27.3 is complete.
+- S27.4 demand confirmation is recorded in `Phase27_S27.4_Provider_Demand_Confirmation.md`; no provider family is selected because the three real graphs contain zero connector actions.

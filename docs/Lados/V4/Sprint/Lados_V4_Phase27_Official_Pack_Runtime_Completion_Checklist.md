@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.3 code complete 2026-07-26; operational gate pending migration/config/browser verification
+**Status:** Active - S27.3 complete 2026-07-26; S27.4 demand confirmation complete and provider selection blocked by missing graph bodies
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -21,8 +21,8 @@
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
 | S27.1 | Production-strict execution and one readiness truth | `[x]` | Runtime/API/UI/preflight/CI checks verified |
 | S27.2 | First activation wave has typed config and real services | `[x]` | Document Intelligence, Communication/policy, and Asset Fleet trip slices verified |
-| S27.3 | Secure Connection Profile foundation operational | `[~]` | Code/tests green; migration 0080 + encryption config + authenticated browser gate pending |
-| S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
+| S27.3 | Secure Connection Profile foundation operational | `[x]` | Migration/config/API/UI authenticated lifecycle proof green |
+| S27.4 | Priority provider connectors make real round trips | `[B]` | Demand confirmation found 0 graph-backed connector actions; author business graph + confirm provider sandbox |
 | S27.5 | L0-L2 packs have explicit verified outcomes | `[ ]` | Updated matrix + graph tests |
 | S27.6 | Selected L3/L5 packs install and configure | `[ ]` | Setup/rollback/browser evidence |
 | S27.7 | Selected proof workflows certified end to end | `[ ]` | Certification reports |
@@ -150,7 +150,7 @@ S27.2 is complete. The remaining 93 generic-config nodes are activation backlog,
 - [x] Define encrypted secret/token reference boundary. *(AES-256-GCM envelope using dedicated `LADOS_CONNECTION_ENCRYPTION_KEY`; decrypted only by execution resolver.)*
 - [x] Prove secrets never return through API DTOs. *(`ConnectionProfileView` + leakage tests.)*
 - [x] Prove secrets never enter workflow JSON or execution logs. *(Workflow stores only Connection Profile ID; runner service-injection test proves empty node config receives resolver.)*
-- [~] Add audit events for create/test/refresh/disable/revoke. *(Create/update/test/disable/reconnect/revoke implemented; provider token refresh deferred until S27.4 selects an OAuth provider.)*
+- [x] Add audit events for create/test/refresh/disable/revoke. *(Create/update/test/disable/reconnect/revoke implemented; refresh is not applicable until an OAuth provider is selected.)*
 
 ### Runtime
 
@@ -174,26 +174,34 @@ S27.2 is complete. The remaining 93 generic-config nodes are activation backlog,
 
 ### S27.3 gate
 
-- [~] Organization admin can create, test, use, disable, and revoke a connection. *(API/service/UI code complete; authenticated live proof awaits migration 0080 and encryption-key configuration.)*
+- [x] Organization admin can create, test, use, disable, and revoke a connection. *(Migration 0080 applied; encryption configured; authenticated lifecycle proof green 2026-07-26.)*
 - [x] Unauthorized organization member cannot manage connections. *(Permission matrix + negative service test.)*
 - [x] Node accesses provider through a reference, not raw credentials.
 - [x] Secret-leakage tests pass.
 
 ### S27.3 operational handoff (2026-07-26)
 
-- [B] Apply `0080_connection_profiles.sql` to the target Supabase project. *(Local CLI is not linked: `Cannot find project ref`.)*
-- [B] Configure one specific server value: `LADOS_CONNECTION_ENCRYPTION_KEY` containing 32 random bytes encoded as Base64 or 64 hex characters. *(Never place this value in workflow JSON or browser configuration.)*
-- [ ] Run authenticated browser proof on `/settings/connections`: create -> test -> select in a connection field -> disable -> confirm execution rejection -> reconnect -> revoke -> confirm secret removal.
-- [ ] Re-run the gate after API restart with the migration and key present; do not start S27.4 provider claims before this proof is recorded.
+- [x] Apply `0080_connection_profiles.sql` to the target Supabase project.
+- [x] Configure server-only `LADOS_CONNECTION_ENCRYPTION_KEY`.
+- [x] Run authenticated lifecycle proof on `/settings/connections`: create -> test -> disable -> reconnect -> test -> revoke; all states and secret removal verified green.
+- [x] Re-run the gate after API restart with the migration and key present.
 
 ## S27.4 - Priority L4 connector wave
 
 ### Demand confirmation
 
-- [ ] Confirm selected provider family and exact actions/triggers.
-- [ ] Name workflows unlocked by each connector node.
-- [ ] Confirm sandbox/test accounts and required scopes.
-- [ ] Record provider API/licence/usage constraints.
+- [B] Confirm selected provider family and exact actions/triggers. *(Three importable graphs contain zero external connector nodes; 13 descriptors cannot determine exact provider demand.)*
+- [~] Name workflows unlocked by each connector node. *(Four descriptor-only communication candidates identified; no connector node can be assigned until a graph body declares the action.)*
+- [B] Confirm sandbox/test accounts and required scopes. *(No provider family selected and no sandbox decision documented.)*
+- [D] Record provider API/licence/usage constraints. *(Deferred until a provider is evidence-selected; researching every provider speculatively is outside the roadmap rule.)*
+
+### S27.4A - Provider demand unblock
+
+- [ ] Author `lados.template.invoice_approval.submit_invoice_to_approval` as an importable workflow graph.
+- [ ] Declare its exact trigger, outbound notification action, identity/ownership, attachment behavior, and connection scopes.
+- [ ] Validate the graph against official manifests and production-strict resolver readiness.
+- [ ] Confirm SMTP, Microsoft 365, or Google Workspace provider plus sandbox/test account.
+- [ ] Resume S27.4 implementation only after the above evidence exists.
 
 ### Implementation per connector node
 

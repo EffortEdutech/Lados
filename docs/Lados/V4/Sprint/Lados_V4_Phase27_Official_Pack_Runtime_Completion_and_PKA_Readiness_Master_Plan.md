@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.3 code complete 2026-07-26; operational gate pending migration/config/browser proof |
+| Status | Active - S27.3 complete 2026-07-26; S27.4 demand confirmed but provider selection blocked pending a communication-bearing graph and sandbox decision |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |
@@ -785,4 +785,10 @@ Extended the shared manifest UI vocabulary with `data_pack_item` / `data-pack-it
 
 **Ad-hoc outstanding:** the authenticated resource/Knowledge Pack lookup round trip and the importable Contractor Operations trip workflow body remain coupled S27.6 proof work. The temporary browser harness left no repository diff. No credential or environment file was read.
 
-**Next:** S27.3 - build the organization-scoped Connection Profile schema, secret boundary, API/UI management surface, and provider-neutral node binding foundation.
+**Next:** S27.4A - author the first communication-bearing business graph (`submit_invoice_to_approval` recommended), declare exact connector requirements, and confirm a provider sandbox before implementing an L4 pack.
+
+### S27.3 completion and S27.4 demand confirmation - 2026-07-26
+
+S27.3 passed its authenticated lifecycle gate after migration `0080` was applied and the server-only encryption key was configured. Create, test, disable, reconnect, retest, and revoke all produced the expected active/untested/healthy/disabled/revoked states, and revoked credentials were no longer present.
+
+S27.4 demand extraction examined all three importable graph bodies and all thirteen descriptor-only composition assets. The importable graphs contain zero external connector triggers/actions. Four descriptors signal generic outbound notification intent, but none declares a channel/provider, mailbox ownership, scopes, attachments, or inbound behavior. Microsoft 365, Google Workspace, SMTP, SMS, and other provider choices therefore remain non-evidence-selectable. Full evidence: `docs/Lados/V4/Verification/Phase27_S27.4_Provider_Demand_Confirmation.md`.
