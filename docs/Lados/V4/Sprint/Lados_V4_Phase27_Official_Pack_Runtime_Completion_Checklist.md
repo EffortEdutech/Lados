@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.2 in progress; Document Intelligence activation slice complete 2026-07-23
+**Status:** Active - S27.2 in progress; S27.2B shared policy and notification slice complete 2026-07-26
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -20,7 +20,7 @@
 |---|---|---|---|
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
 | S27.1 | Production-strict execution and one readiness truth | `[x]` | Runtime/API/UI/preflight/CI checks verified |
-| S27.2 | First activation wave has typed config and real services | `[~]` | Document Intelligence slice verified; remaining activation packs open |
+| S27.2 | First activation wave has typed config and real services | `[~]` | Document Intelligence and S27.2B Communication/policy slices verified; remaining activation packs open |
 | S27.3 | Secure Connection Profile foundation operational | `[ ]` | Migration/RLS/API/UI/security tests |
 | S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
 | S27.5 | L0-L2 packs have explicit verified outcomes | `[ ]` | Updated matrix + graph tests |
@@ -114,14 +114,15 @@
 - [ ] Add future Connection Profile selectors where required.
 - [ ] Verify configuration fits and functions in canvas UI.
 - [x] Add manifest/executor/service contract tests for the Document Intelligence slice.
+- [x] Add typed configuration for implemented Communication nodes: email, in-app notification, and reminder. *(SMS remains an honest provider stub.)*
 
 ### Services
 
 - [x] Confirm and implement PDF and DOCX parsing gaps with real parser libraries.
 - [x] Confirm and implement generated-document storage with upload metadata and provenance.
 - [x] Confirm the selected spreadsheet read operation and typed sheet/header-row configuration.
-- [ ] Confirm and implement notification recipient lookup gaps.
-- [ ] Add timeout, retry, idempotency, and structured error conventions.
+- [x] Confirm and implement organization-role notification recipient lookup with explicit no-recipient failures.
+- [x] Enforce workflow timeout, retry filtering/backoff, stable node idempotency context, structured timeout state, and notification deduplication.
 - [x] Add parser audit and stored-document provenance behavior.
 - [x] Remove PDF/DOCX stub status only after contract and real-parser integration tests pass.
 - [ ] Reclassify unselected gaps honestly.
@@ -132,8 +133,9 @@
 - [x] Selected Document Intelligence executors invoke real services.
 - [x] Selected Document Intelligence nodes fail loudly when parsing, download, or storage dependencies fail.
 - [x] Document Intelligence contract and integration tests pass.
+- [x] S27.2B runner-policy, recipient-resolution, Communication manifest, and full API regression tests pass.
 
-The S27.2 sprint remains open for resource/Knowledge Pack references, Connection Profile selectors, canvas visual verification, notification recipient lookup, shared timeout/retry/idempotency conventions, and the remaining selected pack schemas.
+The S27.2 sprint remains open for resource/Knowledge Pack references, Connection Profile selectors, canvas visual verification, reclassification of unselected gaps, and the remaining selected pack schemas.
 
 ## S27.3 - Connection Profiles and connector runtime foundation
 

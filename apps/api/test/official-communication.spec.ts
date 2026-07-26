@@ -133,12 +133,37 @@ describe('lados.communication.send_sms — stub honesty', () => {
 });
 
 describe('lados.communication.send_in_app', () => {
-  it('fails with NOT_IMPLEMENTED when only a role is given (no member-lookup service)', async () => {
+  it('fails clearly when role targeting has no recipient resolver', async () => {
     const { ctx } = createMockNodeContext({ inputs: { context: { role: 'owner', title: 'Hi' } } });
     const exec = resolveNode({ notificationService: fakeNotificationService() })('lados.communication.send_in_app')!;
     const result = await exec(ctx);
     expect(result.status).toBe('failure');
-    expect(result.error?.code).toBe('NOT_IMPLEMENTED');
+    expect(result.error?.code).toBe('RECIPIENT_RESOLVER_NOT_CONFIGURED');
+  });
+
+  it('resolves a role and notifies every matching organization member', async () => {
+    const notificationService: IInAppNotificationService = {
+      notify: jest.fn().mockResolvedValueOnce('n1').mockResolvedValueOnce('n2'),
+      resolveRecipients: jest.fn().mockResolvedValue(['u1', 'u2']),
+    };
+    const { ctx } = createMockNodeContext({ inputs: { context: { role: 'owner', title: 'Hi' } } });
+    ctx.idempotencyKey = 'run-1:node-1';
+    const result = await resolveNode({ notificationService })('lados.communication.send_in_app')!(ctx);
+    expect(result.status).toBe('success');
+    expect(result.outputs['notification']).toMatchObject({ notified: true, userIds: ['u1', 'u2'], role: 'owner' });
+    expect(notificationService.notify).toHaveBeenCalledTimes(2);
+    expect(notificationService.notify).toHaveBeenNthCalledWith(1, expect.objectContaining({ idempotencyKey: 'run-1:node-1:u1' }));
+  });
+
+  it('fails when role lookup returns no recipients', async () => {
+    const notificationService: IInAppNotificationService = {
+      notify: jest.fn(),
+      resolveRecipients: jest.fn().mockResolvedValue([]),
+    };
+    const { ctx } = createMockNodeContext({ inputs: { context: { role: 'missing', title: 'Hi' } } });
+    const result = await resolveNode({ notificationService })('lados.communication.send_in_app')!(ctx);
+    expect(result.error?.code).toBe('RECIPIENTS_NOT_FOUND');
+    expect(notificationService.notify).not.toHaveBeenCalled();
   });
 
   it('sends an in-app notification to a concrete user', async () => {

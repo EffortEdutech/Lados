@@ -47,6 +47,8 @@ export interface NotifyPayload {
   /** Link to the relevant resource in the UI */
   actionUrl?: string;
   metadata?: Record<string, unknown>;
+  /** Stable operation key; repeated delivery returns the existing notification. */
+  idempotencyKey?: string;
 }
 
 @Injectable()
@@ -55,15 +57,46 @@ export class NotificationService {
 
   constructor(private readonly supabase: SupabaseService) {}
 
+  /** Resolve explicit users or organization members by role for pack executors. */
+  async resolveRecipients(input: {
+    orgId: string;
+    userId?: string;
+    role?: string;
+  }): Promise<string[]> {
+    if (input.userId) return [input.userId];
+    if (!input.role) return [];
+
+    const { data, error } = await this.supabase.admin
+      .from('organization_members')
+      .select('user_id')
+      .eq('organization_id', input.orgId)
+      .eq('role', input.role);
+
+    if (error) throw new Error(`Recipient lookup failed: ${error.message}`);
+    return [...new Set((data ?? []).map((row) => String(row.user_id)).filter(Boolean))];
+  }
+
   /**
    * Create a notification for a user.
    * Sprint 14: writes to `notifications` table only (in-app).
    * Sprint 19: will also send email / webhook based on user preferences.
    */
   async notify(payload: NotifyPayload): Promise<string | null> {
-    const { userId, orgId, type, title, body, actionUrl, metadata } = payload;
+    const { userId, orgId, type, title, body, actionUrl, metadata, idempotencyKey } = payload;
 
     this.logger.log(`Notify [${type}] → user ${userId}: ${title}`);
+
+    if (idempotencyKey) {
+      let existingQuery = this.supabase.admin
+        .from('notifications')
+        .select('id')
+        .eq('user_id', userId)
+        .contains('metadata', { idempotencyKey });
+      if (orgId) existingQuery = existingQuery.eq('org_id', orgId);
+      const { data: existing, error: lookupError } = await existingQuery.maybeSingle();
+      if (lookupError) throw new Error(`Notification idempotency lookup failed: ${lookupError.message}`);
+      if (existing?.id) return String(existing.id);
+    }
 
     const { data, error } = await this.supabase.admin
       .from('notifications')
@@ -74,7 +107,7 @@ export class NotificationService {
         title,
         body:       body ?? null,
         action_url: actionUrl ?? null,
-        metadata:   metadata ?? {},
+        metadata:   { ...(metadata ?? {}), ...(idempotencyKey ? { idempotencyKey } : {}) },
         is_read:    false,
       })
       .select('id')

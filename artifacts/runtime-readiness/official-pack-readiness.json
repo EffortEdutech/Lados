@@ -1,6 +1,6 @@
 {
   "schemaVersion": "lados.phase27.runtime-baseline.v1",
-  "generatedAt": "2026-07-23T05:22:57.658Z",
+  "generatedAt": "2026-07-26T00:28:53.201Z",
   "scope": {
     "officialRoot": "packs/official",
     "archivedPacksExcluded": true,
@@ -25,8 +25,8 @@
     "degradedWorkflowCount": 1,
     "blockedWorkflowCount": 0,
     "nodesWithConfigFields": 103,
-    "nodesWithTypedConfig": 4,
-    "nodesWithGenericConfig": 99,
+    "nodesWithTypedConfig": 7,
+    "nodesWithGenericConfig": 96,
     "l4PackCount": 0
   },
   "contradictions": [],
@@ -217,7 +217,7 @@
       "stubNodeCount": 1,
       "resolverDeclaredNodeCount": 4,
       "nodesWithConfigFields": 4,
-      "nodesWithTypedConfig": 0,
+      "nodesWithTypedConfig": 3,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -2075,7 +2075,14 @@
         "template",
         "body"
       ],
-      "typedConfigurationFieldKeys": [],
+      "typedConfigurationFieldKeys": [
+        "to",
+        "cc",
+        "bcc",
+        "subject",
+        "template",
+        "body"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2146,7 +2153,14 @@
         "body",
         "severity"
       ],
-      "typedConfigurationFieldKeys": [],
+      "typedConfigurationFieldKeys": [
+        "userId",
+        "role",
+        "organizationScope",
+        "title",
+        "body",
+        "severity"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -2176,6 +2190,9 @@
       "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
+        "userId",
+        "role",
+        "email",
         "dueDate",
         "offset",
         "timezone",
@@ -2183,7 +2200,17 @@
         "body",
         "channel"
       ],
-      "typedConfigurationFieldKeys": [],
+      "typedConfigurationFieldKeys": [
+        "userId",
+        "role",
+        "email",
+        "dueDate",
+        "offset",
+        "timezone",
+        "title",
+        "body",
+        "channel"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -5603,7 +5630,7 @@
     },
     {
       "id": "generic_string_configuration",
-      "affectedCount": 99,
+      "affectedCount": 96,
       "reason": "These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields.",
       "recommendedSprint": "S27.2"
     },

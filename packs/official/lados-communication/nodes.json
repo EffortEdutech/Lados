@@ -48,6 +48,14 @@
         ]
       }
     ],
+    "configSchema": [
+      { "key": "to", "label": "To", "type": "string", "required": true, "placeholder": "name@example.com" },
+      { "key": "cc", "label": "CC", "type": "string", "required": false },
+      { "key": "bcc", "label": "BCC", "type": "string", "required": false },
+      { "key": "subject", "label": "Subject", "type": "string", "required": true },
+      { "key": "template", "label": "Template", "type": "string", "required": false },
+      { "key": "body", "label": "Body", "type": "textarea", "required": false }
+    ],
     "resourceBindings": {
       "supported": true,
       "required": false
@@ -194,6 +202,23 @@
         ]
       }
     ],
+    "configSchema": [
+      { "key": "userId", "label": "User ID", "type": "string", "required": false },
+      { "key": "role", "label": "Organization Role", "type": "select", "required": false, "options": [
+        { "value": "owner", "label": "Owner" },
+        { "value": "admin", "label": "Admin" },
+        { "value": "member", "label": "Member" },
+        { "value": "viewer", "label": "Viewer" }
+      ] },
+      { "key": "organizationScope", "label": "Organization Scope", "type": "boolean", "required": false, "defaultValue": true },
+      { "key": "title", "label": "Title", "type": "string", "required": true },
+      { "key": "body", "label": "Body", "type": "textarea", "required": false },
+      { "key": "severity", "label": "Severity", "type": "select", "required": false, "defaultValue": "info", "options": [
+        { "value": "info", "label": "Info" },
+        { "value": "warning", "label": "Warning" },
+        { "value": "critical", "label": "Critical" }
+      ] }
+    ],
     "resourceBindings": {
       "supported": true,
       "required": false
@@ -255,6 +280,15 @@
     },
     "configGroups": [
       {
+        "id": "target",
+        "label": "Target",
+        "fields": [
+          "userId",
+          "role",
+          "email"
+        ]
+      },
+      {
         "id": "schedule",
         "label": "Schedule",
         "fields": [
@@ -272,6 +306,25 @@
           "channel"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "userId", "label": "User ID", "type": "string", "required": false },
+      { "key": "role", "label": "Organization Role", "type": "select", "required": false, "options": [
+        { "value": "owner", "label": "Owner" },
+        { "value": "admin", "label": "Admin" },
+        { "value": "member", "label": "Member" },
+        { "value": "viewer", "label": "Viewer" }
+      ] },
+      { "key": "email", "label": "Email", "type": "string", "required": false },
+      { "key": "dueDate", "label": "Due Date", "type": "datetime", "required": false },
+      { "key": "offset", "label": "Offset", "type": "string", "required": false, "placeholder": "24h" },
+      { "key": "timezone", "label": "Timezone", "type": "string", "required": false, "defaultValue": "Asia/Kuala_Lumpur" },
+      { "key": "title", "label": "Title", "type": "string", "required": true },
+      { "key": "body", "label": "Body", "type": "textarea", "required": false },
+      { "key": "channel", "label": "Channel", "type": "select", "required": true, "defaultValue": "in_app", "options": [
+        { "value": "in_app", "label": "In-app" },
+        { "value": "email", "label": "Email" }
+      ] }
     ],
     "resourceBindings": {
       "supported": true,

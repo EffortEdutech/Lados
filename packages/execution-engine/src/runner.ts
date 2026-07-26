@@ -29,6 +29,35 @@ import { getMockExecutor, hasMockFor } from './mock-registry';
 
 type NodeExecutor = (ctx: NodeContext) => Promise<NodeExecuteResult>;
 
+const DEFAULT_RUN_TIMEOUT_SECONDS = 3600;
+
+class ExecutionTimeoutError extends Error {
+  readonly code = 'EXECUTION_TIMEOUT';
+
+  constructor(timeoutSeconds: number) {
+    super(`Workflow exceeded its ${timeoutSeconds}-second execution timeout`);
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutSeconds: number): Promise<T> {
+  if (timeoutMs <= 0) throw new ExecutionTimeoutError(timeoutSeconds);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new ExecutionTimeoutError(timeoutSeconds)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function delay(ms: number): Promise<void> {
+  return ms <= 0 ? Promise.resolve() : new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function resolveNodeEffectiveMode(
   step: ExecutionStep,
   groups: WorkflowSkillGroup[],
@@ -119,6 +148,8 @@ export class WorkflowRunner {
       programStageId,
     } = this.options;
     const workflowGroups = definition.ui?.groups ?? [];
+    const timeoutSeconds = definition.executionPolicy?.timeoutSeconds ?? DEFAULT_RUN_TIMEOUT_SECONDS;
+    const deadlineMs = timeoutSeconds > 0 ? Date.now() + timeoutSeconds * 1000 : undefined;
 
     // Build a fast lookup: nodeId -> SkipNodeSpec
     const skipMap = new Map<string, SkipNodeSpec>(skipNodes.map((s) => [s.nodeId, s]));
@@ -216,6 +247,8 @@ export class WorkflowRunner {
         { executionId, workflowId, projectId, organizationId, userId, programRunId, programStageId },
         skipMap,
         workflowGroups,
+        deadlineMs,
+        timeoutSeconds,
       ));
 
       const settled = await runWithConcurrency(levelTasks, concurrency);
@@ -250,7 +283,7 @@ export class WorkflowRunner {
           }
 
           if (stepStatus === 'failed') {
-            finalStatus = 'failed';
+            finalStatus = logEntry.error?.code === 'EXECUTION_TIMEOUT' ? 'timed_out' : 'failed';
             break levelLoop;
           }
 
@@ -332,6 +365,8 @@ export class WorkflowRunner {
     },
     skipMap: Map<string, SkipNodeSpec>,
     workflowGroups: WorkflowSkillGroup[],
+    deadlineMs?: number,
+    timeoutSeconds = DEFAULT_RUN_TIMEOUT_SECONDS,
   ): Promise<{
     logEntry: NodeLogEntry;
     nodeOutput: Record<string, unknown>;
@@ -468,7 +503,49 @@ export class WorkflowRunner {
         nodeCtx.logger.warn('[SIMULATION] Output is synthetic and is not production execution evidence');
       }
 
-      const result = await executor(nodeCtx);
+      const retryPolicy = this.options.definition.executionPolicy?.retryPolicy;
+      const maxAttempts = Math.max(1, Math.floor(retryPolicy?.maxAttempts ?? 1));
+      const backoffSeconds = Math.max(0, retryPolicy?.backoffSeconds ?? 0);
+      const retryOn = retryPolicy?.retryOn;
+      const idempotencyKey = `${nodeCtx.executionId}:${step.nodeId}`;
+      let result: NodeExecuteResult | undefined;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        nodeCtx.attempt = attempt;
+        nodeCtx.maxAttempts = maxAttempts;
+        nodeCtx.idempotencyKey = idempotencyKey;
+        nodeCtx.logger.info(`[POLICY] Attempt ${attempt}/${maxAttempts}; idempotencyKey:${idempotencyKey}`);
+
+        try {
+          const execution = executor(nodeCtx);
+          result = deadlineMs === undefined
+            ? await execution
+            : await withTimeout(execution, deadlineMs - Date.now(), timeoutSeconds);
+        } catch (err) {
+          const code = err instanceof ExecutionTimeoutError ? err.code : 'UNHANDLED_EXCEPTION';
+          const message = err instanceof Error ? err.message : String(err);
+          result = { status: 'failure', outputs: {}, error: { code, message } };
+        }
+
+        if (result.status !== 'failure') break;
+        const errorCode = result.error?.code ?? 'NODE_FAILED';
+        const retryable = attempt < maxAttempts && (!retryOn || retryOn.includes(errorCode));
+        if (!retryable) break;
+
+        const backoffMs = backoffSeconds * 1000 * 2 ** (attempt - 1);
+        nodeCtx.logger.warn(`[POLICY] ${errorCode}; retrying attempt ${attempt + 1}/${maxAttempts} after ${backoffMs}ms`);
+        if (deadlineMs !== undefined && Date.now() + backoffMs >= deadlineMs) {
+          result = {
+            status: 'failure',
+            outputs: result.outputs ?? {},
+            error: { code: 'EXECUTION_TIMEOUT', message: `Workflow exceeded its ${timeoutSeconds}-second execution timeout before retry` },
+          };
+          break;
+        }
+        await delay(backoffMs);
+      }
+
+      result ??= { status: 'failure', outputs: {}, error: { code: 'NODE_FAILED', message: 'Node produced no result' } };
       const nodeCompletedAt = new Date().toISOString();
       const durationMs = new Date(nodeCompletedAt).getTime() - new Date(nodeStartedAt).getTime();
 

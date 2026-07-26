@@ -1,28 +1,3 @@
-/**
- * lados.communication.send_in_app — Phase 21 S4 (Wave 2)
- *
- * Canonical successor to the prototype `notification.send_in_app` and
- * `foundation.send_notification` (both merge into this node per the
- * compatibility alias map). Delivers an in-app notification to a single
- * user via the injected NotificationService. Informs only — it does not
- * assign or approve work.
- *
- * Role/organization-scope broadcast (config.role / config.organizationScope)
- * is accepted but NOT YET implemented — there is no org-member-by-role
- * lookup service wired into this pack. If `role` is supplied without a
- * concrete `userId`, this node fails clearly with NOT_IMPLEMENTED rather
- * than silently no-op'ing or guessing a recipient.
- *
- * Config/Inputs:
- *   userId   — target user (required unless role broadcast — see above)
- *   role     — org role to broadcast to (not yet implemented)
- *   title    — required
- *   body     — optional
- *   severity — free-form label, carried in metadata (not a NotificationType)
- *
- * Outputs:
- *   notification — { notified, notificationId, userId }
- */
 import type { NodeContext, NodeExecuteResult } from '@lados/execution-engine';
 import type { IInAppNotificationService } from '../types';
 
@@ -30,77 +5,69 @@ export async function sendInApp(
   ctx: NodeContext,
   notificationService?: IInAppNotificationService,
 ): Promise<NodeExecuteResult> {
+  const emptyOutput = { notification: { notified: false, notificationIds: [], userIds: [] } };
   if (!notificationService) {
-    return {
-      status: 'failure',
-      outputs: { notification: { notified: false, notificationId: null, userId: null } },
-      error: { code: 'NO_SERVICE', message: 'NotificationService not injected' },
-    };
+    return { status: 'failure', outputs: emptyOutput, error: { code: 'NO_SERVICE', message: 'NotificationService not injected' } };
   }
 
-  const inp = ctx.inputs as Record<string, unknown>;
-  const cfg = ctx.config as Record<string, unknown>;
-  const context = (inp['context'] as Record<string, unknown> | undefined) ?? {};
+  const context = ((ctx.inputs as Record<string, unknown>)['context'] as Record<string, unknown> | undefined) ?? {};
+  const config = ctx.config as Record<string, unknown>;
+  const userId = (context['userId'] ?? config['userId']) as string | undefined;
+  const role = (context['role'] ?? config['role']) as string | undefined;
+  const title = (context['title'] ?? config['title']) as string | undefined;
+  const body = (context['body'] ?? config['body']) as string | undefined;
+  const severity = (context['severity'] ?? config['severity']) as string | undefined;
 
-  const userId   = (context['userId']   ?? cfg['userId'])   as string | undefined;
-  const role     = (context['role']     ?? cfg['role'])     as string | undefined;
-  const title    = (context['title']    ?? cfg['title'])    as string | undefined;
-  const body     = (context['body']     ?? cfg['body'])     as string | undefined;
-  const severity = (context['severity'] ?? cfg['severity']) as string | undefined;
-
-  if (!userId) {
-    if (role) {
-      return {
-        status: 'failure',
-        outputs: { notification: { notified: false, notificationId: null, userId: null } },
-        error: {
-          code: 'NOT_IMPLEMENTED',
-          message: 'lados.communication.send_in_app: role-based broadcast is not implemented — provide a concrete userId',
-        },
-      };
-    }
-    return {
-      status: 'failure',
-      outputs: { notification: { notified: false, notificationId: null, userId: null } },
-      error: { code: 'MISSING_INPUT', message: 'lados.communication.send_in_app: userId is required' },
-    };
+  if (!userId && !role) {
+    return { status: 'failure', outputs: emptyOutput, error: { code: 'MISSING_INPUT', message: 'lados.communication.send_in_app: userId or role is required' } };
   }
   if (!title) {
-    return {
-      status: 'failure',
-      outputs: { notification: { notified: false, notificationId: null, userId } },
-      error: { code: 'MISSING_INPUT', message: 'lados.communication.send_in_app: title is required' },
-    };
+    return { status: 'failure', outputs: emptyOutput, error: { code: 'MISSING_INPUT', message: 'lados.communication.send_in_app: title is required' } };
   }
 
-  ctx.logger.info(`lados.communication.send_in_app → user:${userId} title:"${title}"`);
-
   try {
-    const notificationId = await notificationService.notify({
-      userId,
+    if (role && !notificationService.resolveRecipients) {
+      return { status: 'failure', outputs: emptyOutput, error: { code: 'RECIPIENT_RESOLVER_NOT_CONFIGURED', message: 'Notification recipient resolver is not injected' } };
+    }
+    const userIds = notificationService.resolveRecipients
+      ? await notificationService.resolveRecipients({ orgId: ctx.organizationId, userId, role })
+      : userId ? [userId] : [];
+    if (!userIds.length) {
+      return { status: 'failure', outputs: emptyOutput, error: { code: 'RECIPIENTS_NOT_FOUND', message: `No notification recipients found${role ? ` for role "${role}"` : ''}` } };
+    }
+
+    ctx.logger.info(`lados.communication.send_in_app recipients:${userIds.join(',')} title:"${title}"`);
+    const notificationIds = await Promise.all(userIds.map((recipientId) => notificationService.notify({
+      userId: recipientId,
       orgId: ctx.organizationId,
       type: 'system',
       title,
       body,
+      idempotencyKey: ctx.idempotencyKey ? `${ctx.idempotencyKey}:${recipientId}` : undefined,
       metadata: {
         severity: severity ?? null,
+        role: role ?? null,
         workflowId: ctx.workflowId,
         executionId: ctx.executionId,
+        attempt: ctx.attempt ?? 1,
       },
-    });
+    })));
 
     return {
       status: 'success',
-      outputs: { notification: { notified: true, notificationId: notificationId ?? null, userId } },
-      summary: `In-app notification sent to user ${userId}: "${title}"`,
+      outputs: { notification: {
+        notified: true,
+        notificationId: notificationIds[0] ?? null,
+        notificationIds,
+        userId: userIds[0] ?? null,
+        userIds,
+        role: role ?? null,
+      } },
+      summary: `In-app notification sent to ${userIds.length} recipient(s): "${title}"`,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     ctx.logger.error(`lados.communication.send_in_app failed: ${message}`);
-    return {
-      status: 'failure',
-      outputs: { notification: { notified: false, notificationId: null, userId } },
-      error: { code: 'NOTIFICATION_FAILED', message },
-    };
+    return { status: 'failure', outputs: emptyOutput, error: { code: 'NOTIFICATION_FAILED', message } };
   }
 }

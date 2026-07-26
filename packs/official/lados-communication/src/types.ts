@@ -67,9 +67,11 @@ export interface InAppNotifyPayload {
   body?: string;
   actionUrl?: string;
   metadata?: Record<string, unknown>;
+  idempotencyKey?: string;
 }
 
 /** Minimal interface — NestJS NotificationService satisfies this via duck typing. */
 export interface IInAppNotificationService {
   notify(payload: InAppNotifyPayload): Promise<string | null>;
+  resolveRecipients?(input: { orgId: string; userId?: string; role?: string }): Promise<string[]>;
 }

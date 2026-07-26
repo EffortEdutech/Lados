@@ -83,4 +83,52 @@ describe('Phase 27 runtime baseline', () => {
     expect(report.packs[0]?.state).toBe('blocked');
     expect(report.contradictions).toHaveLength(2);
   });
+
+  it('retries matching structured failures with a stable idempotency key', async () => {
+    const attempts: Array<{ attempt?: number; key?: string }> = [];
+    const retryDefinition = {
+      ...definition,
+      executionPolicy: { retryPolicy: { maxAttempts: 3, backoffSeconds: 0, retryOn: ['TRANSIENT'] } },
+    };
+    const result = await runWorkflow({
+      executionId: 'run-retry', workflowId: 'retry', projectId: 'project-1', organizationId: 'org-1', userId: 'user-1',
+      definition: retryDefinition as never,
+      nodeResolver: () => async (ctx) => {
+        attempts.push({ attempt: ctx.attempt, key: ctx.idempotencyKey });
+        return attempts.length < 3
+          ? { status: 'failure', outputs: {}, error: { code: 'TRANSIENT', message: 'try again' } }
+          : { status: 'success', outputs: { ok: true } };
+      },
+    });
+
+    expect(result.status).toBe('completed');
+    expect(attempts).toEqual([
+      { attempt: 1, key: 'run-retry:unknown-1' },
+      { attempt: 2, key: 'run-retry:unknown-1' },
+      { attempt: 3, key: 'run-retry:unknown-1' },
+    ]);
+    expect(result.logs[0]?.messages.join(' ')).toContain('retrying attempt 2/3');
+  });
+
+  it('does not retry an error excluded by retryOn', async () => {
+    const executor = jest.fn().mockResolvedValue({ status: 'failure', outputs: {}, error: { code: 'VALIDATION_FAILED', message: 'bad input' } });
+    const result = await runWorkflow({
+      executionId: 'run-no-retry', workflowId: 'no-retry', projectId: 'project-1', organizationId: 'org-1', userId: 'user-1',
+      definition: { ...definition, executionPolicy: { retryPolicy: { maxAttempts: 3, backoffSeconds: 0, retryOn: ['TRANSIENT'] } } } as never,
+      nodeResolver: () => executor,
+    });
+    expect(result.status).toBe('failed');
+    expect(executor).toHaveBeenCalledTimes(1);
+    expect(result.logs[0]?.error?.code).toBe('VALIDATION_FAILED');
+  });
+
+  it('fails a node with EXECUTION_TIMEOUT when the run deadline expires', async () => {
+    const result = await runWorkflow({
+      executionId: 'run-timeout', workflowId: 'timeout', projectId: 'project-1', organizationId: 'org-1', userId: 'user-1',
+      definition: { ...definition, executionPolicy: { timeoutSeconds: 0.01 } } as never,
+      nodeResolver: () => async () => new Promise(() => undefined),
+    });
+    expect(result.status).toBe('timed_out');
+    expect(result.logs[0]?.error?.code).toBe('EXECUTION_TIMEOUT');
+  });
 });

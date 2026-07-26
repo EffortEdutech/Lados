@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.2 in progress; Document Intelligence activation slice complete 2026-07-23 |
+| Status | Active - S27.2 in progress; S27.2B shared policy and notification slice complete 2026-07-26 |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |
@@ -756,3 +756,17 @@ Regenerated the runtime baseline with typed-versus-generic configuration account
 **Ad-hoc outstanding:** canvas visual verification for the new typed controls; generic configuration remains on 99 nodes; resource/Knowledge Pack reference selectors, future Connection Profile selectors, notification recipient lookup, and shared timeout/retry/idempotency conventions remain within S27.2. The two honest runtime stubs are SMS sending and video rendering.
 
 **Next:** continue S27.2 with shared timeout/retry/idempotency/error conventions and notification recipient resolution, then type the next workflow-demanded pack rather than broad-editing all manifests without graph demand.
+
+### 2026-07-26 (8) - S27.2B shared execution policy and notification resolution complete
+
+Enforced the workflow execution policy that had previously existed only as a type declaration. The runner now applies a wall-clock deadline, structured `EXECUTION_TIMEOUT` failures with the `timed_out` run state, total-attempt retry limits, exponential backoff, and `retryOn` error-code filtering. Every node attempt receives its attempt number, maximum attempts, and a stable execution/node idempotency key; retry decisions and keys are preserved in node audit messages.
+
+Completed the in-app recipient boundary without placing database logic inside the official pack. `NotificationService.resolveRecipients()` resolves explicit users or organization members by role. Send In-App and Send Reminder fan out through that service, fail clearly when the resolver is absent or no members match, and preserve workflow/run/role/attempt provenance. Notification persistence now deduplicates repeated delivery by a per-recipient idempotency key.
+
+Added explicit typed configuration schemas for the three implemented Communication nodes: Send Email, Send In-App, and Send Reminder. Send SMS remains untyped and honestly stubbed until a real S27.4 provider is selected. The runtime baseline now reports seven nodes with fully typed configuration and 96 nodes retaining generic fields, with 101 implemented nodes, two stubs, 12 runtime-ready packs, three degraded packs, seven catalogue-only packs, and zero contradictions.
+
+**Verification:** shared-types, node SDK, execution engine, official Communication pack, and pack SDK builds passed; API and web typechecks passed; official-pack validation and readiness checks passed; focused Jest passed 3/3 suites and 28/28 tests; full API Jest passed 37/37 suites with 479 passed and 2 skipped. `git diff --check` remained clean after recovery from a system reboot; no interrupted file was truncated or corrupted.
+
+**Ad-hoc outstanding:** the runner cannot cancel underlying provider work after a JavaScript timeout, so provider adapters must use abortable HTTP/SDK timeouts in S27.3-S27.4. Email delivery receives the stable key in `NodeContext` but the current SMTP interface has no provider idempotency facility. Canvas visual verification remains open. The two honest runtime stubs remain SMS sending and video rendering.
+
+**Next:** S27.2C should add resource and Knowledge Pack reference controls to one workflow-demanded professional pack, perform live canvas verification for the Document Intelligence and Communication typed controls, and reclassify any remaining first-wave gaps before closing S27.2.

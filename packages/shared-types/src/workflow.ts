@@ -20,6 +20,23 @@ export interface QSWorkflowDefinition {
   triggers?: WorkflowTrigger[];
   metadata?: WorkflowMetadata;
   ui?: WorkflowUiState;
+  executionPolicy?: ExecutionPolicy;
+}
+
+export interface ExecutionPolicy {
+  maxConcurrent?: number;
+  onConcurrencyExceeded?: 'queue' | 'reject' | 'cancel_oldest';
+  /** Maximum wall-clock duration for a run. Zero disables the deadline. */
+  timeoutSeconds?: number;
+  retryPolicy?: {
+    /** Total attempts including the first execution. */
+    maxAttempts: number;
+    /** Base delay; each subsequent retry uses exponential backoff. */
+    backoffSeconds: number;
+    /** When present, only these structured node error codes are retryable. */
+    retryOn?: string[];
+  };
+  allowParallelBranches?: boolean;
 }
 
 // ─── Workflow info ────────────────────────────────────────────────────────────

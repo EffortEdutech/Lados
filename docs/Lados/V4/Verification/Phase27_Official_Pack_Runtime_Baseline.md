@@ -1,6 +1,6 @@
 # Phase 27 Official Pack Runtime Baseline
 
-**Generated:** 2026-07-23T05:22:57.658Z
+**Generated:** 2026-07-26T00:28:53.201Z
 
 **Scope:** Static repository evidence for S27.0. Archived packs are excluded. Provider sandbox health, live credentials, Supabase state, and browser execution are not claimed by this report.
 
@@ -11,7 +11,7 @@
 - Resolver declarations: **103/103** node types are present in a pack resolver that is wired into the API resolver.
 - Template descriptors: **16**; importable workflow bodies: **3**; descriptor-only assets: **13**.
 - No live official L4 pack was found. Exact provider demand remains under-specified for descriptor-only L3/L5 assets.
-- Typed configuration schemas are declared by **4** nodes; **99** configured nodes still rely wholly or partly on API-derived generic string inputs.
+- Typed configuration schemas are declared by **7** nodes; **96** configured nodes still rely wholly or partly on API-derived generic string inputs.
 
 ## Readiness interpretation
 
@@ -104,7 +104,7 @@
 | Rank | Blocker | Affected assets | Why it matters | Recommended sprint |
 |---:|---|---:|---|---|
 | 1 | missing_workflow_graph_bodies | 13 | Descriptor-only L3/L5 assets cannot prove node, service, resource, connector, or port dependencies and cannot be imported as runnable workflows. | S27.0 follow-up / S27.6 activation |
-| 2 | generic_string_configuration | 99 | These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields. | S27.2 |
+| 2 | generic_string_configuration | 96 | These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields. | S27.2 |
 | 3 | explicit_stub_executors | 2 | Declared stubs (lados.communication.send_sms, lados.video.render_scenes) block any graph that requires their real behavior. | S27.2 / S27.4 / S27.5 by demand |
 | 4 | missing_l4_provider_catalogue | 1 | No live official L4 pack exists; provider selection must follow workflow graph completion rather than assumptions. | S27.3-S27.4 |
 | 5 | degraded_runtime_status | 3 | lados.communication, lados.quran-media, lados.video-production declare or derive degraded readiness and require explicit service/configuration verification. | S27.2-S27.5 |

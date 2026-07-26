@@ -49,6 +49,12 @@ export interface NodeContext {
   organizationId: string;
   /** User who triggered the run */
   userId: string;
+  /** Current execution attempt, starting at 1. */
+  attempt?: number;
+  /** Maximum attempts allowed by the workflow retry policy. */
+  maxAttempts?: number;
+  /** Stable across retries; services use this to deduplicate side effects. */
+  idempotencyKey?: string;
   /**
    * Design-time configuration baked into the workflow definition.
    * Set once on the canvas; available as ctx.config[key].
