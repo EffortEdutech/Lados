@@ -24,6 +24,7 @@ import {
   LibraryPickerField,
   ResourcePickerField,
   DataPackItemField,
+  ConnectionPickerField,
 } from './fields';
 import type { FieldProps } from './fields';
 
@@ -35,6 +36,7 @@ export default function ManifestFieldRouter(props: FieldProps) {
   // ── ui:widget takes priority ─────────────────────────────────────────────
   if (widget === 'resource-picker') return <ResourcePickerField {...props} />;
   if (widget === 'data-pack-item')  return <DataPackItemField  {...props} />;
+  if (widget === 'connection-picker') return <ConnectionPickerField {...props} />;
   if (widget === 'file-upload')     return <FileUploadField     {...props} />;
   if (widget === 'library-picker')  return <LibraryPickerField  {...props} />;
   if (widget === 'json')            return <JsonField            {...props} />;
@@ -48,6 +50,7 @@ export default function ManifestFieldRouter(props: FieldProps) {
   // ── type-based fallback (legacy packs without ui:widget) ─────────────────
   if (type === 'resource')          return <ResourcePickerField  {...props} />;
   if (type === 'data_pack_item')    return <DataPackItemField    {...props} />;
+  if (type === 'connection_profile') return <ConnectionPickerField {...props} />;
   if (type === 'library-picker')    return <LibraryPickerField   {...props} />;
   if (type === 'file')              return <FileUploadField      {...props} />;
   if (type === 'json')              return <JsonField            {...props} />;

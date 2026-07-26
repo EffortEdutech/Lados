@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.2 complete 2026-07-26; S27.3 next
+**Status:** Active - S27.3 code complete 2026-07-26; operational gate pending migration/config/browser verification
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -21,7 +21,7 @@
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
 | S27.1 | Production-strict execution and one readiness truth | `[x]` | Runtime/API/UI/preflight/CI checks verified |
 | S27.2 | First activation wave has typed config and real services | `[x]` | Document Intelligence, Communication/policy, and Asset Fleet trip slices verified |
-| S27.3 | Secure Connection Profile foundation operational | `[ ]` | Migration/RLS/API/UI/security tests |
+| S27.3 | Secure Connection Profile foundation operational | `[~]` | Code/tests green; migration 0080 + encryption config + authenticated browser gate pending |
 | S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
 | S27.5 | L0-L2 packs have explicit verified outcomes | `[ ]` | Updated matrix + graph tests |
 | S27.6 | Selected L3/L5 packs install and configure | `[ ]` | Setup/rollback/browser evidence |
@@ -144,40 +144,47 @@ S27.2 is complete. The remaining 93 generic-config nodes are activation backlog,
 
 ### Schema and security
 
-- [ ] Design organization-scoped Connection Profile model.
-- [ ] Draft next free migration only after confirming migration head.
-- [ ] Add RLS for read/create/update/disable/revoke.
-- [ ] Define encrypted secret/token reference boundary.
-- [ ] Prove secrets never return through API DTOs.
-- [ ] Prove secrets never enter workflow JSON or execution logs.
-- [ ] Add audit events for create/test/refresh/disable/revoke.
+- [x] Design organization-scoped Connection Profile model.
+- [x] Draft next free migration only after confirming migration head. *(Migration `0080_connection_profiles.sql`; prior head `0079`.)*
+- [x] Add RLS for read/create/update/disable/revoke. *(RLS enabled with no direct client policy; service-role API enforces `connection.view`/`connection.manage`, which keeps `secret_envelope` inaccessible to browser clients.)*
+- [x] Define encrypted secret/token reference boundary. *(AES-256-GCM envelope using dedicated `LADOS_CONNECTION_ENCRYPTION_KEY`; decrypted only by execution resolver.)*
+- [x] Prove secrets never return through API DTOs. *(`ConnectionProfileView` + leakage tests.)*
+- [x] Prove secrets never enter workflow JSON or execution logs. *(Workflow stores only Connection Profile ID; runner service-injection test proves empty node config receives resolver.)*
+- [~] Add audit events for create/test/refresh/disable/revoke. *(Create/update/test/disable/reconnect/revoke implemented; provider token refresh deferred until S27.4 selects an OAuth provider.)*
 
 ### Runtime
 
-- [ ] Define provider adapter contract.
-- [ ] Inject secret-safe connector access into real-node service composition.
-- [ ] Implement connection health checks.
-- [ ] Implement OAuth authorize/callback/refresh/revoke foundation where selected.
-- [ ] Implement webhook register/verify/renew/remove foundation where selected.
-- [ ] Implement retry, timeout, pagination, rate-limit, and idempotency helpers.
-- [ ] Implement provider error normalization.
-- [ ] Add connection selector manifest/config field.
+- [x] Define provider adapter contract.
+- [x] Inject secret-safe connector access into real-node service composition. *(Inline and BullMQ runners expose `connectionResolver` through host-only `NodeContext.services`.)*
+- [x] Implement connection health checks. *(Foundation validates envelope/auth structure; provider adapters replace this with real round trips in S27.4.)*
+- [D] Implement OAuth authorize/callback/refresh/revoke foundation where selected. *(No provider family was selected by S27.0; lifecycle schema/adapter seams are present, provider flow belongs to S27.4.)*
+- [D] Implement webhook register/verify/renew/remove foundation where selected. *(No outbound subscription provider selected; existing inbound HMAC webhook runtime remains intact.)*
+- [x] Implement retry, timeout, pagination, rate-limit, and idempotency helpers. *(`ConnectorRuntimePolicyService`; rate-limit retry-after handling and stable idempotency context.)*
+- [x] Implement provider error normalization.
+- [x] Add connection selector manifest/config field.
 
 ### UI
 
-- [ ] Connection list and status.
-- [ ] Add/connect flow.
-- [ ] Scope/permission display.
-- [ ] Test connection command.
-- [ ] Reconnect/disable/revoke commands.
-- [ ] Clear expired/unhealthy state.
+- [x] Connection list and status.
+- [x] Add/connect flow.
+- [x] Scope/permission display.
+- [x] Test connection command.
+- [x] Reconnect/disable/revoke commands.
+- [x] Clear expired/unhealthy state. *(Credential update/reconnect resets health to `untested`; revoked secrets are destroyed.)*
 
 ### S27.3 gate
 
-- [ ] Organization admin can create, test, use, disable, and revoke a connection.
-- [ ] Unauthorized organization member cannot manage connections.
-- [ ] Node accesses provider through a reference, not raw credentials.
-- [ ] Secret-leakage tests pass.
+- [~] Organization admin can create, test, use, disable, and revoke a connection. *(API/service/UI code complete; authenticated live proof awaits migration 0080 and encryption-key configuration.)*
+- [x] Unauthorized organization member cannot manage connections. *(Permission matrix + negative service test.)*
+- [x] Node accesses provider through a reference, not raw credentials.
+- [x] Secret-leakage tests pass.
+
+### S27.3 operational handoff (2026-07-26)
+
+- [B] Apply `0080_connection_profiles.sql` to the target Supabase project. *(Local CLI is not linked: `Cannot find project ref`.)*
+- [B] Configure one specific server value: `LADOS_CONNECTION_ENCRYPTION_KEY` containing 32 random bytes encoded as Base64 or 64 hex characters. *(Never place this value in workflow JSON or browser configuration.)*
+- [ ] Run authenticated browser proof on `/settings/connections`: create -> test -> select in a connection field -> disable -> confirm execution rejection -> reconnect -> revoke -> confirm secret removal.
+- [ ] Re-run the gate after API restart with the migration and key present; do not start S27.4 provider claims before this proof is recorded.
 
 ## S27.4 - Priority L4 connector wave
 

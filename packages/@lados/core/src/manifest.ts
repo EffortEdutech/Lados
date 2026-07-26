@@ -63,6 +63,7 @@ export type ConfigFieldType =
   | 'file'
   | 'json'
   | 'secret'
+  | 'connection_profile'
   | 'data_pack_item'
   | 'resource';
 
@@ -103,7 +104,8 @@ export interface UISchemaField {
     | 'resource-picker'
     | 'data-pack-item'
     | 'json'
-    | 'secret';
+    | 'secret'
+    | 'connection-picker';
   /**
    * For 'resource-picker': the resource type to query.
    * Platform calls GET /resources?type=<resourceType>&organizationId=...

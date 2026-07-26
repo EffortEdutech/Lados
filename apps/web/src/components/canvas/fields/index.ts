@@ -11,4 +11,5 @@ export { default as FileUploadField }     from './FileUploadField';
 export { default as LibraryPickerField }  from './LibraryPickerField';
 export { default as ResourcePickerField } from './ResourcePickerField';
 export { default as DataPackItemField }   from './DataPackItemField';
+export { default as ConnectionPickerField } from './ConnectionPickerField';
 export type { ConfigField, FieldProps, UiWidget } from './types';

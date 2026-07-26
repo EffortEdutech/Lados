@@ -17,6 +17,7 @@ export type ConfigFieldType =
   | 'file'
   | 'json'
   | 'secret'
+  | 'connection_profile'
   | 'data_pack_item'
   | 'library-picker'   // legacy: same as ui:widget='resource-picker' for library files
   | 'resource';        // legacy: same as ui:widget='resource-picker'
@@ -32,6 +33,7 @@ export type UiWidget =
   | 'library-picker'
   | 'resource-picker'
   | 'data-pack-item'
+  | 'connection-picker'
   | 'json';
 
 export interface ConfigFieldOption {

@@ -149,3 +149,27 @@
 - Provider readiness cannot be certified without sandbox/test accounts and real round trips.
 - Supabase migration/application state and browser import/run behavior are outside this static baseline.
 
+## S27.3 Connection Profile foundation evidence (2026-07-26)
+
+### Implemented
+
+- Migration `0080_connection_profiles.sql` defines organization ownership, lifecycle/health state, scopes, expiry metadata, encrypted secret envelopes, indexes, and service-role-only RLS posture.
+- `ConnectionModule` provides owner/admin lifecycle APIs, sanitized response DTOs, AES-256-GCM credential encryption, adapter registration, foundation health probes, audit events, scope/expiry enforcement, and execution-only resolution.
+- `ConnectorRuntimePolicyService` provides bounded timeout, transient retry/backoff, `retryAfterMs` rate-limit handling, stable idempotency context, pagination guards, and secret-redacting provider error normalization.
+- Inline and BullMQ execution paths inject `connectionResolver` through host-only `NodeContext.services`; workflow definitions and node configuration retain only opaque Connection Profile IDs.
+- The canvas supports `connection_profile` / `connection-picker`; `/settings/connections` supports list/create/test/disable/reconnect/revoke with scope and health visibility.
+
+### Verification
+
+- `pnpm build:packages`: passed.
+- API and web typechecks: passed.
+- API Jest: 40 suites passed, 493 passed, 2 skipped.
+- Official pack validation: 22 packs, 103 nodes, 122 canonical capabilities, 43 aliases; passed.
+- Connection security tests cover encryption round trip, tamper rejection, missing-key failure, sanitized list DTOs, inactive/expired/missing-scope rejection, unauthorized management, secret-redacting provider errors, and host-service injection.
+- Repository-wide API lint remains red on two pre-existing unused declarations outside S27.3 (`execution/real-nodes/index.ts` and `test/official-wave3-e2e.spec.ts`).
+
+### Operational blockers
+
+- Migration `0080` is not applied from this checkout because Supabase CLI reports that the project is not linked.
+- The API requires a server-only `LADOS_CONNECTION_ENCRYPTION_KEY` containing exactly 32 bytes (Base64 or 64-character hex); no environment file was read or modified during this work.
+- Authenticated browser proof remains required before marking the S27.3 gate complete or starting provider certification.

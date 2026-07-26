@@ -121,6 +121,10 @@ const PERMISSION_MATRIX: Record<string, OrgRole[]> = {
   'data_pack.view':        ['owner', 'admin', 'member', 'driver', 'operator', 'viewer'],
   'data_pack.manage':      ['owner', 'admin'],
 
+  // Connection Profiles (Phase 27 S27.3)
+  'connection.view':       ['owner', 'admin', 'member'],
+  'connection.manage':     ['owner', 'admin'],
+
   // General membership (any authenticated member of the org)
   'membership':            ['owner', 'admin', 'member', 'driver', 'operator', 'viewer'],
 };

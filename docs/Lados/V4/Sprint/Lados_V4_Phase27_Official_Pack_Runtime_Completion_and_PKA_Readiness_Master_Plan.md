@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.2 complete 2026-07-26; S27.3 next |
+| Status | Active - S27.3 code complete 2026-07-26; operational gate pending migration/config/browser proof |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |

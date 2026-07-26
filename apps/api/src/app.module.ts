@@ -43,6 +43,7 @@ import { ProgramsModule } from './programs/programs.module';    // Phase 23 S23.
 import { ProgramExecutionModule } from './program-execution/program-execution.module'; // Phase 23 S23.2, renamed Phase 24 S24.2 -- durable server-side program runs + stage gates
 import { ReligiousSourceModule } from './religious-source/religious-source.module'; // Phase B (QMCP) -- QUL/Semak Hadis governed adapters (@Global)
 import { CurrentIssueResearchModule } from './current-issue-research/current-issue-research.module'; // Phase D (QMCP) -- allowlisted RSS/news adapters (@Global)
+import { ConnectionModule } from './connection/connection.module'; // Phase 27 S27.3 -- secure provider-neutral connections
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -105,6 +106,7 @@ import { MulterModule } from '@nestjs/platform-express';
     ProgramExecutionModule, // Phase 23 S23.2, renamed Phase 24 S24.2 -- ProgramExecutionService + ProgramWatchdogService (5th watchdog)
     ReligiousSourceModule,  // Phase B (QMCP) -- QUL/Semak Hadis governed adapters (@Global)
     CurrentIssueResearchModule, // Phase D (QMCP) -- allowlisted RSS/news adapters (@Global)
+    ConnectionModule,       // Phase 27 S27.3 -- Connection Profiles + adapter registry (@Global)
     MulterModule.register({ dest: '/tmp/uploads' }),
   ],
   providers: [

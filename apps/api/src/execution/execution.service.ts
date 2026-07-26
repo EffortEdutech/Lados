@@ -36,6 +36,7 @@ import { ArtifactService }     from '../artifact/artifact.service';
 import { ProgramArtifactService } from '../program-artifact/program-artifact.service'; // Phase 23 S23.3, renamed Phase 24 S24.2
 import { ReligiousSourceService } from '../religious-source/religious-source.service'; // Phase B (QMCP)
 import { CurrentIssueResearchService } from '../current-issue-research/current-issue-research.service'; // Phase D (QMCP)
+import { ConnectionService } from '../connection/connection.service';
 import { ExecutionQueueService } from '../queue/execution-queue.service';
 import { RUN_EVENT } from '../queue/queue.constants';
 import { PackRegistryService }   from '../pack/pack-registry.service';
@@ -100,6 +101,7 @@ export class ExecutionService implements OnModuleInit {
     private readonly programArtifactService: ProgramArtifactService, // Phase 23 S23.3, renamed Phase 24 S24.2
     private readonly religiousSourceService: ReligiousSourceService, // Phase B (QMCP)
     private readonly currentIssueResearchService: CurrentIssueResearchService, // Phase D (QMCP)
+    private readonly connectionService: ConnectionService, // Phase 27 S27.3
   ) {
     // nodeResolver used only for in-process fallback (no Redis) and executeNodeAction.
     this.nodeResolver = buildRealNodeResolver(
@@ -458,6 +460,7 @@ export class ExecutionService implements OnModuleInit {
       ...options,
       definition: resolved.definition,
       nodeResolver: this.nodeResolver,
+      services: { connectionResolver: this.connectionService },
       executionMode: options.executionMode ?? resolveExecutionMode(),
     });
   }
@@ -724,7 +727,10 @@ export class ExecutionService implements OnModuleInit {
   ) {
     let result;
     try {
-      result = await runWorkflow(options);
+      result = await runWorkflow({
+        ...options,
+        services: { ...options.services, connectionResolver: this.connectionService },
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       await this.supabase.admin.from('execution_runs').update({

@@ -110,6 +110,23 @@ describe('Phase 27 runtime baseline', () => {
     expect(result.logs[0]?.messages.join(' ')).toContain('retrying attempt 2/3');
   });
 
+  it('passes host connection resolution to real nodes without workflow credentials', async () => {
+    const connectionResolver = { resolve: jest.fn() };
+    const executor = jest.fn(async (ctx) => ({
+      status: 'success' as const,
+      outputs: { hasResolver: ctx.services?.['connectionResolver'] === connectionResolver },
+    }));
+    const result = await runWorkflow({
+      executionId: 'run-connection', workflowId: 'connection', projectId: 'project-1',
+      organizationId: 'org-1', userId: 'user-1', definition: definition as never,
+      services: { connectionResolver }, nodeResolver: () => executor,
+    });
+
+    expect(result.status).toBe('completed');
+    expect(result.outputs).toEqual({ hasResolver: true });
+    expect(executor.mock.calls[0]?.[0].config).toEqual({});
+  });
+
   it('does not retry an error excluded by retryOn', async () => {
     const executor = jest.fn().mockResolvedValue({ status: 'failure', outputs: {}, error: { code: 'VALIDATION_FAILED', message: 'bad input' } });
     const result = await runWorkflow({

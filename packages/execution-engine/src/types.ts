@@ -175,6 +175,8 @@ export interface RunnerOptions {
   definition: QSWorkflowDefinition;
   inputs?: Record<string, unknown>;
   variables?: Record<string, unknown>;
+  /** Host-provided runtime services. Never serialized into workflow definitions. */
+  services?: Record<string, unknown>;
   /** Controls unresolved-node behavior. Defaults to `production-strict`. */
   executionMode?: ExecutionMode;
   /**

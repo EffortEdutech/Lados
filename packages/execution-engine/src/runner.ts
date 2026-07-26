@@ -142,6 +142,7 @@ export class WorkflowRunner {
       userId,
       inputs = {},
       variables = {},
+      services,
       skipNodes = [],
       concurrency,
       programRunId,
@@ -244,7 +245,7 @@ export class WorkflowRunner {
       // Build parallel tasks for this level
       const levelTasks = pendingSteps.map((step) => () => this._executeStep(
         step, nodeOutputs, inputs, variables,
-        { executionId, workflowId, projectId, organizationId, userId, programRunId, programStageId },
+        { executionId, workflowId, projectId, organizationId, userId, programRunId, programStageId, services },
         skipMap,
         workflowGroups,
         deadlineMs,
@@ -362,6 +363,7 @@ export class WorkflowRunner {
       userId: string;
       programRunId?: string;
       programStageId?: string;
+      services?: Record<string, unknown>;
     },
     skipMap: Map<string, SkipNodeSpec>,
     workflowGroups: WorkflowSkillGroup[],
@@ -456,6 +458,7 @@ export class WorkflowRunner {
       config:         step.config,
       inputs:         resolvedInputs,
       variables,
+      services:        ctx.services,
       logger: {
         info:  (msg: string) => nodeMessages.push(`[INFO]  ${msg}`),
         warn:  (msg: string) => nodeMessages.push(`[WARN]  ${msg}`),

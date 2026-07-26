@@ -57,6 +57,7 @@ const NAV_GROUPS: { label: string | null; items: { href: string; label: string; 
     label: 'Settings',
     items: [
       { href: '/settings/departments', label: 'Departments', icon: 'building' },
+      { href: '/settings/connections', label: 'Connections', icon: 'settings' },
       { href: '/settings/services',    label: 'Services',    icon: 'settings' },
     ],
   },
