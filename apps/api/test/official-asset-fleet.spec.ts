@@ -26,6 +26,7 @@ import {
 interface NodeManifestLike {
   type: string;
   executorStatus: string;
+  configSchema?: Array<{ key: string; type: string; ui?: { widget?: string; resourceType?: string } }>;
 }
 
 const manifests: NodeManifestLike[] = JSON.parse(
@@ -90,6 +91,21 @@ describe('official-asset-fleet — manifest <-> executor contract', () => {
     }
   });
 
+  it('trip workflow nodes expose typed resource and Knowledge Pack controls', () => {
+    for (const type of [
+      'lados.asset_fleet.create_job',
+      'lados.asset_fleet.dispatch_trip',
+      'lados.asset_fleet.complete_trip',
+    ]) {
+      const node = manifests.find((manifest) => manifest.type === type)!;
+      expect(node.configSchema?.some((field) => field.ui?.widget === 'resource-picker')).toBe(true);
+      expect(node.configSchema?.find((field) => field.key === 'knowledgePackRef')).toMatchObject({
+        type: 'data_pack_item',
+        ui: { widget: 'data-pack-item' },
+      });
+    }
+  });
+
   it('unknown node types resolve to null', () => {
     expect(resolveNode({})('lados.asset_fleet.does_not_exist')).toBeNull();
   });
@@ -98,12 +114,15 @@ describe('official-asset-fleet — manifest <-> executor contract', () => {
 describe('lados.asset_fleet.create_job', () => {
   it('creates a fleet job resource', async () => {
     const createService = fakeCreateService('job-1', 'open', 'job');
-    const { ctx } = createMockNodeContext({ inputs: { request: { customer: 'Acme Corp', asset: 'Truck-01' } } });
+    const { ctx } = createMockNodeContext({ inputs: { request: { customer: 'customer-1', asset: 'vehicle-1', knowledgePackRef: 'kp-fleet-1' } } });
     const exec = resolveNode({ createService })('lados.asset_fleet.create_job')!;
     const result = await exec(ctx);
     expect(result.status).toBe('success');
-    expect(result.outputs['job']).toMatchObject({ jobId: 'job-1', customer: 'Acme Corp', status: 'open' });
-    expect(createService.createResource).toHaveBeenCalledWith(expect.objectContaining({ type: 'job' }));
+    expect(result.outputs['job']).toMatchObject({ jobId: 'job-1', customer: 'customer-1', status: 'open', knowledgePackRefs: ['kp-fleet-1'] });
+    expect(createService.createResource).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'job',
+      data: expect.objectContaining({ customer: 'customer-1', asset: 'vehicle-1', knowledgePackRefs: ['kp-fleet-1'] }),
+    }));
   });
 
   it('fails when customer is missing', async () => {
@@ -118,12 +137,14 @@ describe('lados.asset_fleet.create_job', () => {
 describe('lados.asset_fleet.dispatch_trip', () => {
   it('dispatches a trip, optionally nested under a job', async () => {
     const createService = fakeCreateService('trip-1', 'dispatched', 'trip');
-    const { ctx } = createMockNodeContext({ inputs: { job: { vehicle: 'Truck-01', driver: 'Ali', destination: 'Site A', jobId: 'job-1' } } });
+    const { ctx } = createMockNodeContext({ inputs: { job: { vehicle: 'vehicle-1', driver: 'driver-1', destination: 'Site A', jobId: 'job-1', knowledgePackRef: 'kp-fleet-1' } } });
     const exec = resolveNode({ createService })('lados.asset_fleet.dispatch_trip')!;
     const result = await exec(ctx);
     expect(result.status).toBe('success');
-    expect(result.outputs['dispatch']).toMatchObject({ tripId: 'trip-1', vehicle: 'Truck-01', driver: 'Ali' });
-    expect(createService.createResource).toHaveBeenCalledWith(expect.objectContaining({ type: 'trip', parentId: 'job-1' }));
+    expect(result.outputs['dispatch']).toMatchObject({ tripId: 'trip-1', resourceId: 'trip-1', vehicle: 'vehicle-1', driver: 'driver-1', knowledgePackRefs: ['kp-fleet-1'] });
+    expect(createService.createResource).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'trip', parentId: 'job-1', data: expect.objectContaining({ knowledgePackRefs: ['kp-fleet-1'] }),
+    }));
   });
 
   it('fails when driver is missing', async () => {
@@ -146,11 +167,15 @@ describe('lados.asset_fleet.complete_trip', () => {
 
   it('completes a trip', async () => {
     const transitionService = fakeTransitionService({ state: 'completed' });
-    const { ctx } = createMockNodeContext({ inputs: { dispatch: { resourceId: 'trip-1', mileage: 120 } } });
-    const exec = resolveNode({ transitionService, updateService: fakeUpdateService() })('lados.asset_fleet.complete_trip')!;
+    const updateService = fakeUpdateService();
+    const { ctx } = createMockNodeContext({ inputs: { dispatch: { tripId: 'trip-1', mileage: 120, knowledgePackRef: 'kp-fleet-1' } } });
+    const exec = resolveNode({ transitionService, updateService })('lados.asset_fleet.complete_trip')!;
     const result = await exec(ctx);
     expect(result.status).toBe('success');
-    expect(result.outputs['completion']).toMatchObject({ resourceId: 'trip-1', status: 'completed', mileage: 120 });
+    expect(result.outputs['completion']).toMatchObject({ resourceId: 'trip-1', status: 'completed', mileage: 120, knowledgePackRefs: ['kp-fleet-1'] });
+    expect(updateService.updateResource).toHaveBeenCalledWith(
+      'trip-1', expect.any(String), expect.objectContaining({ data: expect.objectContaining({ knowledgePackRefs: ['kp-fleet-1'] }) }), expect.any(String),
+    );
   });
 
   it('pauses (never silently certifies) when completion requires approval', async () => {

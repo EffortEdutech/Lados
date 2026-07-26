@@ -45,11 +45,12 @@ export async function completeTrip(
   const cfg = ctx.config as Record<string, unknown>;
   const dispatchInput = (inp['dispatch'] as Record<string, unknown> | undefined) ?? {};
 
-  const resourceId = (dispatchInput['resourceId'] ?? cfg['resourceId']) as string | undefined;
+  const resourceId = (dispatchInput['resourceId'] ?? dispatchInput['tripId'] ?? cfg['resourceId']) as string | undefined;
   const completionTime = ((dispatchInput['completionTime'] ?? cfg['completionTime']) as string | undefined) ?? new Date().toISOString();
   const mileage = (dispatchInput['mileage'] ?? cfg['mileage']) as number | undefined;
   const deliveryNoteRefs = ((dispatchInput['deliveryNoteRefs'] ?? cfg['deliveryNoteRefs']) as unknown[] | undefined) ?? [];
   const exceptions = (dispatchInput['exceptions'] ?? cfg['exceptions']) as string | undefined;
+  const knowledgePackRef = (dispatchInput['knowledgePackRef'] ?? cfg['knowledgePackRef']) as string | undefined;
 
   if (!resourceId) {
     return {
@@ -72,7 +73,13 @@ export async function completeTrip(
     await updateService.updateResource(
       resourceId,
       ctx.organizationId,
-      { data: { completionTime, mileage: mileage ?? null, deliveryNoteRefs, exceptions: exceptions ?? null } },
+      { data: {
+        completionTime,
+        mileage: mileage ?? null,
+        deliveryNoteRefs,
+        exceptions: exceptions ?? null,
+        knowledgePackRefs: knowledgePackRef ? [knowledgePackRef] : [],
+      } },
       actorId,
     );
   }
@@ -98,7 +105,8 @@ export async function completeTrip(
 
     return {
       status: 'success',
-      outputs: { completion: { resourceId, status: result.state, mileage: mileage ?? null } },
+      outputs: { completion: { resourceId, status: result.state, mileage: mileage ?? null, knowledgePackRefs: knowledgePackRef ? [knowledgePackRef] : [] } },
+      logs: knowledgePackRef ? [`Knowledge Pack item referenced: ${knowledgePackRef}`] : undefined,
       summary: `Trip ${resourceId} completed`,
     };
   } catch (err) {

@@ -36,9 +36,17 @@
           "customer",
           "asset",
           "jobDate",
-          "scope"
+          "scope",
+          "knowledgePackRef"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "customer", "label": "Customer", "type": "resource", "required": true, "ui": { "widget": "resource-picker", "resourceType": "customer", "displayField": "name" } },
+      { "key": "asset", "label": "Vehicle / Asset", "type": "resource", "required": false, "ui": { "widget": "resource-picker", "resourceType": "vehicle", "displayField": "name" } },
+      { "key": "jobDate", "label": "Job Date", "type": "string", "required": false, "ui": { "widget": "date" } },
+      { "key": "scope", "label": "Scope", "type": "textarea", "required": false },
+      { "key": "knowledgePackRef", "label": "Fleet SOP Reference", "type": "data_pack_item", "required": false, "ui": { "widget": "data-pack-item" } }
     ],
     "resourceBindings": {
       "supported": true,
@@ -105,12 +113,22 @@
         "id": "dispatch",
         "label": "Dispatch",
         "fields": [
+          "jobId",
           "vehicle",
           "driver",
           "destination",
-          "dispatchTime"
+          "dispatchTime",
+          "knowledgePackRef"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "jobId", "label": "Parent Job", "type": "resource", "required": false, "ui": { "widget": "resource-picker", "resourceType": "job", "displayField": "name" } },
+      { "key": "vehicle", "label": "Vehicle", "type": "resource", "required": true, "ui": { "widget": "resource-picker", "resourceType": "vehicle", "displayField": "name" } },
+      { "key": "driver", "label": "Driver", "type": "resource", "required": true, "ui": { "widget": "resource-picker", "resourceType": "driver", "displayField": "name" } },
+      { "key": "destination", "label": "Destination", "type": "string", "required": false },
+      { "key": "dispatchTime", "label": "Dispatch Time", "type": "string", "required": false, "ui": { "widget": "date" } },
+      { "key": "knowledgePackRef", "label": "Fleet SOP Reference", "type": "data_pack_item", "required": false, "ui": { "widget": "data-pack-item" } }
     ],
     "resourceBindings": {
       "supported": true,
@@ -175,12 +193,22 @@
         "id": "completion",
         "label": "Completion",
         "fields": [
+          "resourceId",
           "completionTime",
           "mileage",
           "deliveryNoteRefs",
-          "exceptions"
+          "exceptions",
+          "knowledgePackRef"
         ]
       }
+    ],
+    "configSchema": [
+      { "key": "resourceId", "label": "Trip", "type": "resource", "required": true, "ui": { "widget": "resource-picker", "resourceType": "trip", "displayField": "name" } },
+      { "key": "completionTime", "label": "Completion Time", "type": "string", "required": false, "ui": { "widget": "date" } },
+      { "key": "mileage", "label": "Mileage", "type": "number", "required": false, "validation": { "min": 0 } },
+      { "key": "deliveryNoteRefs", "label": "Delivery Note References", "type": "json", "required": false, "defaultValue": [] },
+      { "key": "exceptions", "label": "Exceptions", "type": "textarea", "required": false },
+      { "key": "knowledgePackRef", "label": "Fleet SOP Reference", "type": "data_pack_item", "required": false, "ui": { "widget": "data-pack-item" } }
     ],
     "resourceBindings": {
       "supported": true,

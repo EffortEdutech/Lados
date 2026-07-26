@@ -31,6 +31,7 @@ export type UiWidget =
   | 'file-upload'
   | 'library-picker'
   | 'resource-picker'
+  | 'data-pack-item'
   | 'json';
 
 export interface ConfigFieldOption {

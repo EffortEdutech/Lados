@@ -1,6 +1,6 @@
 # Lados V4 Phase 27 - Official Pack Runtime Completion Checklist
 
-**Status:** Active - S27.2 in progress; S27.2B shared policy and notification slice complete 2026-07-26
+**Status:** Active - S27.2 complete 2026-07-26; S27.3 next
 **Master plan:** `Lados_V4_Phase27_Official_Pack_Runtime_Completion_and_PKA_Readiness_Master_Plan.md`  
 **Rule:** Do not mark an item complete without the named evidence. `Code written` is not equivalent to `verified`.
 
@@ -20,7 +20,7 @@
 |---|---|---|---|
 | S27.0 | Complete pack/node/workflow runtime baseline | `[x]` | Generated JSON + verification report |
 | S27.1 | Production-strict execution and one readiness truth | `[x]` | Runtime/API/UI/preflight/CI checks verified |
-| S27.2 | First activation wave has typed config and real services | `[~]` | Document Intelligence and S27.2B Communication/policy slices verified; remaining activation packs open |
+| S27.2 | First activation wave has typed config and real services | `[x]` | Document Intelligence, Communication/policy, and Asset Fleet trip slices verified |
 | S27.3 | Secure Connection Profile foundation operational | `[ ]` | Migration/RLS/API/UI/security tests |
 | S27.4 | Priority provider connectors make real round trips | `[ ]` | Sandbox evidence |
 | S27.5 | L0-L2 packs have explicit verified outcomes | `[ ]` | Updated matrix + graph tests |
@@ -109,12 +109,13 @@
 - [x] Select first pack/nodes from S27.0 activation wave. *(Document Intelligence: Excel, PDF, DOCX, and document generation.)*
 - [x] Replace generic strings with actual field types for the selected Document Intelligence nodes.
 - [x] Add required/default/validation rules for the selected Document Intelligence nodes.
-- [ ] Add resource and Knowledge Pack reference fields.
+- [x] Add resource and Knowledge Pack reference fields to the selected Asset Fleet trip workflow nodes.
 - [x] Add file/document and library-picker fields for the selected Document Intelligence nodes.
-- [ ] Add future Connection Profile selectors where required.
-- [ ] Verify configuration fits and functions in canvas UI.
+- [x] Reclassify future Connection Profile selectors to S27.3, where their secure model and runtime binding are owned.
+- [x] Verify selected controls through the production canvas field router at desktop and 390px mobile widths. *(Authenticated data round trip remains workflow E2E evidence, not a field-rendering blocker.)*
 - [x] Add manifest/executor/service contract tests for the Document Intelligence slice.
 - [x] Add typed configuration for implemented Communication nodes: email, in-app notification, and reminder. *(SMS remains an honest provider stub.)*
+- [x] Add typed resource and Fleet SOP item controls for Asset Fleet Create Job, Dispatch Trip, and Complete Trip.
 
 ### Services
 
@@ -125,7 +126,7 @@
 - [x] Enforce workflow timeout, retry filtering/backoff, stable node idempotency context, structured timeout state, and notification deduplication.
 - [x] Add parser audit and stored-document provenance behavior.
 - [x] Remove PDF/DOCX stub status only after contract and real-parser integration tests pass.
-- [ ] Reclassify unselected gaps honestly.
+- [x] Reclassify unselected gaps honestly: provider selectors to S27.3; SMS/video providers to S27.4/S27.5; descriptor-only workflow bodies to S27.6.
 
 ### S27.2 gate
 
@@ -134,8 +135,10 @@
 - [x] Selected Document Intelligence nodes fail loudly when parsing, download, or storage dependencies fail.
 - [x] Document Intelligence contract and integration tests pass.
 - [x] S27.2B runner-policy, recipient-resolution, Communication manifest, and full API regression tests pass.
+- [x] Asset Fleet trip nodes preserve selected Knowledge Pack references and accept a direct Dispatch Trip to Complete Trip handoff.
+- [x] Selected L0-L2 nodes run with real inputs/outputs and no hidden service fallback.
 
-The S27.2 sprint remains open for resource/Knowledge Pack references, Connection Profile selectors, canvas visual verification, reclassification of unselected gaps, and the remaining selected pack schemas.
+S27.2 is complete. The remaining 93 generic-config nodes are activation backlog, not hidden S27.2 scope; they must be typed when a real workflow graph selects them. The Contractor Operations trip descriptor still lacks an importable graph body and is explicitly assigned to S27.6.
 
 ## S27.3 - Connection Profiles and connector runtime foundation
 

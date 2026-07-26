@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Active - S27.2 in progress; S27.2B shared policy and notification slice complete 2026-07-26 |
+| Status | Active - S27.2 complete 2026-07-26; S27.3 next |
 | Primary objective | Make every prepared official pack honestly installable, configurable, and executable in Lados |
 | Secondary objective | Prepare stable PKA-facing runtime contracts without waiting for or inventing the first KF PKA |
 | Depends on | Phase 25 Multi-Run Canvas Tracking complete; Phase 26 Flexible Multi-Tenant Org Structure is reserved but untouched; official pack catalogue; execution engine; Knowledge Pack engine |
@@ -770,3 +770,19 @@ Added explicit typed configuration schemas for the three implemented Communicati
 **Ad-hoc outstanding:** the runner cannot cancel underlying provider work after a JavaScript timeout, so provider adapters must use abortable HTTP/SDK timeouts in S27.3-S27.4. Email delivery receives the stable key in `NodeContext` but the current SMTP interface has no provider idempotency facility. Canvas visual verification remains open. The two honest runtime stubs remain SMS sending and video rendering.
 
 **Next:** S27.2C should add resource and Knowledge Pack reference controls to one workflow-demanded professional pack, perform live canvas verification for the Document Intelligence and Communication typed controls, and reclassify any remaining first-wave gaps before closing S27.2.
+
+### 2026-07-26 (9) - S27.2C Asset Fleet controls and first-wave closure
+
+Selected Asset Fleet from the first Contractor Operations descriptor rather than typing unrelated professional packs. Direct inspection confirmed that `lados.solution.contractor_ops.trip_dispatch_and_completion` is descriptor-only, so this slice uses its declared Asset Fleet/Task Case demand without claiming an existing graph body. Create Job, Dispatch Trip, and Complete Trip now expose typed customer, vehicle, driver, parent-job, and trip resource selectors plus an installed Knowledge Pack item selector for Fleet SOP evidence.
+
+The three executors preserve the selected Knowledge Pack item in resource data, outputs, and node logs. Dispatch Trip now emits both `tripId` and `resourceId`, and Complete Trip accepts either, closing a real port-handoff mismatch that would otherwise have broken the planned direct chain. Existing service ownership remains unchanged: pack executors call ResourceService-compatible interfaces and never query resources or Knowledge Pack tables directly.
+
+Extended the shared manifest UI vocabulary with `data_pack_item` / `data-pack-item` and Knowledge Pack filter hints. Live visual verification used the production `ManifestFieldRouter`, `ResourcePickerField`, and `DataPackItemField` in a temporary development-only harness that was removed immediately afterward. Desktop and 390x844 mobile screenshots showed stable 324px controls, no horizontal overflow, meaningful empty/error states, and no Next.js error overlay. Authentication correctly prevented an unauthenticated real canvas/data round trip; that evidence remains part of the authenticated S27.6 workflow proof.
+
+**First-wave reclassification:** Connection Profile controls move to S27.3; SMS and video provider gaps remain honest S27.4/S27.5 work; the Contractor Operations descriptor-only graph moves to S27.6. Generic fields outside the selected Document Intelligence, Communication, and Asset Fleet trip nodes remain activation backlog and are not silently treated as complete.
+
+**Verification:** core, node SDK, pack SDK, and official Asset Fleet builds passed; API and web typechecks passed; official-pack validation and readiness checks passed; focused Jest passed 3/3 suites and 36/36 tests; full API Jest passed 37/37 suites with 480 passed and 2 skipped. Runtime evidence regeneration reports ten fully typed nodes, 93 nodes retaining generic fields, 101 implemented nodes, two honest stubs, and zero contradictions.
+
+**Ad-hoc outstanding:** the authenticated resource/Knowledge Pack lookup round trip and the importable Contractor Operations trip workflow body remain coupled S27.6 proof work. The temporary browser harness left no repository diff. No credential or environment file was read.
+
+**Next:** S27.3 - build the organization-scoped Connection Profile schema, secret boundary, API/UI management surface, and provider-neutral node binding foundation.

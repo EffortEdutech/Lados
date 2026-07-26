@@ -39,6 +39,7 @@ export async function dispatchTrip(
   const destination = (jobInput['destination'] ?? cfg['destination']) as string | undefined;
   const dispatchTime = ((jobInput['dispatchTime'] ?? cfg['dispatchTime']) as string | undefined) ?? new Date().toISOString();
   const jobId = (jobInput['jobId'] ?? cfg['jobId']) as string | undefined;
+  const knowledgePackRef = (jobInput['knowledgePackRef'] ?? cfg['knowledgePackRef']) as string | undefined;
 
   if (!vehicle) {
     return {
@@ -71,7 +72,13 @@ export async function dispatchTrip(
     projectId: ctx.projectId,
     type: 'trip',
     name: `Trip — ${vehicle}`,
-    data: { vehicle, driver, destination: destination ?? null, dispatchTime },
+    data: {
+      vehicle,
+      driver,
+      destination: destination ?? null,
+      dispatchTime,
+      knowledgePackRefs: knowledgePackRef ? [knowledgePackRef] : [],
+    },
     parentId: jobId,
     createdBy: actorId,
     initialState: 'dispatched',
@@ -79,7 +86,8 @@ export async function dispatchTrip(
 
   return {
     status: 'success',
-    outputs: { dispatch: { tripId: record.id, vehicle, driver, status: record.state } },
+    outputs: { dispatch: { tripId: record.id, resourceId: record.id, vehicle, driver, status: record.state, knowledgePackRefs: knowledgePackRef ? [knowledgePackRef] : [] } },
+    logs: knowledgePackRef ? [`Knowledge Pack item referenced: ${knowledgePackRef}`] : undefined,
     summary: `Trip dispatched: ${vehicle} / ${driver}`,
   };
 }

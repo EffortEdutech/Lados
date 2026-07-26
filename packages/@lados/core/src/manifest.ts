@@ -63,6 +63,7 @@ export type ConfigFieldType =
   | 'file'
   | 'json'
   | 'secret'
+  | 'data_pack_item'
   | 'resource';
 
 /**
@@ -100,6 +101,7 @@ export interface UISchemaField {
     | 'file-upload'
     | 'library-picker'
     | 'resource-picker'
+    | 'data-pack-item'
     | 'json'
     | 'secret';
   /**
@@ -108,6 +110,9 @@ export interface UISchemaField {
    * @example 'Vehicle', 'Driver', 'Customer', 'Job'
    */
   resourceType?: string;
+  /** Optional installed Knowledge Pack/collection filters. */
+  dataPackSlug?: string;
+  dataPackCollection?: string;
   /** For 'resource-picker': field to display in the dropdown label */
   displayField?: string;
   /** Placeholder text shown in the input when empty */

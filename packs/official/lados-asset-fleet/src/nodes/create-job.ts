@@ -38,6 +38,7 @@ export async function createJob(
   const asset = (requestInput['asset'] ?? cfg['asset']) as string | undefined;
   const jobDate = ((requestInput['jobDate'] ?? cfg['jobDate']) as string | undefined) ?? new Date().toISOString();
   const scope = (requestInput['scope'] ?? cfg['scope']) as string | undefined;
+  const knowledgePackRef = (requestInput['knowledgePackRef'] ?? cfg['knowledgePackRef']) as string | undefined;
 
   if (!customer) {
     return {
@@ -63,14 +64,21 @@ export async function createJob(
     projectId: ctx.projectId,
     type: 'job',
     name: `Job — ${customer}`,
-    data: { customer, asset: asset ?? null, jobDate, scope: scope ?? null },
+    data: {
+      customer,
+      asset: asset ?? null,
+      jobDate,
+      scope: scope ?? null,
+      knowledgePackRefs: knowledgePackRef ? [knowledgePackRef] : [],
+    },
     createdBy: actorId,
     initialState: 'open',
   });
 
   return {
     status: 'success',
-    outputs: { job: { jobId: record.id, customer, status: record.state } },
+    outputs: { job: { jobId: record.id, customer, status: record.state, knowledgePackRefs: knowledgePackRef ? [knowledgePackRef] : [] } },
+    logs: knowledgePackRef ? [`Knowledge Pack item referenced: ${knowledgePackRef}`] : undefined,
     summary: `Fleet job created: ${customer}`,
   };
 }

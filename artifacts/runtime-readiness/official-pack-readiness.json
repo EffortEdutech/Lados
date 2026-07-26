@@ -1,6 +1,6 @@
 {
   "schemaVersion": "lados.phase27.runtime-baseline.v1",
-  "generatedAt": "2026-07-26T00:28:53.201Z",
+  "generatedAt": "2026-07-26T03:09:23.063Z",
   "scope": {
     "officialRoot": "packs/official",
     "archivedPacksExcluded": true,
@@ -25,8 +25,8 @@
     "degradedWorkflowCount": 1,
     "blockedWorkflowCount": 0,
     "nodesWithConfigFields": 103,
-    "nodesWithTypedConfig": 7,
-    "nodesWithGenericConfig": 96,
+    "nodesWithTypedConfig": 10,
+    "nodesWithGenericConfig": 93,
     "l4PackCount": 0
   },
   "contradictions": [],
@@ -78,7 +78,7 @@
       "stubNodeCount": 0,
       "resolverDeclaredNodeCount": 7,
       "nodesWithConfigFields": 7,
-      "nodesWithTypedConfig": 0,
+      "nodesWithTypedConfig": 3,
       "templateCount": 0,
       "workflowBodyCount": 0,
       "testEvidence": {
@@ -100,7 +100,7 @@
       "verification": {
         "manifest": "verified — S6.1 fix: none needed, nodes.json already fully matched manifest.json's 7 declared nodes (no skeleton parity gap)",
         "runtime": "implemented — all 7 nodes implemented, reusing job/trip/fuel_receipt/maintenance_record resource types from migration 0032_phase9_contractor_edition.sql (no new migration needed). extract_fuel_receipt reuses the real, already-integrated AiService.isConfigured/runVision (same capability contractor-pack's real contractor.extract_fuel_data node uses) — honest reuse, not fabrication; falls back to a confidence:0 advisory stub when AI is not configured. clear_maintenance enforces the MISSING_HUMAN_DECISION contract on clearedBy.",
-        "canvas": "not_started",
+        "canvas": "verified - S27.2C production field components rendered through ManifestFieldRouter at desktop and 390px mobile widths with no overflow or framework error overlay; authenticated resource/Knowledge Pack data round trip remains part of workflow E2E proof",
         "templates": "not_started"
       }
     },
@@ -1539,9 +1539,16 @@
         "customer",
         "asset",
         "jobDate",
-        "scope"
+        "scope",
+        "knowledgePackRef"
       ],
-      "typedConfigurationFieldKeys": [],
+      "typedConfigurationFieldKeys": [
+        "customer",
+        "asset",
+        "jobDate",
+        "scope",
+        "knowledgePackRef"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1572,12 +1579,21 @@
       "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
+        "jobId",
         "vehicle",
         "driver",
         "destination",
-        "dispatchTime"
+        "dispatchTime",
+        "knowledgePackRef"
       ],
-      "typedConfigurationFieldKeys": [],
+      "typedConfigurationFieldKeys": [
+        "jobId",
+        "vehicle",
+        "driver",
+        "destination",
+        "dispatchTime",
+        "knowledgePackRef"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -1607,12 +1623,21 @@
       "runtimeReadiness": "implemented",
       "apiResolverWired": true,
       "configurationFieldKeys": [
+        "resourceId",
         "completionTime",
         "mileage",
         "deliveryNoteRefs",
-        "exceptions"
+        "exceptions",
+        "knowledgePackRef"
       ],
-      "typedConfigurationFieldKeys": [],
+      "typedConfigurationFieldKeys": [
+        "resourceId",
+        "completionTime",
+        "mileage",
+        "deliveryNoteRefs",
+        "exceptions",
+        "knowledgePackRef"
+      ],
       "knowledgePackRequirements": {
         "required": [],
         "recommended": [
@@ -5630,7 +5655,7 @@
     },
     {
       "id": "generic_string_configuration",
-      "affectedCount": 96,
+      "affectedCount": 93,
       "reason": "These configured nodes still contain fields without explicit typed schemas, so the API derives optional string controls for the remaining fields.",
       "recommendedSprint": "S27.2"
     },
